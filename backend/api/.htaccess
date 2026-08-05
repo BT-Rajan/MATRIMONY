@@ -1,0 +1,15 @@
+RewriteEngine On
+
+# Route every request that isn't a real file/dir to index.php
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^ index.php [L]
+
+# Never allow directory listing
+Options -Indexes
+
+# Block direct access to PHP files inside these data folders
+<IfModule mod_rewrite.c>
+  RewriteRule ^uploads/.*\.php$ - [F,L]
+  RewriteRule ^logs/.*$ - [F,L]
+</IfModule>
