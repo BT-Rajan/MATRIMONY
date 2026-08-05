@@ -19,6 +19,7 @@ import {
 } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
 import DashboardOutlined from '@mui/icons-material/DashboardOutlined';
+import TuneOutlined from '@mui/icons-material/TuneOutlined';
 import LogoutOutlined from '@mui/icons-material/LogoutOutlined';
 import FavoriteIcon from '@mui/icons-material/Favorite';
 import { useAuth } from '../contexts/AuthContext';
@@ -28,7 +29,10 @@ import { ROUTES } from '../utils/constants';
 const DRAWER_WIDTH = 240;
 
 const NAV_ITEMS = {
-  admin: [{ label: 'டாஷ்போர்டு', icon: <DashboardOutlined fontSize="small" />, path: ROUTES.ADMIN_DASHBOARD }],
+  admin: [
+    { label: 'டாஷ்போர்டு', icon: <DashboardOutlined fontSize="small" />, path: ROUTES.ADMIN_DASHBOARD },
+    { label: 'மாஸ்டர் தரவு', icon: <TuneOutlined fontSize="small" />, path: '/admin/masters' },
+  ],
   member: [{ label: 'என் டாஷ்போர்டு', icon: <DashboardOutlined fontSize="small" />, path: ROUTES.MEMBER_DASHBOARD }],
 };
 

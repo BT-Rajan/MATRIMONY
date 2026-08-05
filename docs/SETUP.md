@@ -12,11 +12,17 @@
 ```bash
 mysql -u root -p < backend/api/sql/001_pass1_core.sql
 mysql -u root -p karkathar_matrimony < backend/api/sql/002_pass1_seed_admin.sql
+mysql -u root -p karkathar_matrimony < backend/api/sql/003_pass2_masters.sql
+mysql -u root -p karkathar_matrimony < backend/api/sql/004_pass2_seed_masters.sql
 ```
 
 Migrations are numbered and additive (`001_...`, `002_...`, ...) — always run
 them in order. Never edit a migration that has already been run against a
 real database; add a new numbered file instead.
+
+> If you see a `Data too long for column` error while loading a seed file
+> that contains Tamil text, your `mysql` CLI is reading the file as Latin-1
+> instead of UTF-8 — add `--default-character-set=utf8mb4` to the command.
 
 Create a dedicated app DB user rather than using `root`:
 

@@ -25,19 +25,46 @@ if ($path === '') {
 $method = $_SERVER['REQUEST_METHOD'];
 
 require_once __DIR__ . '/controllers/AuthController.php';
+require_once __DIR__ . '/controllers/MasterController.php';
 
+// Static, exact-match routes.
 $routes = [
     'POST /auth/admin/login' => [AuthController::class, 'loginAdmin'],
     'POST /auth/member/login' => [AuthController::class, 'loginMember'],
     'GET /auth/me' => [AuthController::class, 'me'],
     'POST /auth/logout' => [AuthController::class, 'logout'],
+    'GET /masters' => [MasterController::class, 'registry'],
 ];
 
 $key = "{$method} {$path}";
 
-if (!isset($routes[$key])) {
-    Response::error('பாதை கிடைக்கவில்லை', 404);
+if (isset($routes[$key])) {
+    [$controller, $action] = $routes[$key];
+    $controller::$action();
+    exit;
 }
 
-[$controller, $action] = $routes[$key];
-$controller::$action();
+// Pattern routes: /masters/{slug} and /masters/{slug}/{id}
+// {slug} is restricted to lowercase letters/hyphens (matches MasterRegistry keys).
+$patternRoutes = [
+    ['GET', '#^/masters/([a-z-]+)$#', [MasterController::class, 'index']],
+    ['POST', '#^/masters/([a-z-]+)$#', [MasterController::class, 'store']],
+    ['PUT', '#^/masters/([a-z-]+)/(\d+)$#', [MasterController::class, 'update']],
+    ['DELETE', '#^/masters/([a-z-]+)/(\d+)$#', [MasterController::class, 'destroy']],
+];
+
+foreach ($patternRoutes as [$routeMethod, $pattern, $handler]) {
+    if ($method !== $routeMethod) {
+        continue;
+    }
+    if (preg_match($pattern, $path, $matches)) {
+        [$controller, $action] = $handler;
+        $args = array_slice($matches, 1);
+        // Cast numeric id segments to int for the controller signature.
+        $args = array_map(fn($v) => ctype_digit($v) ? (int) $v : $v, $args);
+        $controller::$action(...$args);
+        exit;
+    }
+}
+
+Response::error('பாதை கிடைக்கவில்லை', 404);

@@ -53,7 +53,41 @@ run against a real database:
 Each pass adds new numbered files; existing tables are extended with
 `ALTER TABLE`, never dropped or destructively rewritten.
 
-## Frontend structure
+## Masters engine (Pass 2)
+
+15 lookup types (Religion, Caste, Sub Caste, District, Taluk, Village,
+Education, Occupation, Income, Star, Rasi, Dosham, Relationship, Event,
+Payment Type) share one generic engine instead of 15 hand-written CRUD
+modules:
+
+- `config/MasterRegistry.php` is the **only** place table/column names
+  for this engine come from. `MasterModel`'s dynamic SQL always looks
+  the table name up here by `slug` — it never accepts a table name from
+  the request — so building queries with string-interpolated identifiers
+  stays injection-safe (values are still always bound as parameters).
+- Two shapes: `simple` (`id, name_tamil, name_english, sort_order,
+  is_active`) and `hierarchical` (adds a `parent_id`-style FK — Caste→
+  Religion, Sub Caste→Caste, Taluk→District, Village→Taluk). `events` is
+  a one-off third shape (`event_date`, `venue`) handled by light special-
+  casing in `MasterService`.
+- Hierarchical parents use `ON DELETE RESTRICT` — deleting a parent that
+  still has children fails at the DB level; `MasterService::delete()`
+  catches that and returns a friendly Tamil 409 instead of a raw SQL
+  error.
+- One React page (`MasterListPage.jsx`) + one dialog
+  (`MasterFormDialog.jsx`) render all 15 types by reading
+  `frontend/src/config/masterConfig.js` (a frontend mirror of the PHP
+  registry) — search, pagination, parent-filtering, and the add/edit
+  form all adapt to the config rather than being copy-pasted per type.
+- Every create/update/delete writes to `audit_log` via the `Audit`
+  helper (actor, before/after JSON, IP, user agent).
+
+Later passes (registration wizard, admin member CRUD) consume these
+tables read-only via `masterService.options(slug, parentId)` to
+populate dropdowns — per the master prompt's rule, **no dropdown values
+are ever hardcoded** in the frontend.
+
+
 
 ```
 src/
