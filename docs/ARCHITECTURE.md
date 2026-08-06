@@ -130,6 +130,33 @@ src/
   theme/                MUI theme (palette, typography)
 ```
 
+## Admin member workflow (Pass 4)
+
+- Status transitions are enforced server-side, not just hidden in the
+  UI: `approve` checks `registration_step >= 6`, `reject` requires a
+  reason, `delete` is refused once `status = approved` (the member
+  must be archived instead), and editing
+  `member_event_participation` is refused once approved. Every
+  transition writes `reviewed_by`/`reviewed_at` and an `audit_log`
+  row with before/after values.
+- `deactivate` records the member's status into `previous_status`
+  *before* overwriting it, so `reactivate` restores exactly where
+  they were (approved members go back to approved, not to some
+  default). This must be done as two separate bound parameters in
+  the `UPDATE` — `SET status = :new, previous_status = status` looks
+  right but is wrong in MySQL, because multi-column `UPDATE`
+  assignments see each other's *new* values, not the pre-update row;
+  the previous status has to be read in PHP and passed in explicitly.
+- `blocked` and `archived` both reject login (`AuthService::
+  loginMember`) — archived wasn't explicitly called out as
+  login-blocking in the source spec, but "removed from the platform"
+  clearly implies it.
+- Deleting a member cascades to every child table via `ON DELETE
+  CASCADE` (photos, horoscope, family, reference, event
+  participation) and `MemberAdminService::delete()` also removes the
+  actual uploaded files from disk, so a hard delete doesn't leave
+  orphaned files behind.
+
 ## Design direction
 
 Palette and typography draw on Tamil temple/ritual visual language rather

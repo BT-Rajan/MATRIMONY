@@ -8,9 +8,9 @@ final class MemberModel
     public static function findByEmailOrMobile(string $identifier): ?array
     {
         $stmt = Database::connection()->prepare(
-            'SELECT * FROM members WHERE (email = :identifier OR mobile = :identifier) LIMIT 1'
+            'SELECT * FROM members WHERE (email = :identifier1 OR mobile = :identifier2) LIMIT 1'
         );
-        $stmt->execute(['identifier' => $identifier]);
+        $stmt->execute(['identifier1' => $identifier, 'identifier2' => $identifier]);
         $row = $stmt->fetch();
         return $row ?: null;
     }
@@ -146,5 +146,110 @@ final class MemberModel
         $stmt->execute(['id' => $id]);
         $row = $stmt->fetch();
         return $row ?: null;
+    }
+
+    // ---------------------------------------------------------------
+    // Admin: listing, filtering, status transitions (Pass 4)
+    // ---------------------------------------------------------------
+
+    public static function adminPaginate(array $filters, int $page, int $perPage): array
+    {
+        $db = Database::connection();
+        $where = [];
+        $params = [];
+
+        if (!empty($filters['search'])) {
+            $where[] = '(registration_number LIKE :s1 OR name_english LIKE :s2 OR name_tamil LIKE :s3 OR mobile LIKE :s4 OR email LIKE :s5)';
+            $needle = "%{$filters['search']}%";
+            $params['s1'] = $needle; $params['s2'] = $needle; $params['s3'] = $needle;
+            $params['s4'] = $needle; $params['s5'] = $needle;
+        }
+        if (!empty($filters['status'])) {
+            $where[] = 'status = :status';
+            $params['status'] = $filters['status'];
+        }
+        if (!empty($filters['gender'])) {
+            $where[] = 'gender = :gender';
+            $params['gender'] = $filters['gender'];
+        }
+        if (isset($filters['is_verified']) && $filters['is_verified'] !== '') {
+            $where[] = 'is_verified = :is_verified';
+            $params['is_verified'] = (int) $filters['is_verified'];
+        }
+        if (!empty($filters['religion_id'])) {
+            $where[] = 'religion_id = :religion_id';
+            $params['religion_id'] = (int) $filters['religion_id'];
+        }
+        if (!empty($filters['district_id'])) {
+            $where[] = 'district_id = :district_id';
+            $params['district_id'] = (int) $filters['district_id'];
+        }
+
+        $whereSql = $where ? ('WHERE ' . implode(' AND ', $where)) : '';
+
+        $countStmt = $db->prepare("SELECT COUNT(*) AS total FROM members {$whereSql}");
+        $countStmt->execute($params);
+        $total = (int) $countStmt->fetch()['total'];
+
+        $offset = max(0, ($page - 1) * $perPage);
+        $sql = "SELECT id, registration_number, name_tamil, name_english, gender, mobile, email,
+                       status, registration_step, is_verified, photo_path, created_at
+                FROM members {$whereSql}
+                ORDER BY created_at DESC
+                LIMIT :limit OFFSET :offset";
+        $stmt = $db->prepare($sql);
+        foreach ($params as $k => $v) {
+            $stmt->bindValue(":{$k}", $v);
+        }
+        $stmt->bindValue(':limit', $perPage, PDO::PARAM_INT);
+        $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
+        $stmt->execute();
+
+        return ['items' => $stmt->fetchAll(), 'total' => $total];
+    }
+
+    public static function setStatus(int $id, string $status, int $adminId, ?string $reason = null, ?string $previousStatus = null): void
+    {
+        $sql = 'UPDATE members SET status = :status, reviewed_by = :admin_id, reviewed_at = NOW()';
+        $params = ['status' => $status, 'admin_id' => $adminId, 'id' => $id];
+
+        if ($previousStatus !== null) {
+            $sql .= ', previous_status = :previous_status';
+            $params['previous_status'] = $previousStatus;
+        }
+        if ($reason !== null) {
+            $sql .= ', rejection_reason = :reason';
+            $params['reason'] = $reason;
+        } elseif ($status !== 'rejected') {
+            $sql .= ', rejection_reason = NULL';
+        }
+
+        $sql .= ' WHERE id = :id';
+        $stmt = Database::connection()->prepare($sql);
+        $stmt->execute($params);
+    }
+
+    public static function restorePreviousStatus(int $id, int $adminId): void
+    {
+        $stmt = Database::connection()->prepare(
+            "UPDATE members
+             SET status = COALESCE(previous_status, 'approved'), reviewed_by = :admin_id, reviewed_at = NOW(), previous_status = NULL
+             WHERE id = :id"
+        );
+        $stmt->execute(['admin_id' => $adminId, 'id' => $id]);
+    }
+
+    public static function setVerified(int $id, bool $verified, int $adminId): void
+    {
+        $stmt = Database::connection()->prepare(
+            'UPDATE members SET is_verified = :v, reviewed_by = :admin_id, reviewed_at = NOW() WHERE id = :id'
+        );
+        $stmt->execute(['v' => $verified ? 1 : 0, 'admin_id' => $adminId, 'id' => $id]);
+    }
+
+    public static function delete(int $id): void
+    {
+        $stmt = Database::connection()->prepare('DELETE FROM members WHERE id = :id');
+        $stmt->execute(['id' => $id]);
     }
 }

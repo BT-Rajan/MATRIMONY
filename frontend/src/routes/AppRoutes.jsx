@@ -6,6 +6,8 @@ import MemberDashboard from '../pages/dashboard/MemberDashboard';
 import AdminDashboard from '../pages/dashboard/AdminDashboard';
 import MastersIndexPage from '../pages/admin/masters/MastersIndexPage';
 import MasterListPage from '../pages/admin/masters/MasterListPage';
+import MembersListPage from '../pages/admin/members/MembersListPage';
+import MemberDetailPage from '../pages/admin/members/MemberDetailPage';
 import NotFound from '../pages/NotFound';
 import ProtectedRoute from './ProtectedRoute';
 import { ROLES, ROUTES } from '../utils/constants';
@@ -28,6 +30,8 @@ export default function AppRoutes() {
           <Route path="/admin/dashboard" element={<AdminDashboard />} />
           <Route path="/admin/masters" element={<MastersIndexPage />} />
           <Route path="/admin/masters/:slug" element={<MasterListPage />} />
+          <Route path="/admin/members" element={<MembersListPage />} />
+          <Route path="/admin/members/:id" element={<MemberDetailPage />} />
         </Route>
       </Route>
 

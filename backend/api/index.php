@@ -27,6 +27,7 @@ $method = $_SERVER['REQUEST_METHOD'];
 require_once __DIR__ . '/controllers/AuthController.php';
 require_once __DIR__ . '/controllers/MasterController.php';
 require_once __DIR__ . '/controllers/RegistrationController.php';
+require_once __DIR__ . '/controllers/AdminMemberController.php';
 
 // Static, exact-match routes.
 $routes = [
@@ -45,6 +46,7 @@ $routes = [
     'PUT /registration/step4' => [RegistrationController::class, 'step4'],
     'POST /registration/step5' => [RegistrationController::class, 'step5'],
     'GET /registration/me' => [RegistrationController::class, 'me'],
+    'GET /admin/members' => [AdminMemberController::class, 'index'],
 ];
 
 $key = "{$method} {$path}";
@@ -62,6 +64,18 @@ $patternRoutes = [
     ['POST', '#^/masters/([a-z-]+)$#', [MasterController::class, 'store']],
     ['PUT', '#^/masters/([a-z-]+)/(\d+)$#', [MasterController::class, 'update']],
     ['DELETE', '#^/masters/([a-z-]+)/(\d+)$#', [MasterController::class, 'destroy']],
+
+    ['GET', '#^/admin/members/(\d+)$#', [AdminMemberController::class, 'show']],
+    ['PUT', '#^/admin/members/(\d+)$#', [AdminMemberController::class, 'update']],
+    ['DELETE', '#^/admin/members/(\d+)$#', [AdminMemberController::class, 'destroy']],
+    ['POST', '#^/admin/members/(\d+)/approve$#', [AdminMemberController::class, 'approve']],
+    ['POST', '#^/admin/members/(\d+)/reject$#', [AdminMemberController::class, 'reject']],
+    ['POST', '#^/admin/members/(\d+)/verify$#', [AdminMemberController::class, 'verify']],
+    ['POST', '#^/admin/members/(\d+)/unverify$#', [AdminMemberController::class, 'unverify']],
+    ['POST', '#^/admin/members/(\d+)/deactivate$#', [AdminMemberController::class, 'deactivate']],
+    ['POST', '#^/admin/members/(\d+)/reactivate$#', [AdminMemberController::class, 'reactivate']],
+    ['POST', '#^/admin/members/(\d+)/archive$#', [AdminMemberController::class, 'archive']],
+    ['PUT', '#^/admin/members/(\d+)/event$#', [AdminMemberController::class, 'updateEvent']],
 ];
 
 foreach ($patternRoutes as [$routeMethod, $pattern, $handler]) {

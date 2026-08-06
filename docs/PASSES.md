@@ -9,7 +9,7 @@ end of every pass.
 | 1 | Project setup, auth (admin + member JWT login), DB connection, routing, theme, common components, API service layer | ✅ Done |
 | 2 | Masters module (Religion, Caste, Sub Caste, District, Taluk, Village, Education, Occupation, Income, Star, Rasi, Dosham, Relationship, Event, Payment Type) — CRUD, search, pagination | ✅ Done |
 | 3 | Self-registration wizard (5 steps, autosave, resume) | ✅ Done |
-| 4 | Admin CRUD — members, approval, verification, deactivate, archive | ⏳ Not started |
+| 4 | Admin CRUD — members, approval, verification, deactivate, archive | ✅ Done |
 | 5 | Search — simple, advanced, saved searches, export | ⏳ Not started |
 | 6 | Booklet generator (PDF, cover, QR code, print-ready) | ⏳ Not started |
 | 7 | Dashboard — statistics, charts, reports | ⏳ Not started |
@@ -130,3 +130,72 @@ kept in `backend/tests/` for re-running.
 - `member_event_participation` payment fields aren't verified against
   any payment gateway — this pass only records what the member reports
   (transaction number + receipt upload), matching the spec.
+
+## Pass 4 summary
+
+**Delivered:**
+- Admin review trail on `members`: `reviewed_by`, `reviewed_at`,
+  `rejection_reason`, `previous_status`
+- `MemberAdminService.php` + `AdminMemberController.php`: paginated
+  list with search/status/gender/verified/religion/district filters,
+  full-profile view, **approve** (blocked unless
+  `registration_step >= 6`, matching "cannot approve incomplete
+  profile"), **reject** (requires a reason), **verify/unverify**,
+  **deactivate → blocked** (login rejected while blocked),
+  **reactivate** (restores the exact prior status), **archive**
+  (also now blocks login — a reasonable extension of "removed from
+  the platform" beyond what the spec spelled out), **delete** (blocked
+  once `status = approved`, matching "cannot delete approved
+  profile" — cascades to all child tables and removes the uploaded
+  files from disk), a scoped **edit** of core contact/address fields,
+  and a guarded edit of event-participation/payment data (blocked
+  once approved, matching "cannot edit approved payment")
+- Every action writes to `audit_log` with before/after values
+- Frontend: `MembersListPage` (search, status/gender filters,
+  pagination, status chips, verified badge) and `MemberDetailPage`
+  (full profile across all 5 registration steps, every workflow
+  action as a button with confirmation dialogs, inline edit dialog)
+- Admin dashboard now shows live counts (total/pending/approved/
+  verified) instead of placeholder dashes
+- New "உறுப்பினர்கள்" admin nav section
+
+**Two real bugs found and fixed while testing (not in this pass's
+new code, but only surfaced by it):**
+1. Member login by mobile/email was silently broken since Pass 1 — a
+   duplicate named SQL placeholder (`:identifier` reused for both the
+   email and mobile side of an OR clause) that MySQL's native prepared
+   statements reject. It only surfaced now because this pass was the
+   first to test member login end-to-end (Pass 1's tests only covered
+   admin login). Fixed, and the whole codebase was scanned
+   programmatically for the same class of bug — none found elsewhere.
+2. A classic MySQL multi-column `UPDATE` gotcha: `SET status =
+   :status, previous_status = status` reads the column's
+   *already-updated* value within the same statement, not the value
+   before the update — so reactivating a deactivated member silently
+   restored the wrong status. Fixed by passing the previous status in
+   explicitly as a bound parameter.
+
+**Tested end-to-end** — twice: once against the running dev database,
+and again from a **completely fresh database built by running all six
+migrations in sequence** (001 through 006, the exact order a real
+deployment would use), followed by the full registration flow (Pass 3)
+and the full admin workflow (Pass 4) on that freshly-built schema.
+17 admin scenarios plus the Pass 3 suite all pass: approve, reject
+(with/without reason), re-approve-already-approved (409), delete-
+approved-blocked (409), verify, core-field edit, invalid-email edit
+(422), payment-edit-on-approved-blocked (409), deactivate, blocked-
+login-rejected (403), reactivate, reactivated-login-succeeds (200),
+archive, archived-login-rejected, filtered listing, and unauthenticated
+access (401).
+
+**Known follow-ups for later passes:**
+- Admin edit is intentionally scoped to contact/address fields, not
+  the full bio-data (photo/ID-proof/horoscope-document re-upload,
+  religion/caste/education/etc.) — a fuller "admin edits everything"
+  screen can be added later if needed; noted rather than built to keep
+  this pass's scope matching what the spec asked for ("Members,
+  Approval, Verification, Deactivate, Archive").
+- No bulk actions (e.g. approve multiple members at once) yet.
+- "Archive" doesn't currently expose an "unarchive" action in the UI,
+  though the backend's `previous_status` tracking would support adding
+  one cheaply later.

@@ -63,6 +63,9 @@ final class AuthService
         if ($member['status'] === 'blocked') {
             throw new AuthException('இந்த கணக்கு முடக்கப்பட்டுள்ளது. நிர்வாகியை தொடர்பு கொள்ளவும்.', 403);
         }
+        if ($member['status'] === 'archived') {
+            throw new AuthException('இந்த கணக்கு காப்பகப்படுத்தப்பட்டுள்ளது. நிர்வாகியை தொடர்பு கொள்ளவும்.', 403);
+        }
 
         RateLimiter::recordAttempt("member:{$identifier}", true);
         MemberModel::touchLastLogin((int) $member['id']);
