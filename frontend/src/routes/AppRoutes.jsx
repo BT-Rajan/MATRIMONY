@@ -1,6 +1,6 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
 import Login from '../pages/auth/Login';
-import RegisterComingSoon from '../pages/auth/RegisterComingSoon';
+import RegistrationWizard from '../pages/registration/RegistrationWizard';
 import MainLayout from '../layouts/MainLayout';
 import MemberDashboard from '../pages/dashboard/MemberDashboard';
 import AdminDashboard from '../pages/dashboard/AdminDashboard';
@@ -15,7 +15,7 @@ export default function AppRoutes() {
     <Routes>
       <Route path="/" element={<Navigate to={ROUTES.LOGIN} replace />} />
       <Route path="/login" element={<Login />} />
-      <Route path="/register" element={<RegisterComingSoon />} />
+      <Route path="/register" element={<RegistrationWizard />} />
 
       <Route element={<ProtectedRoute allowedRoles={[ROLES.MEMBER]} />}>
         <Route element={<MainLayout />}>

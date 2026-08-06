@@ -33,6 +33,12 @@ export function AuthProvider({ children }) {
     return res.data;
   }, []);
 
+  // Used after registration Step 1 auto-login, and whenever we get a fresh
+  // {token, user} pair back from an endpoint other than the login screens.
+  const establishSession = useCallback((sessionData) => {
+    persistSession(sessionData);
+  }, []);
+
   function persistSession({ token, user: sessionUser }) {
     localStorage.setItem(TOKEN_KEY, token);
     localStorage.setItem(USER_KEY, JSON.stringify(sessionUser));
@@ -45,10 +51,20 @@ export function AuthProvider({ children }) {
     setUser(null);
   }, []);
 
+  // Merges a partial update (e.g. { registration_step: 3 }) into the
+  // stored user and persists it — used as each wizard step advances.
+  const updateUser = useCallback((partial) => {
+    setUser((prev) => {
+      const next = { ...prev, ...partial };
+      localStorage.setItem(USER_KEY, JSON.stringify(next));
+      return next;
+    });
+  }, []);
+
   const isAuthenticated = !!user;
 
   return (
-    <AuthContext.Provider value={{ user, loading, isAuthenticated, loginMember, loginAdmin, logout }}>
+    <AuthContext.Provider value={{ user, loading, isAuthenticated, loginMember, loginAdmin, establishSession, logout, updateUser }}>
       {children}
     </AuthContext.Provider>
   );

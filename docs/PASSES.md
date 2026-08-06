@@ -8,7 +8,7 @@ end of every pass.
 |---|---|---|
 | 1 | Project setup, auth (admin + member JWT login), DB connection, routing, theme, common components, API service layer | ✅ Done |
 | 2 | Masters module (Religion, Caste, Sub Caste, District, Taluk, Village, Education, Occupation, Income, Star, Rasi, Dosham, Relationship, Event, Payment Type) — CRUD, search, pagination | ✅ Done |
-| 3 | Self-registration wizard (5 steps, autosave, resume) | ⏳ Not started |
+| 3 | Self-registration wizard (5 steps, autosave, resume) | ✅ Done |
 | 4 | Admin CRUD — members, approval, verification, deactivate, archive | ⏳ Not started |
 | 5 | Search — simple, advanced, saved searches, export | ⏳ Not started |
 | 6 | Booklet generator (PDF, cover, QR code, print-ready) | ⏳ Not started |
@@ -75,3 +75,58 @@ HTTP requests, and every audit_log entry confirmed written.
   actual operating area via the CRUD screens.
 - No bulk import/export for master data yet (could be added in
   Pass 5's Export work or Pass 9 optimization).
+
+## Pass 3 summary
+
+**Delivered:**
+- `members` table extended with the full Step 1 bio-data profile (dob,
+  height/weight, marital status, education/occupation/income,
+  religion/caste/sub-caste, star/rasi/dosham, address, photo/ID-proof
+  paths, about-me, lifestyle fields) plus one child table per remaining
+  step: `member_photos` (up to 10 extra), `member_horoscopes`,
+  `member_family`, `member_references`, `member_event_participation`
+- `FileUpload.php` — a shared, security-conscious upload handler used by
+  every step: real MIME-sniffing against the file's actual bytes (never
+  trusts the client-declared extension or Content-Type), a dangerous-
+  extension blocklist, size limits per file type, UUID renaming on disk
+- `RegistrationService.php` — full server-side validation matching every
+  rule in the spec (age 18-60, height/weight ranges, sibling-count
+  cross-checks, reference-phone-≠-applicant-phone, duplicate-transaction
+  rejection, DOB-must-match-across-steps, etc.)
+- **Resume mechanism**: Step 1 creates the account and auto-logs the
+  member in (JWT); resuming later is just the existing member login —
+  `GET /registration/me` returns the full draft for the wizard to
+  rehydrate, and `registration_step` tracks furthest-reached step
+  (never moves backwards, so revisiting an earlier step to edit doesn't
+  lose progress)
+- Frontend: one wizard container (`RegistrationWizard.jsx`) with an MUI
+  Stepper, five step form components, cascading master-data dropdowns
+  (Religion→Caste→Sub-Caste; District for now, Taluk/Village wiring is
+  ready via the same `useMasterOptions` hook once seeded), a reusable
+  `FileDropInput` with image preview, and full Yup validation mirroring
+  the backend
+- Login and the member dashboard both redirect an incomplete member
+  (`registration_step < 6`) straight back into the wizard at their
+  saved step
+
+**Tested end-to-end** against a live MariaDB instance with real image/
+PDF file uploads (not mocked): full happy-path through all 5 steps;
+negative paths for duplicate mobile/email, underage DOB, missing
+required files, password mismatch, mismatched DOB between steps 1 and
+2, married-siblings-exceeds-total, reference-phone-equals-applicant-
+phone, duplicate payment transaction number — and critically, **a file
+with a `.jpg` name but plain-text content was correctly rejected** by
+the MIME-sniffing check rather than trusting the extension. Scripts are
+kept in `backend/tests/` for re-running.
+
+**Known follow-ups for later passes:**
+- No autosave-on-keystroke yet — each step saves on "Next"/"Back" and
+  on final submit. True field-level autosave (debounced PATCH per
+  field) would need a separate lighter-weight endpoint per step; noted
+  for Pass 9 if the client wants it.
+- Taluk/Village dropdowns aren't wired into Step 1 yet (only District
+  is) since those tables are seeded empty — trivial to add once an
+  admin populates them via the Masters screens.
+- `member_event_participation` payment fields aren't verified against
+  any payment gateway — this pass only records what the member reports
+  (transaction number + receipt upload), matching the spec.

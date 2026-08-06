@@ -26,6 +26,7 @@ $method = $_SERVER['REQUEST_METHOD'];
 
 require_once __DIR__ . '/controllers/AuthController.php';
 require_once __DIR__ . '/controllers/MasterController.php';
+require_once __DIR__ . '/controllers/RegistrationController.php';
 
 // Static, exact-match routes.
 $routes = [
@@ -34,6 +35,16 @@ $routes = [
     'GET /auth/me' => [AuthController::class, 'me'],
     'POST /auth/logout' => [AuthController::class, 'logout'],
     'GET /masters' => [MasterController::class, 'registry'],
+
+    // Registration wizard. Steps 1/2/3/5 accept file uploads, so they are
+    // POST (multipart/form-data) rather than PUT — PHP does not populate
+    // $_FILES for PUT requests. Step 4 has no file, so it accepts JSON via PUT.
+    'POST /registration/step1' => [RegistrationController::class, 'step1'],
+    'POST /registration/step2' => [RegistrationController::class, 'step2'],
+    'POST /registration/step3' => [RegistrationController::class, 'step3'],
+    'PUT /registration/step4' => [RegistrationController::class, 'step4'],
+    'POST /registration/step5' => [RegistrationController::class, 'step5'],
+    'GET /registration/me' => [RegistrationController::class, 'me'],
 ];
 
 $key = "{$method} {$path}";

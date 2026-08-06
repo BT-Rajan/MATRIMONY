@@ -87,6 +87,35 @@ tables read-only via `masterService.options(slug, parentId)` to
 populate dropdowns — per the master prompt's rule, **no dropdown values
 are ever hardcoded** in the frontend.
 
+## Registration wizard (Pass 3)
+
+- One `FileUpload.php` helper backs every file field across all 5
+  steps. It never trusts a client-supplied extension or `Content-Type`
+  — `finfo_file()` checks the file's actual bytes against an allow-
+  list per field (e.g. photo: jpg/jpeg/png only), and a fixed
+  denylist (`.php`, `.exe`, `.svg`, `.zip`, ...) is rejected outright
+  regardless of what the real content turns out to be. Every accepted
+  file is renamed to a random UUID on disk; the original filename is
+  kept only in the DB row.
+- Step 1 is the only public endpoint — it creates the member row
+  (`status='draft'`) and returns a JWT, i.e. registering *is*
+  logging in. There's no separate "resume" endpoint: a member who
+  drops off simply logs back in with the member login screen (Pass 1)
+  and `GET /registration/me` rehydrates the wizard from
+  `registration_step` and the saved sub-tables.
+- `members.registration_step` only ever moves forward
+  (`GREATEST(registration_step, :step)` in `MemberModel::advanceStep`)
+  — revisiting an earlier step to correct something never regresses
+  how far the member has actually gotten.
+- Steps 2, 3, and 5 accept file uploads, so they're POST endpoints
+  with `multipart/form-data` bodies — PHP does not populate `$_FILES`
+  for `PUT` requests. Step 4 has no file, so it's a plain JSON `PUT`.
+- Horoscope/Family/Reference/Event-participation are each a single row
+  per member (`member_id` as the primary key) written with
+  `INSERT ... ON DUPLICATE KEY UPDATE`, so re-saving a step (editing
+  after Next, or an eventual autosave) is idempotent rather than
+  accumulating duplicate rows.
+
 
 
 ```

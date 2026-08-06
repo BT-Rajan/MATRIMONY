@@ -81,6 +81,7 @@ final class AuthService
                 'name' => $member['name_english'],
                 'registration_number' => $member['registration_number'],
                 'status' => $member['status'],
+                'registration_step' => (int) $member['registration_step'],
                 'role' => 'member',
             ],
         ];

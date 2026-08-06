@@ -14,6 +14,7 @@ mysql -u root -p < backend/api/sql/001_pass1_core.sql
 mysql -u root -p karkathar_matrimony < backend/api/sql/002_pass1_seed_admin.sql
 mysql -u root -p karkathar_matrimony < backend/api/sql/003_pass2_masters.sql
 mysql -u root -p karkathar_matrimony < backend/api/sql/004_pass2_seed_masters.sql
+mysql -u root -p karkathar_matrimony < backend/api/sql/005_pass3_registration.sql
 ```
 
 Migrations are numbered and additive (`001_...`, `002_...`, ...) — always run
@@ -87,5 +88,9 @@ UPDATE admins SET password_hash = '<paste hash here>' WHERE username = 'superadm
 - `backend/.env`, `backend/api/logs/`, and `backend/api/uploads/` must
   never be web-accessible as raw files — `.htaccess` blocks `.php`
   execution and log access, but confirm this on your actual host.
+- `backend/api/uploads/` (and its `photos/`, `id_proofs/`,
+  `horoscopes/`, `family_photos/`, `receipts/` subfolders) must be
+  writable by the web server user (e.g. `chown -R www-data:www-data
+  backend/api/uploads`), or every registration file upload will fail.
 - Rotate the GitHub PAT used during development once the project is
   handed off / passes are complete.
