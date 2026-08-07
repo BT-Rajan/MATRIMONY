@@ -27,6 +27,11 @@ final class MemberAdminService
         return MemberModel::searchForExport($filters);
     }
 
+    public static function bookletRows(array $filters): array
+    {
+        return MemberModel::searchForBooklet($filters);
+    }
+
     /** @throws MemberAdminException */
     public static function show(int $id): array
     {

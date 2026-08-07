@@ -8,6 +8,7 @@ import MastersIndexPage from '../pages/admin/masters/MastersIndexPage';
 import MasterListPage from '../pages/admin/masters/MasterListPage';
 import MembersListPage from '../pages/admin/members/MembersListPage';
 import MemberDetailPage from '../pages/admin/members/MemberDetailPage';
+import BookletView from '../pages/admin/booklet/BookletView';
 import NotFound from '../pages/NotFound';
 import ProtectedRoute from './ProtectedRoute';
 import { ROLES, ROUTES } from '../utils/constants';
@@ -33,6 +34,7 @@ export default function AppRoutes() {
           <Route path="/admin/members" element={<MembersListPage />} />
           <Route path="/admin/members/:id" element={<MemberDetailPage />} />
         </Route>
+        <Route path="/admin/booklet" element={<BookletView />} />
       </Route>
 
       <Route path="*" element={<NotFound />} />

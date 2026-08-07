@@ -176,6 +176,24 @@ src/
   row — without it, Excel misreads Tamil text as Latin-1 and shows
   mojibake even though the bytes are correct UTF-8.
 
+## Booklet (Pass 6)
+
+- No server-side PDF generation. Correct Tamil rendering needs a real
+  text-shaping engine for vowel-sign reordering, which no dependency-
+  free PHP library provides — so the booklet is print-optimized HTML,
+  and "download a PDF" is the browser's own "Print → Save as PDF"
+  (the spec lists "Print" as its own requirement alongside "PDF",
+  which is exactly this path). Zero fragile server dependency, correct
+  Tamil on every device.
+- `MemberModel::searchForBooklet()` reuses the Pass 5 filter builder
+  and adds `LEFT JOIN`s to every master table so the printed page
+  shows names, not IDs.
+- The QR code is the one place this codebase reaches for a small npm
+  package (`qrcode`) instead of hand-rolling — Reed-Solomon error
+  correction encoding is a genuinely bad thing to hand-write, unlike
+  JWT or file-type validation elsewhere in this project which were
+  worth writing by hand to stay dependency-free.
+
 ## Design direction
 
 Palette and typography draw on Tamil temple/ritual visual language rather

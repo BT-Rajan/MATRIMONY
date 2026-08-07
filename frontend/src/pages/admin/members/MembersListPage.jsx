@@ -23,6 +23,7 @@ import SearchIcon from '@mui/icons-material/Search';
 import VerifiedOutlined from '@mui/icons-material/VerifiedOutlined';
 import TuneOutlined from '@mui/icons-material/TuneOutlined';
 import FileDownloadOutlined from '@mui/icons-material/FileDownloadOutlined';
+import MenuBookOutlined from '@mui/icons-material/MenuBookOutlined';
 import { adminMemberService } from '../../../services/adminMemberService';
 import { useToast } from '../../../contexts/ToastContext';
 import Loader from '../../../components/common/Loader';
@@ -97,6 +98,14 @@ export default function MembersListPage() {
         <Typography variant="h5">உறுப்பினர்கள்</Typography>
         <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
           <SavedSearchesMenu currentFilters={filters} onApply={applySavedSearch} />
+          <Button
+            size="small"
+            variant="outlined"
+            startIcon={<MenuBookOutlined />}
+            onClick={() => navigate('/admin/booklet', { state: { filters } })}
+          >
+            பதிவேடு உருவாக்கு
+          </Button>
           <Button size="small" variant="outlined" startIcon={<FileDownloadOutlined />} disabled={exporting} onClick={handleExport}>
             {exporting ? 'ஏற்றுமதி செய்கிறது...' : 'CSV ஏற்றுமதி'}
           </Button>

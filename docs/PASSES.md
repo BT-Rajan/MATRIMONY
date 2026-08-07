@@ -11,7 +11,7 @@ end of every pass.
 | 3 | Self-registration wizard (5 steps, autosave, resume) | ✅ Done |
 | 4 | Admin CRUD — members, approval, verification, deactivate, archive | ✅ Done |
 | 5 | Search — simple, advanced, saved searches, export | ✅ Done |
-| 6 | Booklet generator (PDF, cover, QR code, print-ready) | ⏳ Not started |
+| 6 | Booklet generator (PDF, cover, QR code, print-ready) | ✅ Done |
 | 7 | Dashboard — statistics, charts, reports | ⏳ Not started |
 | 8 | Notifications — SMS, WhatsApp, Email | ⏳ Not started |
 | 9 | Optimization — caching, indexes, security hardening, testing, deployment | ⏳ Not started |
@@ -267,3 +267,62 @@ that clean schema. Every test passes both times.
   that's actually what's wanted, since the master prompt's search
   field list (phone, email, payment status) reads as admin-tool
   oriented rather than member-browsing oriented.
+
+## Pass 6 summary
+
+**A deliberate engineering decision, stated upfront:** the spec asks
+for both "PDF" and "Print" (listed as separate requirements). Server-
+side PDF generation for Tamil text is a genuinely hard problem —
+correct rendering needs a full text-shaping engine (HarfBuzz-level) to
+handle vowel-sign reordering, which no dependency-free PHP approach
+provides, and this project deliberately carries zero Composer
+dependencies for portability. Rather than ship server-rendered PDFs
+with subtly broken Tamil (a real risk with e.g. TCPDF, which has no
+Indic reordering), the booklet is built as a **print-optimized HTML
+view** using the browser's native "Print → Save as PDF" — the browser
+renders Tamil correctly via its own text-shaping engine, and this
+requires zero fragile server dependency, works on every device, and
+matches the spec's own "Print" requirement directly.
+
+**Delivered:**
+- `MemberModel::searchForBooklet()` — reuses Pass 5's exact filter
+  engine, `LEFT JOIN`ed against every relevant master table so the
+  booklet prints human-readable names (education, occupation,
+  religion, caste, district, star, rasi, dosham) instead of raw IDs
+- `GET /admin/members/booklet` — same filters as the member list/
+  export endpoints, capped at 200 rows
+- Frontend `BookletView.jsx`: cover page, table of contents, one page
+  per member (photo, core details, QR code), print CSS
+  (`page-break-after` per section, A4 `@page` margins), triggered from
+  either the Members list (bulk, using whatever filters/search are
+  currently active — so "booklet of all approved brides in Madurai"
+  is just: filter, then click) or a single member's detail page
+- QR code per member (client-side, via the `qrcode` npm package —
+  genuinely hard to hand-roll correctly (Reed-Solomon error
+  correction), so a small well-established library was the right call
+  here, unlike the hand-written JWT/upload-validation code elsewhere).
+  Encodes a plain reference string
+  (`KARKATHAR|<registration_number>|<name>`) since there's no public
+  member-verification page yet to link to.
+- Page numbers rely on the browser's native print header/footer
+  (Chrome enables this by default; an on-screen hint tells the admin
+  where to find the toggle if it's off) rather than CSS `@page` margin
+  boxes, whose `content` support is inconsistent across browsers —
+  this was verified against what actually renders rather than assumed.
+
+**Tested end-to-end**: the booklet endpoint against real data joined
+across all eight master tables, filtered to "all approved," to a
+single member by registration number (the exact query the detail-page
+button uses), and by gender — confirmed the right rows and the right
+joined names come back, and that it's rejected without auth.
+
+**No new migration** — Pass 6 is a read-only feature over data the
+app already has; it needed a new query, not new schema.
+
+**Known follow-ups for later passes:**
+- No public member-verification page for the QR code to link to yet —
+  it currently encodes a plain reference string. Worth revisiting once
+  (if) a member-facing profile view exists.
+- The 200-row cap on a single booklet run is a safety limit, same
+  reasoning as export's 5,000-row cap; very large associations would
+  need a paginated/batched booklet generation flow instead.

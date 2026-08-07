@@ -49,6 +49,7 @@ $routes = [
     'GET /registration/me' => [RegistrationController::class, 'me'],
     'GET /admin/members' => [AdminMemberController::class, 'index'],
     'GET /admin/members/export' => [AdminMemberController::class, 'export'],
+    'GET /admin/members/booklet' => [AdminMemberController::class, 'booklet'],
     'GET /admin/saved-searches' => [SavedSearchController::class, 'index'],
     'POST /admin/saved-searches' => [SavedSearchController::class, 'store'],
 ];

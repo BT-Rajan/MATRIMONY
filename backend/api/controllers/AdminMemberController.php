@@ -51,6 +51,14 @@ final class AdminMemberController
         exit;
     }
 
+    /** GET /admin/members/booklet — same filters as index, joined against master tables for display names. */
+    public static function booklet(): void
+    {
+        AuthMiddleware::requireAuth(['admin']);
+        $rows = MemberAdminService::bookletRows(self::parseFilters());
+        Response::success($rows);
+    }
+
     private static function parseFilters(): array
     {
         return [

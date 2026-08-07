@@ -26,6 +26,7 @@ import ReplayOutlined from '@mui/icons-material/ReplayOutlined';
 import ArchiveOutlined from '@mui/icons-material/ArchiveOutlined';
 import DeleteOutline from '@mui/icons-material/DeleteOutlineOutlined';
 import EditOutlined from '@mui/icons-material/EditOutlined';
+import MenuBookOutlined from '@mui/icons-material/MenuBookOutlined';
 import { adminMemberService } from '../../../services/adminMemberService';
 import { useToast } from '../../../contexts/ToastContext';
 import Loader from '../../../components/common/Loader';
@@ -191,6 +192,14 @@ export default function MemberDetailPage() {
             )}
             <Button size="small" variant="outlined" startIcon={<EditOutlined />} onClick={() => setEditOpen(true)}>
               திருத்து
+            </Button>
+            <Button
+              size="small"
+              variant="outlined"
+              startIcon={<MenuBookOutlined />}
+              onClick={() => navigate('/admin/booklet', { state: { filters: { registrationNumber: member.registration_number } } })}
+            >
+              பதிவேடு
             </Button>
             {member.status !== 'approved' && (
               <Button

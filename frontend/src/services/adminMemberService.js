@@ -16,7 +16,7 @@ const CAMEL_TO_SNAKE = {
   eventId: 'event_id',
 };
 
-function toApiParams(filters) {
+export function toApiParams(filters) {
   const params = {};
   FILTER_KEYS.forEach((key) => {
     const value = filters[key];

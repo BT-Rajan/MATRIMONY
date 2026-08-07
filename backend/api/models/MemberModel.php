@@ -204,6 +204,51 @@ final class MemberModel
         return $stmt->fetchAll();
     }
 
+    /**
+     * Same filters, joined against every master table so the booklet can
+     * print human-readable names (education/occupation/religion/caste/
+     * district/star/rasi/dosham) rather than raw IDs. Capped like export.
+     */
+    public static function searchForBooklet(array $filters, int $maxRows = 200): array
+    {
+        [$whereSql, $params] = self::buildFilterClauses($filters);
+        $db = Database::connection();
+
+        $sql = "SELECT
+                    m.id, m.registration_number, m.name_tamil, m.name_english, m.gender,
+                    TIMESTAMPDIFF(YEAR, m.dob, CURDATE()) AS age,
+                    m.height_cm, m.weight_kg, m.marital_status, m.photo_path, m.native_place,
+                    m.state, m.country,
+                    edu.name_tamil AS education_tamil, edu.name_english AS education_english,
+                    occ.name_tamil AS occupation_tamil, occ.name_english AS occupation_english,
+                    rel.name_tamil AS religion_tamil, rel.name_english AS religion_english,
+                    cas.name_tamil AS caste_tamil, cas.name_english AS caste_english,
+                    dist.name_tamil AS district_tamil, dist.name_english AS district_english,
+                    star.name_tamil AS star_tamil, star.name_english AS star_english,
+                    rasi.name_tamil AS rasi_tamil, rasi.name_english AS rasi_english,
+                    dosh.name_tamil AS dosham_tamil, dosh.name_english AS dosham_english
+                FROM members m
+                LEFT JOIN educations edu ON edu.id = m.education_id
+                LEFT JOIN occupations occ ON occ.id = m.occupation_id
+                LEFT JOIN religions rel ON rel.id = m.religion_id
+                LEFT JOIN castes cas ON cas.id = m.caste_id
+                LEFT JOIN districts dist ON dist.id = m.district_id
+                LEFT JOIN stars star ON star.id = m.star_id
+                LEFT JOIN rasis rasi ON rasi.id = m.rasi_id
+                LEFT JOIN doshams dosh ON dosh.id = m.dosham_id
+                {$whereSql}
+                ORDER BY m.registration_number ASC
+                LIMIT :limit";
+        $stmt = $db->prepare($sql);
+        foreach ($params as $k => $v) {
+            $stmt->bindValue(":{$k}", $v);
+        }
+        $stmt->bindValue(':limit', $maxRows, PDO::PARAM_INT);
+        $stmt->execute();
+
+        return $stmt->fetchAll();
+    }
+
     private static function buildFilterClauses(array $filters): array
     {
         $where = [];
