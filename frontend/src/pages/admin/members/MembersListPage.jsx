@@ -16,13 +16,19 @@ import {
   Pagination,
   Avatar,
   Tooltip,
+  Button,
+  Stack,
 } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import VerifiedOutlined from '@mui/icons-material/VerifiedOutlined';
+import TuneOutlined from '@mui/icons-material/TuneOutlined';
+import FileDownloadOutlined from '@mui/icons-material/FileDownloadOutlined';
 import { adminMemberService } from '../../../services/adminMemberService';
 import { useToast } from '../../../contexts/ToastContext';
 import Loader from '../../../components/common/Loader';
 import { STATUS_LABELS, GENDER_LABELS } from '../../../utils/memberStatus';
+import AdvancedSearchDialog from './AdvancedSearchDialog';
+import SavedSearchesMenu from './SavedSearchesMenu';
 
 const PER_PAGE = 15;
 
@@ -32,44 +38,78 @@ export default function MembersListPage() {
 
   const [items, setItems] = useState([]);
   const [meta, setMeta] = useState({ total: 0, total_pages: 1 });
-  const [search, setSearch] = useState('');
-  const [status, setStatus] = useState('');
-  const [gender, setGender] = useState('');
+  const [filters, setFilters] = useState({ search: '', status: '', gender: '' });
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(true);
+  const [advancedOpen, setAdvancedOpen] = useState(false);
+  const [exporting, setExporting] = useState(false);
 
   const load = useCallback(() => {
     setLoading(true);
     adminMemberService
-      .list({ search, status, gender, page, perPage: PER_PAGE })
+      .list(filters, page, PER_PAGE)
       .then((res) => {
         setItems(res.data.items);
         setMeta(res.data.meta);
       })
       .catch((err) => toast.error(err.message))
       .finally(() => setLoading(false));
-  }, [search, status, gender, page]);
+  }, [filters, page]);
 
   useEffect(() => {
     load();
   }, [load]);
 
+  const updateFilter = (key, value) => {
+    setPage(1);
+    setFilters((f) => ({ ...f, [key]: value }));
+  };
+
+  const applyAdvanced = (advancedFilters) => {
+    setPage(1);
+    setFilters((f) => ({ search: f.search, status: f.status, gender: f.gender, ...advancedFilters }));
+  };
+
+  const applySavedSearch = (savedFilters) => {
+    setPage(1);
+    setFilters(savedFilters);
+    toast.success('சேமித்த தேடல் பயன்படுத்தப்பட்டது');
+  };
+
+  const activeAdvancedCount = Object.keys(filters).filter(
+    (k) => !['search', 'status', 'gender'].includes(k) && filters[k] !== '' && filters[k] !== undefined
+  ).length;
+
+  const handleExport = async () => {
+    setExporting(true);
+    try {
+      await adminMemberService.exportCsv(filters);
+    } catch (err) {
+      toast.error(err.message || 'ஏற்றுமதி தோல்வியடைந்தது');
+    } finally {
+      setExporting(false);
+    }
+  };
+
   return (
     <Box>
-      <Typography variant="h5" sx={{ mb: 2 }}>
-        உறுப்பினர்கள்
-      </Typography>
+      <Box sx={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', gap: 2, mb: 2 }}>
+        <Typography variant="h5">உறுப்பினர்கள்</Typography>
+        <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
+          <SavedSearchesMenu currentFilters={filters} onApply={applySavedSearch} />
+          <Button size="small" variant="outlined" startIcon={<FileDownloadOutlined />} disabled={exporting} onClick={handleExport}>
+            {exporting ? 'ஏற்றுமதி செய்கிறது...' : 'CSV ஏற்றுமதி'}
+          </Button>
+        </Stack>
+      </Box>
 
       <Paper variant="outlined" sx={{ borderRadius: 3, overflow: 'hidden' }}>
-        <Box sx={{ p: 2, display: 'flex', flexWrap: 'wrap', gap: 2 }}>
+        <Box sx={{ p: 2, display: 'flex', flexWrap: 'wrap', gap: 2, alignItems: 'center' }}>
           <TextField
             size="small"
             placeholder="பதிவு எண், பெயர், மொபைல், மின்னஞ்சல்..."
-            value={search}
-            onChange={(e) => {
-              setPage(1);
-              setSearch(e.target.value);
-            }}
+            value={filters.search}
+            onChange={(e) => updateFilter('search', e.target.value)}
             InputProps={{ startAdornment: <InputAdornment position="start"><SearchIcon fontSize="small" /></InputAdornment> }}
             sx={{ minWidth: 260 }}
           />
@@ -77,11 +117,8 @@ export default function MembersListPage() {
             size="small"
             select
             label="நிலை"
-            value={status}
-            onChange={(e) => {
-              setPage(1);
-              setStatus(e.target.value);
-            }}
+            value={filters.status}
+            onChange={(e) => updateFilter('status', e.target.value)}
             sx={{ minWidth: 200 }}
           >
             <MenuItem value="">அனைத்தும்</MenuItem>
@@ -93,17 +130,22 @@ export default function MembersListPage() {
             size="small"
             select
             label="பாலினம்"
-            value={gender}
-            onChange={(e) => {
-              setPage(1);
-              setGender(e.target.value);
-            }}
+            value={filters.gender}
+            onChange={(e) => updateFilter('gender', e.target.value)}
             sx={{ minWidth: 160 }}
           >
             <MenuItem value="">அனைத்தும்</MenuItem>
             <MenuItem value="groom">மணமகன்</MenuItem>
             <MenuItem value="bride">மணமகள்</MenuItem>
           </TextField>
+          <Button
+            size="small"
+            variant={activeAdvancedCount > 0 ? 'contained' : 'outlined'}
+            startIcon={<TuneOutlined />}
+            onClick={() => setAdvancedOpen(true)}
+          >
+            மேம்பட்ட தேடல் {activeAdvancedCount > 0 ? `(${activeAdvancedCount})` : ''}
+          </Button>
         </Box>
 
         {loading ? (
@@ -120,6 +162,7 @@ export default function MembersListPage() {
                 <TableCell>பதிவு எண்</TableCell>
                 <TableCell>பெயர்</TableCell>
                 <TableCell>பாலினம்</TableCell>
+                <TableCell>வயது</TableCell>
                 <TableCell>மொபைல்</TableCell>
                 <TableCell align="center">நிலை</TableCell>
                 <TableCell align="center">சரிபார்ப்பு</TableCell>
@@ -151,6 +194,7 @@ export default function MembersListPage() {
                       </Typography>
                     </TableCell>
                     <TableCell>{GENDER_LABELS[row.gender] || row.gender}</TableCell>
+                    <TableCell>{row.age ?? '-'}</TableCell>
                     <TableCell>{row.mobile}</TableCell>
                     <TableCell align="center">
                       <Chip size="small" label={statusInfo.label} color={statusInfo.color} variant={statusInfo.color === 'default' ? 'outlined' : 'filled'} />
@@ -175,6 +219,13 @@ export default function MembersListPage() {
           </Box>
         )}
       </Paper>
+
+      <AdvancedSearchDialog
+        open={advancedOpen}
+        onClose={() => setAdvancedOpen(false)}
+        initial={filters}
+        onApply={applyAdvanced}
+      />
     </Box>
   );
 }

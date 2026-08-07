@@ -16,6 +16,7 @@ mysql -u root -p karkathar_matrimony < backend/api/sql/003_pass2_masters.sql
 mysql -u root -p karkathar_matrimony < backend/api/sql/004_pass2_seed_masters.sql
 mysql -u root -p karkathar_matrimony < backend/api/sql/005_pass3_registration.sql
 mysql -u root -p karkathar_matrimony < backend/api/sql/006_pass4_admin_review.sql
+mysql -u root -p karkathar_matrimony < backend/api/sql/007_pass5_search.sql
 ```
 
 Migrations are numbered and additive (`001_...`, `002_...`, ...) — always run

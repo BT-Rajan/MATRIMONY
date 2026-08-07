@@ -11,10 +11,10 @@ export default function AdminDashboard() {
 
   useEffect(() => {
     Promise.all([
-      adminMemberService.list({ page: 1, perPage: 1 }),
-      adminMemberService.list({ page: 1, perPage: 1, status: 'pending_approval' }),
-      adminMemberService.list({ page: 1, perPage: 1, status: 'approved' }),
-      adminMemberService.list({ page: 1, perPage: 1, isVerified: 1 }),
+      adminMemberService.list({}, 1, 1),
+      adminMemberService.list({ status: 'pending_approval' }, 1, 1),
+      adminMemberService.list({ status: 'approved' }, 1, 1),
+      adminMemberService.list({ isVerified: 1 }, 1, 1),
     ])
       .then(([total, pending, approved, verified]) => {
         setCounts({

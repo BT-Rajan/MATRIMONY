@@ -157,6 +157,25 @@ src/
   actual uploaded files from disk, so a hard delete doesn't leave
   orphaned files behind.
 
+## Search (Pass 5)
+
+- Simple search, advanced search, and CSV export all share one query
+  builder (`MemberModel::buildFilterClauses`) rather than three
+  separate implementations — the list screen and the advanced-search
+  dialog hit the exact same `GET /admin/members` endpoint with a
+  larger set of query parameters, and export reuses the same builder
+  against an uncapped-but-limited (5,000 row) query.
+- Filters that need to check a related table (event participation,
+  reference, horoscope existence, payment) use `EXISTS`/`NOT EXISTS`
+  subqueries scoped to `members.id` rather than joins, so a member
+  with e.g. two references still appears once, not twice.
+- `saved_searches.filters` is stored as JSON — a saved search is just
+  a name plus the exact filter object the frontend already sends,
+  decoded straight back into the advanced search dialog on reuse.
+- CSV export writes a UTF-8 BOM (`\xEF\xBB\xBF`) before the header
+  row — without it, Excel misreads Tamil text as Latin-1 and shows
+  mojibake even though the bytes are correct UTF-8.
+
 ## Design direction
 
 Palette and typography draw on Tamil temple/ritual visual language rather

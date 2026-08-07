@@ -22,6 +22,11 @@ final class MemberAdminService
         return MemberModel::adminPaginate($filters, $page, $perPage);
     }
 
+    public static function exportRows(array $filters): array
+    {
+        return MemberModel::searchForExport($filters);
+    }
+
     /** @throws MemberAdminException */
     public static function show(int $id): array
     {

@@ -11,18 +11,10 @@ final class AdminMemberController
     {
         AuthMiddleware::requireAuth(['admin']);
 
-        $filters = [
-            'search' => trim((string) ($_GET['search'] ?? '')),
-            'status' => $_GET['status'] ?? '',
-            'gender' => $_GET['gender'] ?? '',
-            'is_verified' => $_GET['is_verified'] ?? '',
-            'religion_id' => $_GET['religion_id'] ?? '',
-            'district_id' => $_GET['district_id'] ?? '',
-        ];
         $page = max(1, (int) ($_GET['page'] ?? 1));
         $perPage = min(100, max(1, (int) ($_GET['per_page'] ?? 20)));
 
-        $result = MemberAdminService::list($filters, $page, $perPage);
+        $result = MemberAdminService::list(self::parseFilters(), $page, $perPage);
 
         Response::success([
             'items' => $result['items'],
@@ -33,6 +25,65 @@ final class AdminMemberController
                 'total_pages' => (int) ceil($result['total'] / $perPage),
             ],
         ]);
+    }
+
+    /** GET /admin/members/export — same filters as index, streams a CSV instead of JSON. */
+    public static function export(): void
+    {
+        AuthMiddleware::requireAuth(['admin']);
+
+        $rows = MemberAdminService::exportRows(self::parseFilters());
+
+        header('Content-Type: text/csv; charset=utf-8');
+        header('Content-Disposition: attachment; filename="members-' . date('Y-m-d-His') . '.csv"');
+
+        $out = fopen('php://output', 'w');
+        fwrite($out, "\xEF\xBB\xBF"); // UTF-8 BOM so Tamil text opens correctly in Excel
+
+        $headers = ['registration_number', 'name_tamil', 'name_english', 'gender', 'mobile', 'whatsapp', 'email',
+            'status', 'is_verified', 'age', 'height_cm', 'weight_kg', 'marital_status', 'native_place',
+            'state', 'country', 'created_at'];
+        fputcsv($out, $headers);
+        foreach ($rows as $row) {
+            fputcsv($out, array_map(fn($h) => $row[$h] ?? '', $headers));
+        }
+        fclose($out);
+        exit;
+    }
+
+    private static function parseFilters(): array
+    {
+        return [
+            'search' => trim((string) ($_GET['search'] ?? '')),
+            'registration_number' => trim((string) ($_GET['registration_number'] ?? '')),
+            'status' => $_GET['status'] ?? '',
+            'gender' => $_GET['gender'] ?? '',
+            'is_verified' => $_GET['is_verified'] ?? '',
+            'religion_id' => $_GET['religion_id'] ?? '',
+            'caste_id' => $_GET['caste_id'] ?? '',
+            'district_id' => $_GET['district_id'] ?? '',
+            'education_id' => $_GET['education_id'] ?? '',
+            'occupation_id' => $_GET['occupation_id'] ?? '',
+            'income_id' => $_GET['income_id'] ?? '',
+            'star_id' => $_GET['star_id'] ?? '',
+            'rasi_id' => $_GET['rasi_id'] ?? '',
+            'dosham_id' => $_GET['dosham_id'] ?? '',
+            'state' => trim((string) ($_GET['state'] ?? '')),
+            'country' => trim((string) ($_GET['country'] ?? '')),
+            'phone' => trim((string) ($_GET['phone'] ?? '')),
+            'email' => trim((string) ($_GET['email'] ?? '')),
+            'age_min' => $_GET['age_min'] ?? '',
+            'age_max' => $_GET['age_max'] ?? '',
+            'height_min' => $_GET['height_min'] ?? '',
+            'height_max' => $_GET['height_max'] ?? '',
+            'weight_min' => $_GET['weight_min'] ?? '',
+            'weight_max' => $_GET['weight_max'] ?? '',
+            'photo_available' => $_GET['photo_available'] ?? '',
+            'horoscope_available' => $_GET['horoscope_available'] ?? '',
+            'payment' => $_GET['payment'] ?? '',
+            'event_id' => $_GET['event_id'] ?? '',
+            'reference' => trim((string) ($_GET['reference'] ?? '')),
+        ];
     }
 
     public static function show(int $id): void

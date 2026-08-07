@@ -150,11 +150,62 @@ final class MemberModel
 
     // ---------------------------------------------------------------
     // Admin: listing, filtering, status transitions (Pass 4)
+    // Advanced search (Pass 5) extends the same filter builder with
+    // range/master/related-table filters — one query builder for the
+    // list screen, the advanced search screen, and CSV export.
     // ---------------------------------------------------------------
 
     public static function adminPaginate(array $filters, int $page, int $perPage): array
     {
+        [$whereSql, $params] = self::buildFilterClauses($filters);
         $db = Database::connection();
+
+        $countStmt = $db->prepare("SELECT COUNT(*) AS total FROM members {$whereSql}");
+        $countStmt->execute($params);
+        $total = (int) $countStmt->fetch()['total'];
+
+        $offset = max(0, ($page - 1) * $perPage);
+        $sql = "SELECT id, registration_number, name_tamil, name_english, gender, mobile, email,
+                       status, registration_step, is_verified, photo_path, created_at,
+                       TIMESTAMPDIFF(YEAR, dob, CURDATE()) AS age
+                FROM members {$whereSql}
+                ORDER BY created_at DESC
+                LIMIT :limit OFFSET :offset";
+        $stmt = $db->prepare($sql);
+        foreach ($params as $k => $v) {
+            $stmt->bindValue(":{$k}", $v);
+        }
+        $stmt->bindValue(':limit', $perPage, PDO::PARAM_INT);
+        $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
+        $stmt->execute();
+
+        return ['items' => $stmt->fetchAll(), 'total' => $total];
+    }
+
+    /** Same filters, no pagination (capped), full column set — used by CSV export. */
+    public static function searchForExport(array $filters, int $maxRows = 5000): array
+    {
+        [$whereSql, $params] = self::buildFilterClauses($filters);
+        $db = Database::connection();
+
+        $sql = "SELECT registration_number, name_tamil, name_english, gender, mobile, whatsapp, email,
+                       status, is_verified, TIMESTAMPDIFF(YEAR, dob, CURDATE()) AS age,
+                       height_cm, weight_kg, marital_status, native_place, state, country, created_at
+                FROM members {$whereSql}
+                ORDER BY created_at DESC
+                LIMIT :limit";
+        $stmt = $db->prepare($sql);
+        foreach ($params as $k => $v) {
+            $stmt->bindValue(":{$k}", $v);
+        }
+        $stmt->bindValue(':limit', $maxRows, PDO::PARAM_INT);
+        $stmt->execute();
+
+        return $stmt->fetchAll();
+    }
+
+    private static function buildFilterClauses(array $filters): array
+    {
         $where = [];
         $params = [];
 
@@ -163,6 +214,10 @@ final class MemberModel
             $needle = "%{$filters['search']}%";
             $params['s1'] = $needle; $params['s2'] = $needle; $params['s3'] = $needle;
             $params['s4'] = $needle; $params['s5'] = $needle;
+        }
+        if (!empty($filters['registration_number'])) {
+            $where[] = 'registration_number LIKE :reg_no';
+            $params['reg_no'] = "%{$filters['registration_number']}%";
         }
         if (!empty($filters['status'])) {
             $where[] = 'status = :status';
@@ -180,32 +235,103 @@ final class MemberModel
             $where[] = 'religion_id = :religion_id';
             $params['religion_id'] = (int) $filters['religion_id'];
         }
+        if (!empty($filters['caste_id'])) {
+            $where[] = 'caste_id = :caste_id';
+            $params['caste_id'] = (int) $filters['caste_id'];
+        }
         if (!empty($filters['district_id'])) {
             $where[] = 'district_id = :district_id';
             $params['district_id'] = (int) $filters['district_id'];
         }
+        if (!empty($filters['education_id'])) {
+            $where[] = 'education_id = :education_id';
+            $params['education_id'] = (int) $filters['education_id'];
+        }
+        if (!empty($filters['occupation_id'])) {
+            $where[] = 'occupation_id = :occupation_id';
+            $params['occupation_id'] = (int) $filters['occupation_id'];
+        }
+        if (!empty($filters['income_id'])) {
+            $where[] = 'income_id = :income_id';
+            $params['income_id'] = (int) $filters['income_id'];
+        }
+        if (!empty($filters['star_id'])) {
+            $where[] = 'star_id = :star_id';
+            $params['star_id'] = (int) $filters['star_id'];
+        }
+        if (!empty($filters['rasi_id'])) {
+            $where[] = 'rasi_id = :rasi_id';
+            $params['rasi_id'] = (int) $filters['rasi_id'];
+        }
+        if (!empty($filters['dosham_id'])) {
+            $where[] = 'dosham_id = :dosham_id';
+            $params['dosham_id'] = (int) $filters['dosham_id'];
+        }
+        if (!empty($filters['state'])) {
+            $where[] = 'state LIKE :state';
+            $params['state'] = "%{$filters['state']}%";
+        }
+        if (!empty($filters['country'])) {
+            $where[] = 'country LIKE :country';
+            $params['country'] = "%{$filters['country']}%";
+        }
+        if (!empty($filters['phone'])) {
+            $where[] = 'mobile LIKE :phone';
+            $params['phone'] = "%{$filters['phone']}%";
+        }
+        if (!empty($filters['email'])) {
+            $where[] = 'email LIKE :email';
+            $params['email'] = "%{$filters['email']}%";
+        }
+        if (!empty($filters['age_min'])) {
+            $where[] = 'TIMESTAMPDIFF(YEAR, dob, CURDATE()) >= :age_min';
+            $params['age_min'] = (int) $filters['age_min'];
+        }
+        if (!empty($filters['age_max'])) {
+            $where[] = 'TIMESTAMPDIFF(YEAR, dob, CURDATE()) <= :age_max';
+            $params['age_max'] = (int) $filters['age_max'];
+        }
+        if (!empty($filters['height_min'])) {
+            $where[] = 'height_cm >= :height_min';
+            $params['height_min'] = (int) $filters['height_min'];
+        }
+        if (!empty($filters['height_max'])) {
+            $where[] = 'height_cm <= :height_max';
+            $params['height_max'] = (int) $filters['height_max'];
+        }
+        if (!empty($filters['weight_min'])) {
+            $where[] = 'weight_kg >= :weight_min';
+            $params['weight_min'] = (int) $filters['weight_min'];
+        }
+        if (!empty($filters['weight_max'])) {
+            $where[] = 'weight_kg <= :weight_max';
+            $params['weight_max'] = (int) $filters['weight_max'];
+        }
+        if (isset($filters['photo_available']) && $filters['photo_available'] !== '') {
+            $where[] = $filters['photo_available'] ? 'photo_path IS NOT NULL' : 'photo_path IS NULL';
+        }
+        if (isset($filters['horoscope_available']) && $filters['horoscope_available'] !== '') {
+            $where[] = $filters['horoscope_available']
+                ? 'EXISTS (SELECT 1 FROM member_horoscopes h WHERE h.member_id = members.id)'
+                : 'NOT EXISTS (SELECT 1 FROM member_horoscopes h WHERE h.member_id = members.id)';
+        }
+        if (isset($filters['payment']) && $filters['payment'] !== '') {
+            $where[] = $filters['payment']
+                ? 'EXISTS (SELECT 1 FROM member_event_participation ep WHERE ep.member_id = members.id AND ep.amount IS NOT NULL)'
+                : 'NOT EXISTS (SELECT 1 FROM member_event_participation ep WHERE ep.member_id = members.id AND ep.amount IS NOT NULL)';
+        }
+        if (!empty($filters['event_id'])) {
+            $where[] = 'EXISTS (SELECT 1 FROM member_event_participation ep2 WHERE ep2.member_id = members.id AND ep2.participating = \'yes\' AND ep2.event_id = :event_id)';
+            $params['event_id'] = (int) $filters['event_id'];
+        }
+        if (!empty($filters['reference'])) {
+            $where[] = 'EXISTS (SELECT 1 FROM member_references r WHERE r.member_id = members.id AND (r.reference_name LIKE :ref_name OR r.phone = :ref_phone))';
+            $params['ref_name'] = "%{$filters['reference']}%";
+            $params['ref_phone'] = $filters['reference'];
+        }
 
         $whereSql = $where ? ('WHERE ' . implode(' AND ', $where)) : '';
-
-        $countStmt = $db->prepare("SELECT COUNT(*) AS total FROM members {$whereSql}");
-        $countStmt->execute($params);
-        $total = (int) $countStmt->fetch()['total'];
-
-        $offset = max(0, ($page - 1) * $perPage);
-        $sql = "SELECT id, registration_number, name_tamil, name_english, gender, mobile, email,
-                       status, registration_step, is_verified, photo_path, created_at
-                FROM members {$whereSql}
-                ORDER BY created_at DESC
-                LIMIT :limit OFFSET :offset";
-        $stmt = $db->prepare($sql);
-        foreach ($params as $k => $v) {
-            $stmt->bindValue(":{$k}", $v);
-        }
-        $stmt->bindValue(':limit', $perPage, PDO::PARAM_INT);
-        $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
-        $stmt->execute();
-
-        return ['items' => $stmt->fetchAll(), 'total' => $total];
+        return [$whereSql, $params];
     }
 
     public static function setStatus(int $id, string $status, int $adminId, ?string $reason = null, ?string $previousStatus = null): void

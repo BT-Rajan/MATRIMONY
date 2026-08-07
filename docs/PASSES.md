@@ -10,7 +10,7 @@ end of every pass.
 | 2 | Masters module (Religion, Caste, Sub Caste, District, Taluk, Village, Education, Occupation, Income, Star, Rasi, Dosham, Relationship, Event, Payment Type) — CRUD, search, pagination | ✅ Done |
 | 3 | Self-registration wizard (5 steps, autosave, resume) | ✅ Done |
 | 4 | Admin CRUD — members, approval, verification, deactivate, archive | ✅ Done |
-| 5 | Search — simple, advanced, saved searches, export | ⏳ Not started |
+| 5 | Search — simple, advanced, saved searches, export | ✅ Done |
 | 6 | Booklet generator (PDF, cover, QR code, print-ready) | ⏳ Not started |
 | 7 | Dashboard — statistics, charts, reports | ⏳ Not started |
 | 8 | Notifications — SMS, WhatsApp, Email | ⏳ Not started |
@@ -199,3 +199,71 @@ access (401).
 - "Archive" doesn't currently expose an "unarchive" action in the UI,
   though the backend's `previous_status` tracking would support adding
   one cheaply later.
+
+## Pass 5 summary
+
+**Delivered:**
+- One filter-building engine (`MemberModel::buildFilterClauses`)
+  shared by three surfaces: the member list (Pass 4), advanced search,
+  and CSV export — no duplicated query logic
+- **Simple search**: the existing single search box (registration
+  number / name / mobile / email)
+- **Advanced search**: every field the spec listed — registration
+  number, age/height/weight ranges, education, occupation, income,
+  religion, caste, district, state, country, star, rasi, dosham,
+  event participation, reference (name or phone), phone, email,
+  verified, payment made, photo available, horoscope available — as
+  a dedicated dialog with cascading Religion→Caste, applied on top of
+  the simple search/status/gender filters
+- **Saved searches**: name + serialize the active filter set as JSON,
+  list/apply/delete, scoped per admin
+- **Export**: streams a CSV of the current filtered result set (capped
+  at 5,000 rows), with a UTF-8 BOM so Tamil names render correctly
+  when opened in Excel
+
+**Tested end-to-end** against a live database with two distinctly
+different member profiles (different gender/age/district/religion/
+payment status) to make each filter meaningfully discriminating —
+confirmed each advanced filter returns the right member and excludes
+the wrong one (not just "the query ran without error"), including the
+subtler ones: `payment` correctly separates a member with a recorded
+event payment from one who opted out, and `reference` correctly
+matches on the *reference's* name, not the member's own.
+
+**Two more real bugs found and fixed while testing (pre-existing, not
+introduced by this pass):**
+1. `MemberModel::findByEmailOrMobile` reused one named placeholder
+   (`:identifier`) for two different values in an `OR` clause — same
+   bug class as Pass 4's fix, in a different query. Found via the same
+   codebase-wide scan script, which is now worth re-running after any
+   pass that touches raw SQL.
+2. Several optional registration fields (`whatsapp`, `weight_kg`,
+   `income_id`, `sub_caste_id`, `about_myself`, `gothram`,
+   `father_occupation`, `family_income_id`, reference `address`/
+   `known_since`/`remarks`) crashed with a 500 if the field was
+   omitted from the request entirely (as opposed to sent as an empty
+   string) — `$input['x'] !== ''` doesn't handle a missing array key.
+   The real React frontend always sends every field via `FormData`, so
+   this wasn't reachable through the UI, but it's a latent bug for any
+   future API client that omits optional fields. Fixed with `??`
+   defaults on every optional-field access in `RegistrationService`.
+
+**Verified twice** — against the dev database, and again from a
+**completely fresh database built by running all seven migrations in
+sequence (001-007)**, followed by the full Pass 3 registration flow,
+the full Pass 4 admin workflow, and the full Pass 5 search suite on
+that clean schema. Every test passes both times.
+
+**Known follow-ups for later passes:**
+- Export is CSV only (opens fine in Excel/Sheets) — no native
+  `.xlsx` export, since that would require a Composer dependency this
+  project deliberately avoids; worth revisiting in Pass 9 if a real
+  `.xlsx` is required.
+- Export is capped at 5,000 rows as a safety limit; large exports
+  would need streaming/background-job handling instead.
+- Advanced search filters are admin-facing only — a member-facing
+  "browse potential matches" search (with privacy-appropriate limits
+  on which fields are shown) isn't part of this pass; flagging in case
+  that's actually what's wanted, since the master prompt's search
+  field list (phone, email, payment status) reads as admin-tool
+  oriented rather than member-browsing oriented.
