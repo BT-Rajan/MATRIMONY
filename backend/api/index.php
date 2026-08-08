@@ -29,6 +29,7 @@ require_once __DIR__ . '/controllers/MasterController.php';
 require_once __DIR__ . '/controllers/RegistrationController.php';
 require_once __DIR__ . '/controllers/AdminMemberController.php';
 require_once __DIR__ . '/controllers/SavedSearchController.php';
+require_once __DIR__ . '/controllers/StatsController.php';
 
 // Static, exact-match routes.
 $routes = [
@@ -52,6 +53,10 @@ $routes = [
     'GET /admin/members/booklet' => [AdminMemberController::class, 'booklet'],
     'GET /admin/saved-searches' => [SavedSearchController::class, 'index'],
     'POST /admin/saved-searches' => [SavedSearchController::class, 'store'],
+    'GET /admin/stats/overview' => [StatsController::class, 'overview'],
+    'GET /admin/stats/trend' => [StatsController::class, 'trend'],
+    'GET /admin/stats/payments' => [StatsController::class, 'payments'],
+    'GET /admin/stats/events' => [StatsController::class, 'events'],
 ];
 
 $key = "{$method} {$path}";
@@ -82,6 +87,7 @@ $patternRoutes = [
     ['POST', '#^/admin/members/(\d+)/archive$#', [AdminMemberController::class, 'archive']],
     ['PUT', '#^/admin/members/(\d+)/event$#', [AdminMemberController::class, 'updateEvent']],
     ['DELETE', '#^/admin/saved-searches/(\d+)$#', [SavedSearchController::class, 'destroy']],
+    ['GET', '#^/admin/stats/breakdown/([a-z]+)$#', [StatsController::class, 'breakdown']],
 ];
 
 foreach ($patternRoutes as [$routeMethod, $pattern, $handler]) {

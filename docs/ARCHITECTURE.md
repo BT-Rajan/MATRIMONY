@@ -194,6 +194,27 @@ src/
   JWT or file-type validation elsewhere in this project which were
   worth writing by hand to stay dependency-free.
 
+## Dashboard & Reports (Pass 7)
+
+- `StatsDimensionRegistry` is the reports-side equivalent of
+  `MasterRegistry` — breakdown-by-dimension queries only ever build
+  their `JOIN`/`GROUP BY` from a fixed whitelist keyed by a short
+  dimension name (`religion`, `caste`, ...), never from the request.
+- All CSV export in Pass 7 (unlike Pass 5's member export) happens
+  **client-side** — the aggregate data is already in the browser after
+  rendering the chart/table, so there's no reason to round-trip to the
+  server again just to format it as CSV. `utils/csvExport.js` mirrors
+  the same UTF-8 BOM treatment as the server-side export for
+  consistency.
+- Any page that wants to deep-link into a filtered member list (the
+  dashboard's stat cards, the Reports page's status tiles) passes
+  filters via React Router navigation state
+  (`navigate('/admin/members', { state: { filters } })`) rather than a
+  query string — `MembersListPage` reads `location.state.filters` as
+  its initial filter state. This was actually a real bug caught during
+  Pass 7: query-string paths had been written but nothing ever parsed
+  them, so cross-page filter links silently did nothing.
+
 ## Design direction
 
 Palette and typography draw on Tamil temple/ritual visual language rather

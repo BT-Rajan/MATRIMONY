@@ -21,6 +21,7 @@ python3 test_step1_negative.py       # validation/security negative paths
 python3 test_admin_members.py        # Pass 4: admin approve/reject/verify/deactivate/etc.
 python3 test_search.py               # Pass 5: simple/advanced search, saved searches, export
 python3 test_booklet.py              # Pass 6: booklet data endpoint (filters + master-table joins)
+python3 test_stats.py                # Pass 7: dashboard/reports stats endpoints
 ```
 
 `test_admin_members.py` covers the full admin workflow: approve,

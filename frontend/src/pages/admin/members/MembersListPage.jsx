@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import {
   Box,
   Typography,
@@ -35,11 +35,12 @@ const PER_PAGE = 15;
 
 export default function MembersListPage() {
   const navigate = useNavigate();
+  const location = useLocation();
   const toast = useToast();
 
   const [items, setItems] = useState([]);
   const [meta, setMeta] = useState({ total: 0, total_pages: 1 });
-  const [filters, setFilters] = useState({ search: '', status: '', gender: '' });
+  const [filters, setFilters] = useState({ search: '', status: '', gender: '', ...(location.state?.filters || {}) });
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(true);
   const [advancedOpen, setAdvancedOpen] = useState(false);

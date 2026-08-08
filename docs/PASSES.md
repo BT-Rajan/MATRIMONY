@@ -12,7 +12,7 @@ end of every pass.
 | 4 | Admin CRUD — members, approval, verification, deactivate, archive | ✅ Done |
 | 5 | Search — simple, advanced, saved searches, export | ✅ Done |
 | 6 | Booklet generator (PDF, cover, QR code, print-ready) | ✅ Done |
-| 7 | Dashboard — statistics, charts, reports | ⏳ Not started |
+| 7 | Dashboard — statistics, charts, reports | ✅ Done |
 | 8 | Notifications — SMS, WhatsApp, Email | ⏳ Not started |
 | 9 | Optimization — caching, indexes, security hardening, testing, deployment | ⏳ Not started |
 
@@ -326,3 +326,55 @@ app already has; it needed a new query, not new schema.
 - The 200-row cap on a single booklet run is a safety limit, same
   reasoning as export's 5,000-row cap; very large associations would
   need a paginated/batched booklet generation flow instead.
+
+## Pass 7 summary
+
+**Delivered:**
+- `StatsDimensionRegistry.php` — same whitelist-registry pattern as
+  `MasterRegistry`, so breakdown queries only ever build dynamic SQL
+  from a fixed, safe set of table/column names, never from the
+  request
+- `StatsModel.php`: overview counts (by status, by gender, verified,
+  today, this month), registration trend (daily/monthly), breakdown by
+  religion/caste/education/occupation/income/district (joined to their
+  master tables for names), age-band breakdown, payments summary
+  (total collected + by payment type), events summary (participants +
+  amount per event)
+- **Dashboard**: stat cards (clickable through to the filtered member
+  list), a 30-day registration line chart, a status/gender summary, a
+  religion pie chart, a district bar chart, an age-band bar chart —
+  using `recharts`
+- **Reports page**: tabbed view covering every dimension the spec
+  listed (Daily, Monthly, District, Age, Education, Occupation,
+  Income, Religion, Caste, Pending/Approved/Rejected as status quick-
+  links, Payments, Events) — each breakdown table and the trend tables
+  have their own CSV export (client-side, from data already fetched,
+  with the same UTF-8-BOM treatment as the server-side export so Tamil
+  opens correctly in Excel)
+- Fixed a real, if minor, cross-page issue while wiring this up: the
+  Reports page's "click a status to see those members" links, and the
+  dashboard's stat cards, were passing filters as a query string that
+  `MembersListPage` never actually read — clicking through silently
+  showed the unfiltered list. Switched both to React Router navigation
+  state (`{ state: { filters } }`), which `MembersListPage` now reads
+  on mount, so the deep-links actually filter.
+
+**Tested end-to-end**: all fifteen stats/reports API scenarios
+(overview, daily/monthly trend, invalid-period rejection, all seven
+breakdown dimensions, invalid-dimension rejection, payments, events,
+unauthenticated rejection) verified against live data with real HTTP
+requests.
+
+**A near-miss worth recording**: while testing the events breakdown,
+Tamil text came back mojibake'd — not an application bug, but *my own*
+test-fixture mistake from Pass 6: I'd inserted a test event via the
+raw `mysql` CLI without `--default-character-set=utf8mb4` (the exact
+gotcha already documented in `docs/SETUP.md`). Fixed the corrupted row
+and re-verified. A useful reminder that this class of mistake is easy
+to make even when you've already written the warning yourself.
+
+**Known follow-ups for later passes:**
+- No date-range picker for the trend charts (fixed 30-day/12-month
+  windows) — easy to add if finer control is wanted later.
+- Reports are read/export only; no scheduled/emailed report delivery
+  (that would fit naturally into Pass 8's notification work).
