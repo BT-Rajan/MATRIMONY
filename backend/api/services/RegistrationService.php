@@ -9,6 +9,7 @@ require_once __DIR__ . '/../models/MemberEventModel.php';
 require_once __DIR__ . '/../helpers/FileUpload.php';
 require_once __DIR__ . '/../helpers/Jwt.php';
 require_once __DIR__ . '/../helpers/Audit.php';
+require_once __DIR__ . '/NotificationService.php';
 
 final class RegistrationService
 {
@@ -299,6 +300,7 @@ final class RegistrationService
 
         MemberEventModel::upsert($memberId, $fields);
         MemberModel::markPendingApproval($memberId);
+        NotificationService::send($memberId, 'registration_completed');
         Audit::log($memberId, 'member', 'registration_completed', 'members', $memberId, null, ['status' => 'pending_approval']);
 
         return ['status' => 'pending_approval', 'registration_step' => 6];

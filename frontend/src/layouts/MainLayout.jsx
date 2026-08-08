@@ -22,6 +22,7 @@ import DashboardOutlined from '@mui/icons-material/DashboardOutlined';
 import TuneOutlined from '@mui/icons-material/TuneOutlined';
 import PeopleAltOutlined from '@mui/icons-material/PeopleAltOutlined';
 import AssessmentOutlined from '@mui/icons-material/AssessmentOutlined';
+import NotificationsOutlined from '@mui/icons-material/NotificationsOutlined';
 import LogoutOutlined from '@mui/icons-material/LogoutOutlined';
 import FavoriteIcon from '@mui/icons-material/Favorite';
 import { useAuth } from '../contexts/AuthContext';
@@ -35,6 +36,7 @@ const NAV_ITEMS = {
     { label: 'டாஷ்போர்டு', icon: <DashboardOutlined fontSize="small" />, path: ROUTES.ADMIN_DASHBOARD },
     { label: 'உறுப்பினர்கள்', icon: <PeopleAltOutlined fontSize="small" />, path: '/admin/members' },
     { label: 'அறிக்கைகள்', icon: <AssessmentOutlined fontSize="small" />, path: '/admin/reports' },
+    { label: 'அறிவிப்புகள்', icon: <NotificationsOutlined fontSize="small" />, path: '/admin/notifications' },
     { label: 'மாஸ்டர் தரவு', icon: <TuneOutlined fontSize="small" />, path: '/admin/masters' },
   ],
   member: [{ label: 'என் டாஷ்போர்டு', icon: <DashboardOutlined fontSize="small" />, path: ROUTES.MEMBER_DASHBOARD }],

@@ -82,6 +82,69 @@ php -r "echo password_hash('YourNewStrongPassword', PASSWORD_DEFAULT), PHP_EOL;"
 UPDATE admins SET password_hash = '<paste hash here>' WHERE username = 'superadmin';
 ```
 
+## Notifications (Pass 8)
+
+All three channels — email, SMS, WhatsApp — default to **disabled**.
+With nothing configured, the app works exactly as before; every
+notification attempt is simply logged as `skipped` (visible under
+நிர்வாகி → அறிவிப்புகள்), and nothing else is affected.
+
+### Email
+
+Email is real SMTP — any provider that speaks standard SMTP works
+(Gmail, Amazon SES, SendGrid's SMTP relay, your own Postfix server, a
+hosting provider's included mail server). Set in `backend/.env`:
+
+```bash
+MAIL_ENABLED=true
+SMTP_HOST=smtp.your-provider.com
+SMTP_PORT=587
+SMTP_USER=your-smtp-username
+SMTP_PASS=your-smtp-password
+SMTP_ENCRYPTION=tls          # tls | ssl | none
+SMTP_FROM_EMAIL=noreply@yourdomain.com
+SMTP_FROM_NAME=Karkathar Mangala Sandhippu
+```
+
+`SMTP_ENCRYPTION=tls` means STARTTLS on the given port (587 is the
+usual STARTTLS port); `ssl` means implicit TLS from the first byte
+(port 465 is the usual implicit-TLS port); `none` is plain text — only
+appropriate for a mail relay on `localhost`/an internal network you
+trust.
+
+### SMS and WhatsApp
+
+Unlike email, there's no single protocol every SMS/WhatsApp provider
+speaks — Twilio, MSG91, Gupshup, Meta's WhatsApp Cloud API, and others
+each have their own REST API and auth scheme. Rather than lock this
+project to one vendor's SDK, both channels send a **configurable HTTP
+request** built entirely from `.env` — wiring in a real provider is a
+config change, not a code change:
+
+```bash
+SMS_ENABLED=true
+SMS_API_URL=https://your-provider.example.com/send
+SMS_API_METHOD=POST
+SMS_API_HEADERS={"Content-Type":"application/json","Authorization":"Bearer YOUR_API_KEY"}
+SMS_API_BODY_TEMPLATE={"to":"{{phone}}","message":"{{message}}"}
+```
+
+`{{phone}}` and `{{message}}` are substituted into the body template
+before sending. `WHATSAPP_*` follows the identical shape. Check your
+provider's API docs for their exact request format and adjust
+`*_API_HEADERS`/`*_API_BODY_TEMPLATE` to match — most REST-API-based
+providers (which is most of them) will work with this without any
+code changes.
+
+### What triggers a notification
+
+Three lifecycle events, each attempting all three channels (skipping
+whichever aren't enabled or configured): a member completing
+registration (Step 5), an admin approving a member, and an admin
+rejecting a member (the rejection reason is included in the message).
+Every attempt — sent, failed, or skipped, with why — is logged and
+visible under நிர்வாகி → அறிவிப்புகள்.
+
 ## Security notes for deployment
 
 - Set a long, random `JWT_SECRET` — never reuse the local dev value.

@@ -22,7 +22,33 @@ python3 test_admin_members.py        # Pass 4: admin approve/reject/verify/deact
 python3 test_search.py               # Pass 5: simple/advanced search, saved searches, export
 python3 test_booklet.py              # Pass 6: booklet data endpoint (filters + master-table joins)
 python3 test_stats.py                # Pass 7: dashboard/reports stats endpoints
+python3 test_notifications.py        # Pass 8: notification log, counts, channel status
 ```
+
+`test_notifications.py` checks the admin-facing notification log
+(list/filter/counts/channel-status) — it assumes some notifications
+already exist from earlier test runs (Steps 5, approve, reject all
+trigger one). To see real delivery, start the local SMTP debug server
+first and point `backend/.env` at it:
+
+```bash
+python3 smtp_debug_server.py &     # listens on 127.0.0.1:1025, logs to /tmp/received_emails.log
+```
+
+```bash
+# in backend/.env
+MAIL_ENABLED=true
+SMTP_HOST=127.0.0.1
+SMTP_PORT=1025
+SMTP_ENCRYPTION=none
+```
+
+Then run `test_step1.py` → `test_steps2to5.py` → `test_admin_members.py`
+(approve/reject) and check `/tmp/received_emails.log` for the actual
+delivered emails, or `test_notifications.py` for the logged outcome.
+`http_echo_server.py` (127.0.0.1:8090) is the equivalent for testing
+the SMS/WhatsApp HTTP driver — point `SMS_API_URL` at it and check
+`/tmp/received_http_requests.log`.
 
 `test_admin_members.py` covers the full admin workflow: approve,
 reject (with/without reason), re-approve-already-approved (409),

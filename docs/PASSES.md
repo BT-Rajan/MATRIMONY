@@ -13,7 +13,7 @@ end of every pass.
 | 5 | Search — simple, advanced, saved searches, export | ✅ Done |
 | 6 | Booklet generator (PDF, cover, QR code, print-ready) | ✅ Done |
 | 7 | Dashboard — statistics, charts, reports | ✅ Done |
-| 8 | Notifications — SMS, WhatsApp, Email | ⏳ Not started |
+| 8 | Notifications — SMS, WhatsApp, Email | ✅ Done |
 | 9 | Optimization — caching, indexes, security hardening, testing, deployment | ⏳ Not started |
 
 ## Pass 1 summary
@@ -378,3 +378,69 @@ to make even when you've already written the warning yourself.
   windows) — easy to add if finer control is wanted later.
 - Reports are read/export only; no scheduled/emailed report delivery
   (that would fit naturally into Pass 8's notification work).
+
+## Pass 8 summary
+
+**A deliberate engineering decision, stated upfront:** SMS and
+WhatsApp have no universal protocol — every provider (Twilio, MSG91,
+Gupshup, Meta's WhatsApp Cloud API) has its own REST API and auth
+scheme, and I have no real credentials for any of them to test
+against. Rather than claim an untested "Twilio integration," this pass
+built a **generic, `.env`-configurable HTTP driver**: a URL, headers,
+and a JSON body template with `{{phone}}`/`{{message}}` placeholders.
+Wiring in a real provider is a config change (`docs/SETUP.md` has the
+walkthrough), not a code change. Email, by contrast, *does* have a
+universal protocol (SMTP), so that got a real, hand-written,
+dependency-free implementation in the same spirit as the JWT helper.
+
+**Delivered:**
+- `notifications` table — one row per delivery attempt per channel,
+  always written (`sent`/`failed`/`skipped`, with why), independent of
+  the general `audit_log` entry for the action that triggered it
+- `SmtpMailer.php` — a minimal SMTP client from scratch: connect,
+  EHLO, optional STARTTLS, AUTH LOGIN, MAIL FROM/RCPT TO/DATA with
+  correct dot-stuffing, RFC 2047 header encoding for Tamil subjects
+  and names
+- `HttpApiNotifier.php` — the generic SMS/WhatsApp driver described
+  above
+- `NotificationService.php` — builds Tamil message content for three
+  lifecycle events (registration completed, approved, rejected —
+  rejection includes the admin's reason), attempts every enabled
+  channel, and **never throws**: a broken mail relay must never stop
+  an admin from approving a member
+- Hooked into the real endpoints: `RegistrationService::step5()`,
+  `MemberAdminService::approve()`, `MemberAdminService::reject()`
+- Admin-facing notification log (search/filter by status/channel,
+  expandable message content) plus a channel-status panel showing
+  what's actually configured, without exposing secrets
+
+**Tested for real, not just code review**: spun up a real local SMTP
+debug server (`aiosmtpd`) and a real local HTTP echo server, then
+verified — through the actual application endpoints, not a bypassed
+test harness — that emails arrive with byte-correct Tamil content
+(decoded the RFC 2047 subject back to confirm an exact round-trip),
+the rejection reason appears correctly in the email body, dot-stuffing
+is applied correctly on a deliberately tricky test body, the HTTP
+driver correctly substitutes real data into a JSON template and
+delivers it, and both drivers fail cleanly (caught exception, logged
+as `failed`, caller unaffected) against an unreachable host/port.
+
+**One real bug found and fixed**: `HttpApiNotifier.php` threw an
+exception class (`MailException`) that was only defined in the
+unrelated `SmtpMailer.php` — it worked by accident in the full app
+(both files happen to load together via `NotificationService`) but
+broke the moment it was tested in isolation. Fixed by extracting a
+shared `NotificationDeliveryException`. Then wrote a small script to
+scan the whole codebase for the same "uses a class without requiring
+its defining file" pattern — found nothing else.
+
+**Known follow-ups for later passes:**
+- No admin UI to edit the SMTP/SMS/WhatsApp `.env` values from the
+  browser — they're server config, set once at deployment, consistent
+  with how `JWT_SECRET`/DB credentials are already handled.
+- No retry/resend for a failed notification yet — an admin can see
+  *that* it failed and why, but resending is a manual re-trigger of
+  the underlying action for now (e.g. re-approving), not a dedicated
+  "resend" button. Would be a small addition if wanted.
+- No notification preferences per member (e.g. "email only, no SMS")
+  — every enabled channel is attempted for every event.

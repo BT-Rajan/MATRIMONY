@@ -215,6 +215,28 @@ src/
   Pass 7: query-string paths had been written but nothing ever parsed
   them, so cross-page filter links silently did nothing.
 
+## Notifications (Pass 8)
+
+- Email and SMS/WhatsApp are architecturally different, on purpose.
+  Email has one universal protocol (SMTP), so it got a real,
+  hand-written client (`SmtpMailer.php`) — the same "write it by hand,
+  keep the project dependency-free" approach as `Jwt.php`. SMS/WhatsApp
+  have no universal protocol (every provider's REST API differs), so
+  rather than hard-code one vendor's SDK untested against real
+  credentials, `HttpApiNotifier.php` sends a fully `.env`-configurable
+  HTTP request — the provider becomes a deployment config choice, not
+  a code dependency.
+- `NotificationService::send()` never throws. Every channel attempt is
+  wrapped individually, and the whole method is wrapped again as a
+  last line of defense — a broken mail relay or an unreachable SMS API
+  must never be able to stop `approve()`/`reject()`/registration
+  completion from succeeding. Every attempt is still logged
+  (`sent`/`failed`/`skipped`, with why) regardless.
+- The `notifications` table is a delivery log, separate from
+  `audit_log`. `audit_log` records that an admin approved a member;
+  `notifications` records whether the resulting email actually went
+  out. Different questions, different tables.
+
 ## Design direction
 
 Palette and typography draw on Tamil temple/ritual visual language rather

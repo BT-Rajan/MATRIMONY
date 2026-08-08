@@ -30,6 +30,7 @@ require_once __DIR__ . '/controllers/RegistrationController.php';
 require_once __DIR__ . '/controllers/AdminMemberController.php';
 require_once __DIR__ . '/controllers/SavedSearchController.php';
 require_once __DIR__ . '/controllers/StatsController.php';
+require_once __DIR__ . '/controllers/NotificationController.php';
 
 // Static, exact-match routes.
 $routes = [
@@ -57,6 +58,9 @@ $routes = [
     'GET /admin/stats/trend' => [StatsController::class, 'trend'],
     'GET /admin/stats/payments' => [StatsController::class, 'payments'],
     'GET /admin/stats/events' => [StatsController::class, 'events'],
+    'GET /admin/notifications' => [NotificationController::class, 'index'],
+    'GET /admin/notifications/counts' => [NotificationController::class, 'counts'],
+    'GET /admin/notifications/channel-status' => [NotificationController::class, 'channelStatus'],
 ];
 
 $key = "{$method} {$path}";

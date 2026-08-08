@@ -4,6 +4,7 @@ declare(strict_types=1);
 require_once __DIR__ . '/../models/MemberModel.php';
 require_once __DIR__ . '/../models/MemberEventModel.php';
 require_once __DIR__ . '/../helpers/Audit.php';
+require_once __DIR__ . '/NotificationService.php';
 
 final class MemberAdminService
 {
@@ -57,6 +58,7 @@ final class MemberAdminService
 
         MemberModel::setStatus($id, 'approved', $adminId);
         Audit::log($adminId, 'admin', 'member_approved', 'members', $id, ['status' => $member['status']], ['status' => 'approved']);
+        NotificationService::send($id, 'member_approved');
 
         return self::show($id);
     }
@@ -75,6 +77,7 @@ final class MemberAdminService
 
         MemberModel::setStatus($id, 'rejected', $adminId, trim($reason));
         Audit::log($adminId, 'admin', 'member_rejected', 'members', $id, ['status' => $member['status']], ['status' => 'rejected', 'reason' => $reason]);
+        NotificationService::send($id, 'member_rejected', ['reason' => trim($reason)]);
 
         return self::show($id);
     }
