@@ -138,8 +138,10 @@ export default function MasterListPage() {
               setPage(1);
               setSearch(e.target.value);
             }}
-            InputProps={{ startAdornment: <InputAdornment position="start"><SearchIcon fontSize="small" /></InputAdornment> }}
             sx={{ minWidth: 220 }}
+            slotProps={{
+              input: { startAdornment: <InputAdornment position="start"><SearchIcon fontSize="small" /></InputAdornment> }
+            }}
           />
           {config.type === 'hierarchical' && (
             <TextField

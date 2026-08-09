@@ -85,12 +85,14 @@ export default function Login() {
             {...register('username')}
             error={!!errors.username}
             helperText={errors.username?.message}
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <PersonOutline fontSize="small" />
-                </InputAdornment>
-              ),
+            slotProps={{
+              input: {
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <PersonOutline fontSize="small" />
+                  </InputAdornment>
+                ),
+              }
             }}
           />
         ) : (
@@ -102,12 +104,14 @@ export default function Login() {
             {...register('identifier')}
             error={!!errors.identifier}
             helperText={errors.identifier?.message}
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <PersonOutline fontSize="small" />
-                </InputAdornment>
-              ),
+            slotProps={{
+              input: {
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <PersonOutline fontSize="small" />
+                  </InputAdornment>
+                ),
+              }
             }}
           />
         )}
@@ -120,19 +124,21 @@ export default function Login() {
           {...register('password')}
           error={!!errors.password}
           helperText={errors.password?.message}
-          InputProps={{
-            startAdornment: (
-              <InputAdornment position="start">
-                <LockOutlined fontSize="small" />
-              </InputAdornment>
-            ),
-            endAdornment: (
-              <InputAdornment position="end">
-                <IconButton onClick={() => setShowPassword((s) => !s)} edge="end" size="small">
-                  {showPassword ? <VisibilityOff fontSize="small" /> : <Visibility fontSize="small" />}
-                </IconButton>
-              </InputAdornment>
-            ),
+          slotProps={{
+            input: {
+              startAdornment: (
+                <InputAdornment position="start">
+                  <LockOutlined fontSize="small" />
+                </InputAdornment>
+              ),
+              endAdornment: (
+                <InputAdornment position="end">
+                  <IconButton onClick={() => setShowPassword((s) => !s)} edge="end" size="small">
+                    {showPassword ? <VisibilityOff fontSize="small" /> : <Visibility fontSize="small" />}
+                  </IconButton>
+                </InputAdornment>
+              ),
+            }
           }}
         />
 

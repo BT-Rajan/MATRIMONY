@@ -143,11 +143,12 @@ export default function Step1BioData({ onSuccess }) {
               fullWidth
               type="date"
               label="பிறந்த தேதி"
-              InputLabelProps={{ shrink: true }}
               {...register('dob')}
               error={!!errors.dob}
               helperText={errors.dob?.message}
-            />
+              slotProps={{
+                inputLabel: { shrink: true }
+              }} />
           </Grid>
           <Grid item xs={6} sm={4}>
             <TextField fullWidth type="number" label="உயரம் (cm)" {...register('height_cm')} error={!!errors.height_cm} helperText={errors.height_cm?.message} />
@@ -325,14 +326,16 @@ export default function Step1BioData({ onSuccess }) {
               {...register('password')}
               error={!!errors.password}
               helperText={errors.password?.message}
-              InputProps={{
-                endAdornment: (
-                  <InputAdornment position="end">
-                    <IconButton size="small" onClick={() => setShowPassword((s) => !s)}>
-                      {showPassword ? <VisibilityOff fontSize="small" /> : <Visibility fontSize="small" />}
-                    </IconButton>
-                  </InputAdornment>
-                ),
+              slotProps={{
+                input: {
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <IconButton size="small" onClick={() => setShowPassword((s) => !s)}>
+                        {showPassword ? <VisibilityOff fontSize="small" /> : <Visibility fontSize="small" />}
+                      </IconButton>
+                    </InputAdornment>
+                  ),
+                }
               }}
             />
           </Grid>

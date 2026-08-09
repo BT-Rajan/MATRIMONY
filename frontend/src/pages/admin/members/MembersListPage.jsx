@@ -120,8 +120,10 @@ export default function MembersListPage() {
             placeholder="பதிவு எண், பெயர், மொபைல், மின்னஞ்சல்..."
             value={filters.search}
             onChange={(e) => updateFilter('search', e.target.value)}
-            InputProps={{ startAdornment: <InputAdornment position="start"><SearchIcon fontSize="small" /></InputAdornment> }}
             sx={{ minWidth: 260 }}
+            slotProps={{
+              input: { startAdornment: <InputAdornment position="start"><SearchIcon fontSize="small" /></InputAdornment> }
+            }}
           />
           <TextField
             size="small"

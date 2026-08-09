@@ -1,5 +1,11 @@
 RewriteEngine On
 
+# Apache strips the Authorization header by default; this restores it so
+# PHP can read it via $_SERVER['HTTP_AUTHORIZATION']. Without this, every
+# authenticated request 401s immediately after a successful login.
+RewriteCond %{HTTP:Authorization} ^(.*)
+RewriteRule .* - [E=HTTP_AUTHORIZATION:%1]
+
 # Route every request that isn't a real file/dir to index.php
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d

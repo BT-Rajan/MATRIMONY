@@ -142,11 +142,12 @@ export default function MasterFormDialog({ open, onClose, onSaved, config, editi
                 fullWidth
                 type="date"
                 label="தேதி"
-                InputLabelProps={{ shrink: true }}
                 {...register('event_date')}
                 error={!!errors.event_date}
                 helperText={errors.event_date?.message}
-              />
+                slotProps={{
+                  inputLabel: { shrink: true }
+                }} />
               <TextField
                 fullWidth
                 label="இடம்"

@@ -54,10 +54,28 @@ export default function Step2Horoscope({ defaults, onSuccess, onBack }) {
 
       <Grid container spacing={2}>
         <Grid item xs={12} sm={4}>
-          <TextField fullWidth type="date" label="பிறந்த தேதி" InputLabelProps={{ shrink: true }} {...register('birth_date')} error={!!errors.birth_date} helperText={errors.birth_date?.message || 'படிவம் 1 இல் உள்ள தேதியுடன் பொருந்த வேண்டும்'} />
+          <TextField
+            fullWidth
+            type="date"
+            label="பிறந்த தேதி"
+            {...register('birth_date')}
+            error={!!errors.birth_date}
+            helperText={errors.birth_date?.message || 'படிவம் 1 இல் உள்ள தேதியுடன் பொருந்த வேண்டும்'}
+            slotProps={{
+              inputLabel: { shrink: true }
+            }} />
         </Grid>
         <Grid item xs={12} sm={4}>
-          <TextField fullWidth type="time" label="பிறந்த நேரம்" InputLabelProps={{ shrink: true }} {...register('birth_time')} error={!!errors.birth_time} helperText={errors.birth_time?.message} />
+          <TextField
+            fullWidth
+            type="time"
+            label="பிறந்த நேரம்"
+            {...register('birth_time')}
+            error={!!errors.birth_time}
+            helperText={errors.birth_time?.message}
+            slotProps={{
+              inputLabel: { shrink: true }
+            }} />
         </Grid>
         <Grid item xs={12} sm={4}>
           <TextField fullWidth label="பிறந்த இடம்" {...register('birth_place')} error={!!errors.birth_place} helperText={errors.birth_place?.message} />
