@@ -10,6 +10,7 @@ import FileDropInput from '../../../components/common/FileDropInput';
 
 const YN = [['no', 'இல்லை'], ['yes', 'ஆம்']];
 const FAMILY_TYPE = [['nuclear', 'தனி குடும்பம்'], ['joint', 'கூட்டு குடும்பம்']];
+const BIRTH_ORDER = [['eldest', 'மூத்தவர்'], ['middle', 'நடுவில்'], ['youngest', 'இளையவர்']];
 
 export default function Step3Family({ defaults, onSuccess, onBack }) {
   const [serverError, setServerError] = useState('');
@@ -60,7 +61,25 @@ export default function Step3Family({ defaults, onSuccess, onBack }) {
           <TextField fullWidth label="தந்தை தொழில் (விருப்பம்)" {...register('father_occupation')} error={!!errors.father_occupation} helperText={errors.father_occupation?.message} />
         </Grid>
         <Grid item xs={12} sm={6}>
+          <TextField fullWidth label="தந்தை பூர்வீகம் (விருப்பம்)" {...register('father_native_place')} />
+        </Grid>
+        <Grid item xs={12} sm={6}>
+          <TextField fullWidth label="தந்தை மொபைல் (விருப்பம்)" {...register('father_mobile')} error={!!errors.father_mobile} helperText={errors.father_mobile?.message} />
+        </Grid>
+        <Grid item xs={12} sm={6}>
+          <TextField fullWidth label="தந்தை மின்னஞ்சல் (விருப்பம்)" {...register('father_email')} error={!!errors.father_email} helperText={errors.father_email?.message} />
+        </Grid>
+        <Grid item xs={12} sm={6}>
+          <TextField fullWidth label="தாயார் பூர்வீகம் (விருப்பம்)" {...register('mother_native_place')} />
+        </Grid>
+        <Grid item xs={12} sm={6}>
+          <TextField fullWidth label="தாயார் மொபைல் (விருப்பம்)" {...register('mother_mobile')} error={!!errors.mother_mobile} helperText={errors.mother_mobile?.message} />
+        </Grid>
+        <Grid item xs={12} sm={6}>
           <SelectField label="பெற்றோர் உயிருடன் உள்ளனரா" name="parents_alive" control={control} errors={errors} options={YN} />
+        </Grid>
+        <Grid item xs={12} sm={6}>
+          <SelectField label="பிறப்பு வரிசை (விருப்பம்)" name="birth_order" control={control} errors={errors} options={BIRTH_ORDER} required={false} />
         </Grid>
 
         <Grid item xs={6} sm={3}>
@@ -107,7 +126,7 @@ export default function Step3Family({ defaults, onSuccess, onBack }) {
   );
 }
 
-function SelectField({ label, name, control, errors, options }) {
+function SelectField({ label, name, control, errors, options, required = true }) {
   const err = errors?.[name];
   return (
     <Controller
@@ -115,6 +134,7 @@ function SelectField({ label, name, control, errors, options }) {
       control={control}
       render={({ field }) => (
         <TextField {...field} value={field.value ?? ''} select fullWidth label={label} error={!!err} helperText={err?.message}>
+          {!required && <MenuItem value="">தேர்ந்தெடுக்கவும்</MenuItem>}
           {options.map(([val, lab]) => (
             <MenuItem key={val} value={val}>{lab}</MenuItem>
           ))}

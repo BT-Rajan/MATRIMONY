@@ -14,7 +14,7 @@ end of every pass.
 | 6 | Booklet generator (PDF, cover, QR code, print-ready) | ✅ Done |
 | 7 | Dashboard — statistics, charts, reports | ✅ Done |
 | 8 | Notifications — SMS, WhatsApp, Email | ✅ Done |
-| 9 | Optimization — caching, indexes, security hardening, testing, deployment | ⏳ Not started |
+| 9 | Optimization — caching, indexes, security hardening, testing, deployment | ✅ Done |
 
 ## Pass 1 summary
 
@@ -444,3 +444,120 @@ its defining file" pattern — found nothing else.
   "resend" button. Would be a small addition if wanted.
 - No notification preferences per member (e.g. "email only, no SMS")
   — every enabled channel is attempted for every event.
+
+## Pass 9 summary (final pass — application complete)
+
+**A critical, previously-undetected bug was found and fixed in this
+pass**, worth stating up front: `GET /masters/{slug}` — the endpoint
+every dropdown in the entire app calls (religion, caste, education,
+occupation, income, star, rasi, dosham, district, events, payment
+types) — required admin authentication. This meant the **public
+registration wizard's dropdowns had been silently broken for any real
+unauthenticated visitor this entire time**: a person trying to
+register would see every select box empty, since the underlying fetch
+would fail with 401 and the frontend's error handling quietly fell
+back to an empty options list rather than surfacing an error. It was
+never caught because every test script in this project (by design, to
+test the API layer directly) POSTs hardcoded master IDs rather than
+fetching them through the dropdown-loading code path first — the one
+piece of the system no automated test exercised was "does a browser
+successfully populate the registration form's dropdowns before
+submitting." Fixed: `GET /masters` and `GET /masters/{slug}` are now
+public (master data is non-sensitive reference data, and the person
+filling out the form has no account yet to authenticate with); the
+write operations (`POST`/`PUT`/`DELETE`) correctly still require admin
+auth, unchanged. Verified with a genuinely unauthenticated request
+before and after. Scanned every other route for the same pattern —
+found nowhere else.
+
+**Client-facing design integration**: the user supplied a separate
+HTML/JS registration-page design. That prototype stored every
+registrant's data — and its "edit link" tokens — in the Artifacts
+`window.storage` API with `shared: true`, meaning any visitor could
+read every other family's personal data (mobile numbers, emails, a
+child's DOB, address) directly from browser dev tools, and could mint
+an edit link for someone else's registration. That mechanism was not
+ported. Instead: the additional data fields that design called for —
+father's/mother's native place, mobile, email; birth order; company
+name and work location; pincode — were added to the real backend
+schema and wired into the existing, tested Steps 1 and 3 with full
+validation, and "already registered, resume editing" continues to use
+the secure mechanism already built and tested since Pass 3 (log in
+with your own account) rather than a new unauthenticated magic-link
+system. A full pixel-perfect visual reskin of that design was out of
+scope for the remaining time in this pass; the real, securable data
+requirements it revealed were incorporated instead.
+
+**Indexes**: audited with `EXPLAIN` against a realistic synthetic
+dataset (1,000+ members, 1,000+ notifications) rather than guessed.
+One genuine, evidence-based fix: `notifications` had a single-column
+index on `member_id` that wasn't serving the actual "this member's
+notification history, newest first" query pattern (filesort even with
+the index present); replaced with a composite `(member_id,
+created_at)` index, confirmed via `EXPLAIN` at realistic volume to
+eliminate the filesort. Everything else audited — `members.status`,
+`.gender`, `.is_verified`; `audit_log` ordering — was confirmed to
+already be correctly served by existing indexes, or is a low-
+cardinality column where MySQL correctly prefers a full scan over an
+index at this table size; adding indexes there would only slow down
+writes for no read benefit. Simple search's `LIKE '%...%'` can't use a
+standard index for leading-wildcard matches (a fundamental limitation,
+not a missing index) — documented as a known scaling limit rather than
+worked around with a `FULLTEXT` index, which would change search
+semantics from substring to word-boundary matching.
+
+**Caching**: deliberately scoped down from a server-side cache with
+invalidation logic to HTTP `Cache-Control` headers on the master-data
+list endpoints. Reasoning: this app's realistic scale (one
+association's membership, admin-only usage) means the performance
+gain from server-side caching is marginal — the index audit above
+confirmed queries already execute efficiently — while a server-side
+cache's invalidation logic is a well-known source of subtle stale-data
+bugs (e.g. an admin approves a member but a cached dashboard stat
+doesn't reflect it for some TTL window), and this pass already found
+one critical bug from insufficiently-tested code paths; adding more
+untested complexity in the final pass was the wrong tradeoff.
+
+**Security hardening**:
+- Rate limiting extended from login to public registration (Step 1):
+  max 10 attempts per IP per hour, reusing the existing rate-limiter
+  table/logic with a generic (not just success/failure-based) counting
+  mode. Tested with 12 rapid requests — the 11th and 12th correctly
+  receive 429.
+- Security response headers added: `X-Content-Type-Options: nosniff`,
+  `X-Frame-Options: DENY`, `Referrer-Policy` on every API response;
+  the built frontend ships a `.htaccess` (copied from `frontend/
+  public/`) adding the same plus a `Content-Security-Policy` and SPA
+  fallback routing.
+- Confirmed no `dangerouslySetInnerHTML` anywhere in the frontend
+  (grep, zero results) — React's default output escaping is intact
+  everywhere, so stored input can't become executed markup.
+- CSRF: not applicable in the traditional sense — this is a bearer-
+  token (JWT) API, not cookie-session-based, so there's no ambient
+  credential for a cross-site request to ride on; CORS is already
+  locked to a single configured origin, not a wildcard.
+- SQL injection, password hashing, prepared statements, audit logging:
+  already in place since Pass 1, re-confirmed via the same
+  duplicate-placeholder codebase scan used in Passes 4/5/8 (clean).
+
+**Deployment & testing**: `docs/DEPLOYMENT.md` — a concrete, step-by-
+step production checklist (DB setup, `.env` configuration, file
+permissions, HTTPS, a cron job for the new cleanup script, and a
+post-deploy verification checklist). `backend/api/cli/cleanup.php` —
+addresses the "`login_attempts` grows unbounded" follow-up flagged
+back in Pass 1: a cron-run script purging old rate-limit rows (30
+days) and old notification log rows (180 days), never touching member
+or audit data.
+
+**Tested end-to-end, twice**: once against the dev database, and again
+from a **completely fresh database built by running all eleven
+migrations in sequence** (001 through the client-form-fields
+migration), followed by the complete test suite across every prior
+pass (registration Steps 1-5 including every negative path, all 17
+admin workflow scenarios, all 15 stats/report scenarios, booklet data,
+notification log/channel-status, and the new client-form-fields
+validation) plus the new Pass 9 checks (rate-limit trigger, public
+master-data access, admin-write-still-protected) — everything passes.
+
+This closes out the master prompt's nine passes.
+

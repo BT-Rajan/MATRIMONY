@@ -237,6 +237,29 @@ src/
   `notifications` records whether the resulting email actually went
   out. Different questions, different tables.
 
+## Optimization & security (Pass 9)
+
+- `GET /masters` and `GET /masters/{slug}` are public — they must be,
+  since the unauthenticated registration wizard populates its
+  dropdowns from them before the person has an account. This was a
+  real bug until Pass 9 (see `docs/PASSES.md`): these endpoints
+  required admin auth, silently breaking every dropdown on the public
+  registration form. Write operations on masters (`POST`/`PUT`/
+  `DELETE`) are unaffected and still require admin auth.
+- Index changes are evidence-based, not guessed — `EXPLAIN` against a
+  realistic synthetic dataset, not the tiny dev dataset, since MySQL's
+  optimizer makes different (and differently-informative) choices at
+  different table sizes.
+- Caching is deliberately limited to HTTP `Cache-Control` on read-only
+  master-data endpoints, not a server-side cache with invalidation
+  logic — at this app's realistic scale the performance gain would be
+  marginal, while invalidation bugs are a well-known risk; not a
+  trade worth making in the project's final pass.
+- Rate limiting (`RateLimiter::tooManyRecentAttempts`) now covers
+  public registration (Step 1), not just login — keyed by IP, counting
+  all attempts regardless of outcome, since spam prevention cares
+  about volume, not success/failure.
+
 ## Design direction
 
 Palette and typography draw on Tamil temple/ritual visual language rather

@@ -8,11 +8,16 @@ require_once __DIR__ . '/../helpers/Response.php';
 
 final class MasterController
 {
-    /** GET /masters — the registry itself, for building an admin nav/menu */
+    /**
+     * GET /masters — the registry itself, for building an admin nav/menu.
+     * Public: master data (religion/caste/district/education names, etc.)
+     * is non-sensitive reference data, and the public registration wizard
+     * needs these lists to populate its dropdowns before the person has
+     * any account to authenticate with. Only the write operations below
+     * (store/update/destroy) require admin auth.
+     */
     public static function registry(): void
     {
-        AuthMiddleware::requireAuth(['admin']);
-
         $out = [];
         foreach (MasterRegistry::all() as $slug => $config) {
             $out[] = [
@@ -28,8 +33,14 @@ final class MasterController
 
     public static function index(string $slug): void
     {
-        AuthMiddleware::requireAuth(['admin']);
         self::assertSlug($slug);
+
+        // Read-only reference data, safe to cache briefly at the HTTP
+        // level — every dropdown in the app calls this constantly, and
+        // master lists change rarely. `private` because the response
+        // still passed through an Authorization-aware CORS layer; this
+        // is about avoiding redundant re-fetches, not shared/proxy caching.
+        header('Cache-Control: private, max-age=60');
 
         $search = isset($_GET['search']) ? trim((string) $_GET['search']) : null;
         $parentId = isset($_GET['parent_id']) && $_GET['parent_id'] !== '' ? (int) $_GET['parent_id'] : null;

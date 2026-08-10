@@ -63,6 +63,8 @@ final class RegistrationService
             'weight_kg' => ($input['weight_kg'] ?? '') !== '' ? (int) $input['weight_kg'] : null,
             'education_id' => (int) $input['education_id'],
             'occupation_id' => (int) $input['occupation_id'],
+            'company_name' => ($input['company_name'] ?? '') !== '' ? trim($input['company_name']) : null,
+            'work_location' => ($input['work_location'] ?? '') !== '' ? trim($input['work_location']) : null,
             'income_id' => ($input['income_id'] ?? '') !== '' ? (int) $input['income_id'] : null,
             'religion_id' => (int) $input['religion_id'],
             'caste_id' => (int) $input['caste_id'],
@@ -73,6 +75,7 @@ final class RegistrationService
             'native_place' => trim($input['native_place']),
             'district_id' => (int) $input['district_id'],
             'current_address' => trim($input['current_address']),
+            'pincode' => ($input['pincode'] ?? '') !== '' ? trim($input['pincode']) : null,
             'state' => trim($input['state']),
             'country' => trim($input['country']),
             'photo_path' => $photo['path'],
@@ -196,11 +199,17 @@ final class RegistrationService
             'father_name' => trim($input['father_name']),
             'mother_name' => trim($input['mother_name']),
             'father_occupation' => ($input['father_occupation'] ?? '') !== '' ? trim($input['father_occupation']) : null,
+            'father_native_place' => ($input['father_native_place'] ?? '') !== '' ? trim($input['father_native_place']) : null,
+            'father_mobile' => ($input['father_mobile'] ?? '') !== '' ? trim($input['father_mobile']) : null,
+            'father_email' => ($input['father_email'] ?? '') !== '' ? strtolower(trim($input['father_email'])) : null,
+            'mother_native_place' => ($input['mother_native_place'] ?? '') !== '' ? trim($input['mother_native_place']) : null,
+            'mother_mobile' => ($input['mother_mobile'] ?? '') !== '' ? trim($input['mother_mobile']) : null,
             'parents_alive' => $input['parents_alive'],
             'brothers' => (int) $input['brothers'],
             'married_brothers' => (int) $input['married_brothers'],
             'sisters' => (int) $input['sisters'],
             'married_sisters' => (int) $input['married_sisters'],
+            'birth_order' => in_array($input['birth_order'] ?? '', ['eldest', 'middle', 'youngest'], true) ? $input['birth_order'] : null,
             'family_type' => $input['family_type'],
             'own_house' => $input['own_house'],
             'family_income_id' => ($input['family_income_id'] ?? '') !== '' ? (int) $input['family_income_id'] : null,
@@ -381,6 +390,9 @@ final class RegistrationService
         if (!empty($in['whatsapp']) && !preg_match('/^[6-9]\d{9}$/', $in['whatsapp'])) {
             $e['whatsapp'] = 'சரியான வாட்ஸ்அப் எண் தேவை';
         }
+        if (!empty($in['pincode']) && !preg_match('/^\d{6}$/', $in['pincode'])) {
+            $e['pincode'] = 'சரியான 6 இலக்க பின்கோடு தேவை';
+        }
 
         if (empty($in['email']) || !filter_var($in['email'], FILTER_VALIDATE_EMAIL)) {
             $e['email'] = 'சரியான மின்னஞ்சல் தேவை';
@@ -436,6 +448,15 @@ final class RegistrationService
         $e = [];
         self::req($e, $in, 'father_name', 'தந்தை பெயர்');
         self::req($e, $in, 'mother_name', 'தாய் பெயர்');
+        if (!empty($in['father_mobile']) && !preg_match('/^[6-9]\d{9}$/', $in['father_mobile'])) {
+            $e['father_mobile'] = 'சரியான மொபைல் எண் (10 இலக்கம்) தேவை';
+        }
+        if (!empty($in['mother_mobile']) && !preg_match('/^[6-9]\d{9}$/', $in['mother_mobile'])) {
+            $e['mother_mobile'] = 'சரியான மொபைல் எண் (10 இலக்கம்) தேவை';
+        }
+        if (!empty($in['father_email']) && !filter_var($in['father_email'], FILTER_VALIDATE_EMAIL)) {
+            $e['father_email'] = 'சரியான மின்னஞ்சல் தேவை';
+        }
         if (!in_array($in['parents_alive'] ?? '', ['yes', 'no'], true)) {
             $e['parents_alive'] = 'இந்த புலம் தேவை';
         }

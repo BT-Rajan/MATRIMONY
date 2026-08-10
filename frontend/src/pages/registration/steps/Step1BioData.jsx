@@ -181,6 +181,12 @@ export default function Step1BioData({ onSuccess }) {
             <MasterSelect control={control} name="occupation_id" label="தொழில்" options={occupations} errors={errors} />
           </Grid>
           <Grid item xs={12} sm={6}>
+            <TextField fullWidth label="நிறுவனம் (விருப்பம்)" {...register('company_name')} />
+          </Grid>
+          <Grid item xs={12} sm={6}>
+            <TextField fullWidth label="பணி இடம் (விருப்பம்)" {...register('work_location')} />
+          </Grid>
+          <Grid item xs={12} sm={6}>
             <MasterSelect control={control} name="income_id" label="வருமானம் (விருப்பம்)" options={incomes} errors={errors} required={false} />
           </Grid>
         </Grid>
@@ -220,6 +226,9 @@ export default function Step1BioData({ onSuccess }) {
           </Grid>
           <Grid item xs={12}>
             <TextField fullWidth multiline minRows={2} label="தற்போதைய முகவரி" {...register('current_address')} error={!!errors.current_address} helperText={errors.current_address?.message} />
+          </Grid>
+          <Grid item xs={12} sm={4}>
+            <TextField fullWidth label="பின்கோடு (விருப்பம்)" {...register('pincode')} error={!!errors.pincode} helperText={errors.pincode?.message} />
           </Grid>
           <Grid item xs={12} sm={6}>
             <TextField fullWidth label="மாநிலம்" {...register('state')} error={!!errors.state} helperText={errors.state?.message} />

@@ -228,11 +228,13 @@ export default function MemberDetailPage() {
             <Field label="பிறந்த தேதி" value={member.dob} />
             <Field label="உயரம் / எடை" value={`${member.height_cm || '-'} cm / ${member.weight_kg || '-'} kg`} />
             <Field label="திருமண நிலை" value={member.marital_status} />
+            <Field label="நிறுவனம் / பணி இடம்" value={[member.company_name, member.work_location].filter(Boolean).join(' • ') || '-'} />
             <Field label="மொபைல்" value={member.mobile} />
             <Field label="வாட்ஸ்அப்" value={member.whatsapp} />
             <Field label="மின்னஞ்சல்" value={member.email} />
             <Field label="சொந்த ஊர்" value={member.native_place} />
             <Field label="முகவரி" value={member.current_address} />
+            <Field label="பின்கோடு" value={member.pincode} />
             <Field label="மாநிலம் / நாடு" value={`${member.state || '-'}, ${member.country || '-'}`} />
             <Field label="எனை பற்றி" value={member.about_myself} />
             <Field label="உணவு / புகை / மது" value={`${member.diet || '-'} / ${member.smoking || '-'} / ${member.drinking || '-'}`} />
@@ -259,7 +261,10 @@ export default function MemberDetailPage() {
             {family ? (
               <>
                 <Field label="தந்தை / தாய்" value={`${family.father_name} / ${family.mother_name}`} />
+                <Field label="தந்தை தொடர்பு" value={[family.father_mobile, family.father_email].filter(Boolean).join(' • ') || '-'} />
+                <Field label="பெற்றோர் பூர்வீகம்" value={[family.father_native_place, family.mother_native_place].filter(Boolean).join(' / ') || '-'} />
                 <Field label="பெற்றோர் உயிருடன்" value={family.parents_alive} />
+                <Field label="பிறப்பு வரிசை" value={family.birth_order} />
                 <Field label="சகோதரர் / சகோதரி" value={`${family.brothers} (${family.married_brothers} மணமானவர்) / ${family.sisters} (${family.married_sisters} மணமானவர்)`} />
                 <Field label="குடும்ப வகை / சொந்த வீடு" value={`${family.family_type} / ${family.own_house}`} />
               </>

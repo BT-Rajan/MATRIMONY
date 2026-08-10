@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/../services/RegistrationService.php';
 require_once __DIR__ . '/../middleware/AuthMiddleware.php';
+require_once __DIR__ . '/../middleware/RateLimiter.php';
 require_once __DIR__ . '/../helpers/Response.php';
 
 final class RegistrationController
@@ -10,6 +11,12 @@ final class RegistrationController
     /** POST /registration/step1 — public, multipart/form-data. Auto-logs in on success. */
     public static function step1(): void
     {
+        $ip = $_SERVER['REMOTE_ADDR'] ?? 'unknown';
+        if (RateLimiter::tooManyRecentAttempts("register_ip:{$ip}", 10, 60)) {
+            Response::error('அதிக பதிவு முயற்சிகள். சிறிது நேரம் கழித்து முயற்சிக்கவும்.', 429);
+        }
+        RateLimiter::recordAttempt("register_ip:{$ip}", true);
+
         try {
             $result = RegistrationService::step1($_POST, $_FILES);
             Response::success($result, 201, 'படி 1 சேமிக்கப்பட்டது');

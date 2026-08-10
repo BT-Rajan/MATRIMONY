@@ -15,6 +15,12 @@ final class Cors
         header('Access-Control-Allow-Credentials: true');
         header('Content-Type: application/json; charset=utf-8');
 
+        // API responses are JSON only — never let a browser guess otherwise
+        // and try to render an uploaded file's URL or an error body as HTML.
+        header('X-Content-Type-Options: nosniff');
+        header('X-Frame-Options: DENY');
+        header('Referrer-Policy: strict-origin-when-cross-origin');
+
         if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
             http_response_code(204);
             exit;
