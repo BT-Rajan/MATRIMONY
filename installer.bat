@@ -1,24 +1,32 @@
 @echo off
 REM ============================================================================
-REM installer.bat - local setup for karkathar mangala sandhippu (MATRIMONY)
+REM installer.bat - local/hosting setup for karkathar mangala sandhippu (MATRIMONY)
 REM
 REM Automates docs\SETUP.md:
-REM   1. Create the MySQL/MariaDB database + app user, run migrations in order
-REM   2. Set up backend\.env
+REM   1. Run migrations (in order) against a database you already have
+REM      access to - your own local MySQL, or one your hosting provider
+REM      already created for you. This does NOT create a new database user;
+REM      it only asks for the credentials of a user that can already run
+REM      SQL against that database (that's all the installer ever needs).
+REM   2. Set up backend\.env with those same credentials
 REM   3. Set up frontend\.env and run npm install
 REM   4. Create uploads/logs folders
 REM
 REM Usage:
 REM   installer.bat                    interactive
-REM   installer.bat /NONINTERACTIVE    use defaults, no prompts
+REM   installer.bat /NONINTERACTIVE    use defaults, no prompts (needs env vars set - see below)
 REM   installer.bat /SKIPDB            skip database setup
 REM   installer.bat /SKIPFRONTEND      skip npm install
+REM
+REM For /NONINTERACTIVE, set these environment variables before running:
+REM   MATRIMONY_DB_HOST, MATRIMONY_DB_PORT, MATRIMONY_DB_NAME,
+REM   MATRIMONY_DB_USER, MATRIMONY_DB_PASS
 REM
 REM Re-running is safe: migrations are just re-applied against the same DB,
 REM and existing .env files are never overwritten without confirmation.
 REM Run from a normal Command Prompt (cmd.exe), not PowerShell.
-REM This window stays open at the end (success or failure) - press any key
-REM to close it once you're done reading.
+REM This window always stays open at the end (success or failure) - press
+REM any key to close it once you're done reading.
 REM ============================================================================
 setlocal EnableDelayedExpansion
 
@@ -34,7 +42,6 @@ set "TMP_SQL=%TEMP%\matrimony_installer_%RANDOM%.sql"
 set "NONINTERACTIVE=0"
 set "SKIPDB=0"
 set "SKIPFRONTEND=0"
-set "DB_ROOT_PASS="
 set "OVERWRITE="
 set "OVERWRITE2="
 
@@ -46,12 +53,14 @@ for %%A in (%*) do (
   if /I "%%A"=="/HELP" goto :usage
 )
 
-set "DB_HOST=127.0.0.1"
-set "DB_PORT=3306"
-set "DB_NAME=karkathar_matrimony"
-set "DB_APP_USER=karkathar_app"
-set "DB_APP_PASS="
-set "DB_ROOT_USER=root"
+set "DB_HOST=%MATRIMONY_DB_HOST%"
+set "DB_PORT=%MATRIMONY_DB_PORT%"
+set "DB_NAME=%MATRIMONY_DB_NAME%"
+set "DB_USER=%MATRIMONY_DB_USER%"
+set "DB_PASS=%MATRIMONY_DB_PASS%"
+if "%DB_HOST%"=="" set "DB_HOST=127.0.0.1"
+if "%DB_PORT%"=="" set "DB_PORT=3306"
+if "%DB_NAME%"=="" set "DB_NAME=karkathar_matrimony"
 
 echo.
 echo ==============================================
@@ -97,15 +106,17 @@ if errorlevel 1 (
   echo   WARNING: pdo_mysql extension not detected - the backend will not run without it.
 )
 
-where mysql >nul 2>nul
-if errorlevel 1 (
-  echo ERROR: mysql client not found on PATH ^(also checked common XAMPP install paths^).
-  echo   If using XAMPP in a non-default folder, run this first in the same
-  echo   window, then re-run installer.bat:
-  echo     set "PATH=C:\path\to\xampp\mysql\bin;%%PATH%%"
-  goto :fail
+if "%SKIPDB%"=="0" (
+  where mysql >nul 2>nul
+  if errorlevel 1 (
+    echo ERROR: mysql client not found on PATH ^(also checked common XAMPP install paths^).
+    echo   If using XAMPP in a non-default folder, run this first in the same
+    echo   window, then re-run installer.bat:
+    echo     set "PATH=C:\path\to\xampp\mysql\bin;%%PATH%%"
+    goto :fail
+  )
+  echo   mysql client found
 )
-echo   mysql client found
 
 if "%SKIPFRONTEND%"=="0" (
   where node >nul 2>nul
@@ -125,6 +136,14 @@ if "%SKIPFRONTEND%"=="0" (
 
 REM ---------------------------------------------------------------------
 REM 1. Database
+REM
+REM Only ONE set of credentials is ever asked for: a database name plus
+REM a username/password that can already run SQL against it (CREATE
+REM TABLE / ALTER / INSERT). That's every permission the installer needs.
+REM It never creates a MySQL user - on shared hosting you normally can't
+REM anyway (that's done once via your host's control panel), and this
+REM avoids the installer trying to do something it doesn't have rights
+REM to do, or something you didn't ask for.
 REM ---------------------------------------------------------------------
 if "%SKIPDB%"=="1" (
   echo.
@@ -141,67 +160,93 @@ if not exist "%SQL_DIR%" (
 )
 
 if "%NONINTERACTIVE%"=="0" (
-  echo   Database name is fixed to "%DB_NAME%" - the migration files hardcode this name internally ^(USE karkathar_matrimony;^), so a different name here would break migration 002 onward.
-  set /p "DB_APP_USER=App DB username [%DB_APP_USER%]: "
-  if "!DB_APP_USER!"=="" set "DB_APP_USER=karkathar_app"
-  set /p "DB_APP_PASS=App DB password (leave blank to auto-generate): "
+  echo   Enter the details of a database you already have access to -
+  echo   your own local MySQL, or one already created for you by your
+  echo   hosting provider ^(cPanel etc^). Nothing new is created except
+  echo   the tables themselves.
+  echo.
+  set /p "DB_HOST=Database host [%DB_HOST%]: "
+  if "!DB_HOST!"=="" set "DB_HOST=127.0.0.1"
+  set /p "DB_PORT=Database port [%DB_PORT%]: "
+  if "!DB_PORT!"=="" set "DB_PORT=3306"
+  set /p "DB_NAME=Database name [%DB_NAME%]: "
+  if "!DB_NAME!"=="" set "DB_NAME=karkathar_matrimony"
+  set /p "DB_USER=Database username: "
+  set /p "DB_PASS=Database password (leave blank if none): "
 )
 
-if "%DB_APP_PASS%"=="" (
-  for /f "tokens=*" %%P in ('powershell -NoProfile -Command "-join ((48..57)+(65..90)+(97..122)|Get-Random -Count 24|ForEach-Object{[char]$_})" 2^>nul') do set "DB_APP_PASS=%%P"
-  if "!DB_APP_PASS!"=="" set "DB_APP_PASS=ChangeThis_%RANDOM%%RANDOM%"
-  echo   Generated app DB password: !DB_APP_PASS!
-  echo   ^(also saved into backend\.env below - keep it safe^)
-)
-
-echo   MySQL root/admin credentials are needed once, to create the DB, the app user, and run migrations.
-if "%NONINTERACTIVE%"=="0" (
-  set /p "DB_ROOT_USER=MySQL admin username [%DB_ROOT_USER%]: "
-  if "!DB_ROOT_USER!"=="" set "DB_ROOT_USER=root"
-  set /p "DB_ROOT_PASS=MySQL admin password (blank if none): "
-)
-
-set "MYSQL_ARGS=-h %DB_HOST% -P %DB_PORT% -u %DB_ROOT_USER%"
-if not "%DB_ROOT_PASS%"=="" set "MYSQL_ARGS=%MYSQL_ARGS% -p%DB_ROOT_PASS%"
-
-echo.
-echo ==^> Creating database "%DB_NAME%" (if it doesn't already exist)
-mysql %MYSQL_ARGS% --default-character-set=utf8mb4 -e "CREATE DATABASE IF NOT EXISTS %DB_NAME% CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
-if errorlevel 1 (
-  echo ERROR: Could not create database. Check your MySQL admin credentials.
+if "%DB_USER%"=="" (
+  echo ERROR: A database username is required.
   goto :fail
 )
 
-echo.
-echo ==^> Creating/updating app DB user "%DB_APP_USER%"
-if exist "%TMP_SQL%" del /q "%TMP_SQL%" >nul 2>nul
-echo CREATE USER IF NOT EXISTS '%DB_APP_USER%'@'localhost' IDENTIFIED BY '%DB_APP_PASS%';>> "%TMP_SQL%"
-echo ALTER USER '%DB_APP_USER%'@'localhost' IDENTIFIED BY '%DB_APP_PASS%';>> "%TMP_SQL%"
-echo GRANT ALL PRIVILEGES ON %DB_NAME%.* TO '%DB_APP_USER%'@'localhost';>> "%TMP_SQL%"
-echo FLUSH PRIVILEGES;>> "%TMP_SQL%"
+REM MYSQL_PWD is read directly by the mysql client from the environment -
+REM this is deliberate: a password embedded on the command line as -pXXXX
+REM breaks (and can crash this whole script) the moment it contains a
+REM character cmd.exe treats specially - ^& ^^ %% ^! ^< ^> ^| are all valid,
+REM common password characters. MYSQL_PWD sidesteps that entirely.
+set "MYSQL_PWD=%DB_PASS%"
+set "MYSQL_ARGS=-h %DB_HOST% -P %DB_PORT% -u %DB_USER%"
 
-mysql %MYSQL_ARGS% --default-character-set=utf8mb4 < "%TMP_SQL%"
+echo.
+echo ==^> Testing the connection
+mysql %MYSQL_ARGS% --default-character-set=utf8mb4 -e "SELECT 1;" >nul 2>"%TEMP%\matrimony_conn_test.log"
 if errorlevel 1 (
-  echo ERROR: Could not create/update app DB user.
-  del /q "%TMP_SQL%" >nul 2>nul
+  echo ERROR: Could not connect with those credentials. Details:
+  type "%TEMP%\matrimony_conn_test.log"
+  del /q "%TEMP%\matrimony_conn_test.log" >nul 2>nul
+  set "MYSQL_PWD="
   goto :fail
 )
-del /q "%TMP_SQL%" >nul 2>nul
+del /q "%TEMP%\matrimony_conn_test.log" >nul 2>nul
+echo   Connected.
+
+echo.
+echo ==^> Preparing database "%DB_NAME%"
+mysql %MYSQL_ARGS% --default-character-set=utf8mb4 -e "CREATE DATABASE IF NOT EXISTS %DB_NAME% CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;" 2>"%TEMP%\matrimony_createdb.log"
+if errorlevel 1 (
+  REM Common on shared hosting: the DB user can't CREATE DATABASE because
+  REM the database was already provisioned for them. That's fine as long
+  REM as it's actually usable - check that instead of failing outright.
+  mysql %MYSQL_ARGS% --default-character-set=utf8mb4 -D %DB_NAME% -e "SELECT 1;" >nul 2>nul
+  if errorlevel 1 (
+    echo ERROR: Could not create or access database "%DB_NAME%". Details:
+    type "%TEMP%\matrimony_createdb.log"
+    del /q "%TEMP%\matrimony_createdb.log" >nul 2>nul
+    set "MYSQL_PWD="
+    goto :fail
+  )
+  echo   Database already exists and is accessible - continuing.
+) else (
+  echo   Database ready.
+)
+del /q "%TEMP%\matrimony_createdb.log" >nul 2>nul
 
 echo.
 echo ==^> Running migrations (in filename order) from %SQL_DIR%
+REM Every migration file targets the database by name via the mysql
+REM client's own -D flag below, not by relying on the file's internal
+REM "CREATE DATABASE" / "USE karkathar_matrimony;" statements - those
+REM two lines are stripped from each file first, so this works
+REM correctly even if your actual database is named something else.
 for /f "delims=" %%F in ('dir /b /on "%SQL_DIR%\*.sql"') do (
   echo   - %%F
-  mysql %MYSQL_ARGS% --default-character-set=utf8mb4 "%DB_NAME%" < "%SQL_DIR%\%%F"
+  findstr /I /V /B /C:"CREATE DATABASE" /C:"USE karkathar_matrimony" "%SQL_DIR%\%%F" > "%TMP_SQL%"
+  mysql %MYSQL_ARGS% --default-character-set=utf8mb4 -D %DB_NAME% < "%TMP_SQL%"
   if errorlevel 1 (
     echo ERROR: Migration failed: %%F
+    del /q "%TMP_SQL%" >nul 2>nul
+    set "MYSQL_PWD="
     goto :fail
   )
 )
+del /q "%TMP_SQL%" >nul 2>nul
 echo   All migrations applied.
 
+set "MYSQL_PWD="
+
 REM ---------------------------------------------------------------------
-REM 2. Backend .env
+REM 2. Backend .env - same credentials entered above, no separate app user
 REM ---------------------------------------------------------------------
 :backend_env
 echo.
@@ -232,21 +277,39 @@ if "%WRITE_BACKEND_ENV%"=="1" (
 
   if exist "%TMP_PS1%" del /q "%TMP_PS1%" >nul 2>nul
   echo $c = Get-Content -Raw '%BACKEND_ENV_EXAMPLE%'> "%TMP_PS1%"
-  echo $c = $c -replace '(?m)^^DB_HOST=.*', 'DB_HOST=%DB_HOST%'>> "%TMP_PS1%"
-  echo $c = $c -replace '(?m)^^DB_PORT=.*', 'DB_PORT=%DB_PORT%'>> "%TMP_PS1%"
-  echo $c = $c -replace '(?m)^^DB_NAME=.*', 'DB_NAME=%DB_NAME%'>> "%TMP_PS1%"
-  echo $c = $c -replace '(?m)^^DB_USER=.*', 'DB_USER=%DB_APP_USER%'>> "%TMP_PS1%"
-  echo $c = $c -replace '(?m)^^DB_PASS=.*', 'DB_PASS=%DB_APP_PASS%'>> "%TMP_PS1%"
+  echo $c = $c -replace '(?m)^^DB_HOST=.*', ('DB_HOST=' + $env:MATRIMONY_ENV_DB_HOST)>> "%TMP_PS1%"
+  echo $c = $c -replace '(?m)^^DB_PORT=.*', ('DB_PORT=' + $env:MATRIMONY_ENV_DB_PORT)>> "%TMP_PS1%"
+  echo $c = $c -replace '(?m)^^DB_NAME=.*', ('DB_NAME=' + $env:MATRIMONY_ENV_DB_NAME)>> "%TMP_PS1%"
+  echo $c = $c -replace '(?m)^^DB_USER=.*', ('DB_USER=' + $env:MATRIMONY_ENV_DB_USER)>> "%TMP_PS1%"
+  echo $c = $c -replace '(?m)^^DB_PASS=.*', ('DB_PASS=' + $env:MATRIMONY_ENV_DB_PASS)>> "%TMP_PS1%"
   echo $c = $c -replace '(?m)^^JWT_SECRET=.*', 'JWT_SECRET=!JWT_SECRET!'>> "%TMP_PS1%"
   echo Set-Content -NoNewline -Path '%BACKEND_ENV%' -Value $c>> "%TMP_PS1%"
 
+  REM Passed via environment variables (not embedded into the generated
+  REM PowerShell text) so a password containing a quote or $ can't break
+  REM the generated script - same reasoning as MYSQL_PWD above.
+  set "MATRIMONY_ENV_DB_HOST=%DB_HOST%"
+  set "MATRIMONY_ENV_DB_PORT=%DB_PORT%"
+  set "MATRIMONY_ENV_DB_NAME=%DB_NAME%"
+  set "MATRIMONY_ENV_DB_USER=%DB_USER%"
+  set "MATRIMONY_ENV_DB_PASS=%DB_PASS%"
   powershell -NoProfile -ExecutionPolicy Bypass -File "%TMP_PS1%"
   if errorlevel 1 (
     echo ERROR: Failed to write backend\.env via PowerShell.
     del /q "%TMP_PS1%" >nul 2>nul
+    set "MATRIMONY_ENV_DB_HOST="
+    set "MATRIMONY_ENV_DB_PORT="
+    set "MATRIMONY_ENV_DB_NAME="
+    set "MATRIMONY_ENV_DB_USER="
+    set "MATRIMONY_ENV_DB_PASS="
     goto :fail
   )
   del /q "%TMP_PS1%" >nul 2>nul
+  set "MATRIMONY_ENV_DB_HOST="
+  set "MATRIMONY_ENV_DB_PORT="
+  set "MATRIMONY_ENV_DB_NAME="
+  set "MATRIMONY_ENV_DB_USER="
+  set "MATRIMONY_ENV_DB_PASS="
 
   echo   Wrote backend\.env ^(DB credentials + a fresh random JWT_SECRET^)
   echo   Email/SMS/WhatsApp remain disabled - edit backend\.env to enable, see docs\SETUP.md
@@ -362,6 +425,10 @@ exit /b 0
 
 :usage
 echo Usage: installer.bat [/NONINTERACTIVE] [/SKIPDB] [/SKIPFRONTEND]
+echo.
+echo For /NONINTERACTIVE, set these environment variables first:
+echo   MATRIMONY_DB_HOST, MATRIMONY_DB_PORT, MATRIMONY_DB_NAME,
+echo   MATRIMONY_DB_USER, MATRIMONY_DB_PASS
 echo.
 pause
 exit /b 0
