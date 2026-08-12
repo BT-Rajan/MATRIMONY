@@ -3,11 +3,12 @@ REM ============================================================================
 REM installer.bat - local/hosting setup for karkathar mangala sandhippu (MATRIMONY)
 REM
 REM Automates docs\SETUP.md:
-REM   1. Run migrations (in order) against a database you already have
-REM      access to - your own local MySQL, or one your hosting provider
-REM      already created for you. This does NOT create a new database user;
-REM      it only asks for the credentials of a user that can already run
-REM      SQL against that database (that's all the installer ever needs).
+REM   1. Run migrations (in order) against a database you already created
+REM      yourself - your own local MySQL, or one your hosting provider
+REM      already created for you. This installer does NOT create a database
+REM      or a database user; it only asks for the credentials of a user
+REM      that can already run SQL against a database that already exists
+REM      (that's all it ever needs).
 REM   2. Set up backend\.env with those same credentials
 REM   3. Set up frontend\.env and run npm install
 REM   4. Create uploads/logs folders
@@ -21,6 +22,9 @@ REM
 REM For /NONINTERACTIVE, set these environment variables before running:
 REM   MATRIMONY_DB_HOST, MATRIMONY_DB_PORT, MATRIMONY_DB_NAME,
 REM   MATRIMONY_DB_USER, MATRIMONY_DB_PASS
+REM
+REM Before running this: create the database yourself, e.g.
+REM   CREATE DATABASE karkathar_matrimony CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 REM
 REM Re-running is safe: migrations are just re-applied against the same DB,
 REM and existing .env files are never overwritten without confirmation.
@@ -101,7 +105,9 @@ if errorlevel 1 (
 for /f "tokens=*" %%V in ('php -r "echo PHP_VERSION;" 2^>nul') do set "PHP_VER=%%V"
 echo   PHP !PHP_VER! found
 
-php -m | findstr /I pdo_mysql >nul
+REM Ask PHP itself whether the extension is loaded, rather than parsing the
+REM text of "php -m" - more reliable across PHP builds/locales.
+php -r "exit(extension_loaded('pdo_mysql') ? 0 : 1);" >nul 2>nul
 if errorlevel 1 (
   echo   WARNING: pdo_mysql extension not detected - the backend will not run without it.
 )
@@ -135,15 +141,10 @@ if "%SKIPFRONTEND%"=="0" (
 )
 
 REM ---------------------------------------------------------------------
-REM 1. Database
-REM
-REM Only ONE set of credentials is ever asked for: a database name plus
-REM a username/password that can already run SQL against it (CREATE
-REM TABLE / ALTER / INSERT). That's every permission the installer needs.
-REM It never creates a MySQL user - on shared hosting you normally can't
-REM anyway (that's done once via your host's control panel), and this
-REM avoids the installer trying to do something it doesn't have rights
-REM to do, or something you didn't ask for.
+REM 1. Database - migrations only. This installer never creates a database
+REM    or a database user; it expects both to already exist and just needs
+REM    credentials that can already run SQL (CREATE TABLE / ALTER / INSERT)
+REM    against the database named below.
 REM ---------------------------------------------------------------------
 if "%SKIPDB%"=="1" (
   echo.
@@ -153,6 +154,10 @@ if "%SKIPDB%"=="1" (
 
 echo.
 echo ==^> Database setup
+echo   This installer does NOT create a database. Create it yourself first
+echo   if you haven't already, e.g.:
+echo     CREATE DATABASE %DB_NAME% CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+echo   Then enter the credentials of a user that can already run SQL against it.
 
 if not exist "%SQL_DIR%" (
   echo ERROR: Migration directory not found: %SQL_DIR%
@@ -160,10 +165,6 @@ if not exist "%SQL_DIR%" (
 )
 
 if "%NONINTERACTIVE%"=="0" (
-  echo   Enter the details of a database you already have access to -
-  echo   your own local MySQL, or one already created for you by your
-  echo   hosting provider ^(cPanel etc^). Nothing new is created except
-  echo   the tables themselves.
   echo.
   set /p "DB_HOST=Database host [%DB_HOST%]: "
   if "!DB_HOST!"=="" set "DB_HOST=127.0.0.1"
@@ -189,38 +190,20 @@ set "MYSQL_PWD=%DB_PASS%"
 set "MYSQL_ARGS=-h %DB_HOST% -P %DB_PORT% -u %DB_USER%"
 
 echo.
-echo ==^> Testing the connection
-mysql %MYSQL_ARGS% --default-character-set=utf8mb4 -e "SELECT 1;" >nul 2>"%TEMP%\matrimony_conn_test.log"
+echo ==^> Testing the connection to database "%DB_NAME%"
+mysql %MYSQL_ARGS% --default-character-set=utf8mb4 -D %DB_NAME% -e "SELECT 1;" >nul 2>"%TEMP%\matrimony_conn_test.log"
 if errorlevel 1 (
-  echo ERROR: Could not connect with those credentials. Details:
+  echo ERROR: Could not connect to database "%DB_NAME%" with those credentials. Details:
   type "%TEMP%\matrimony_conn_test.log"
+  echo.
+  echo   If the database itself doesn't exist yet, create it first, e.g.:
+  echo     CREATE DATABASE %DB_NAME% CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
   del /q "%TEMP%\matrimony_conn_test.log" >nul 2>nul
   set "MYSQL_PWD="
   goto :fail
 )
 del /q "%TEMP%\matrimony_conn_test.log" >nul 2>nul
 echo   Connected.
-
-echo.
-echo ==^> Preparing database "%DB_NAME%"
-mysql %MYSQL_ARGS% --default-character-set=utf8mb4 -e "CREATE DATABASE IF NOT EXISTS %DB_NAME% CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;" 2>"%TEMP%\matrimony_createdb.log"
-if errorlevel 1 (
-  REM Common on shared hosting: the DB user can't CREATE DATABASE because
-  REM the database was already provisioned for them. That's fine as long
-  REM as it's actually usable - check that instead of failing outright.
-  mysql %MYSQL_ARGS% --default-character-set=utf8mb4 -D %DB_NAME% -e "SELECT 1;" >nul 2>nul
-  if errorlevel 1 (
-    echo ERROR: Could not create or access database "%DB_NAME%". Details:
-    type "%TEMP%\matrimony_createdb.log"
-    del /q "%TEMP%\matrimony_createdb.log" >nul 2>nul
-    set "MYSQL_PWD="
-    goto :fail
-  )
-  echo   Database already exists and is accessible - continuing.
-) else (
-  echo   Database ready.
-)
-del /q "%TEMP%\matrimony_createdb.log" >nul 2>nul
 
 echo.
 echo ==^> Running migrations (in filename order) from %SQL_DIR%
@@ -429,6 +412,9 @@ echo.
 echo For /NONINTERACTIVE, set these environment variables first:
 echo   MATRIMONY_DB_HOST, MATRIMONY_DB_PORT, MATRIMONY_DB_NAME,
 echo   MATRIMONY_DB_USER, MATRIMONY_DB_PASS
+echo.
+echo This installer does NOT create a database - create it yourself first, e.g.:
+echo   CREATE DATABASE karkathar_matrimony CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 echo.
 pause
 exit /b 0
