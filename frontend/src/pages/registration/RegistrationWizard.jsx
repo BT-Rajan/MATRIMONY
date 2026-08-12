@@ -1,81 +1,100 @@
-import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Box, Container, Paper, Stepper, Step, StepLabel, Typography, Button } from '@mui/material';
+import { useState } from 'react';
+import { useForm, Controller } from 'react-hook-form';
+import { yupResolver } from '@hookform/resolvers/yup';
+import {
+  Box,
+  Container,
+  Paper,
+  Grid,
+  TextField,
+  Typography,
+  ToggleButtonGroup,
+  ToggleButton,
+  Button,
+  Alert,
+  Divider,
+  InputAdornment,
+  IconButton,
+} from '@mui/material';
+import Visibility from '@mui/icons-material/Visibility';
+import VisibilityOff from '@mui/icons-material/VisibilityOff';
 import CheckCircleOutline from '@mui/icons-material/CheckCircleOutlineOutlined';
-import { useAuth } from '../../contexts/AuthContext';
+import { useNavigate } from 'react-router-dom';
+import { registrationSchema } from '../../validators/registrationValidators';
 import { registrationService } from '../../services/registrationService';
-import Loader from '../../components/common/Loader';
+import { useMasterOptions } from '../../hooks/useMasterOptions';
+import MasterSelect from '../../components/common/MasterSelect';
+import FileDropInput from '../../components/common/FileDropInput';
 import KolamDivider from '../../components/common/KolamDivider';
-import Step1BioData from './steps/Step1BioData';
-import Step2Horoscope from './steps/Step2Horoscope';
-import Step3Family from './steps/Step3Family';
-import Step4Reference from './steps/Step4Reference';
-import Step5Event from './steps/Step5Event';
-
-const STEP_LABELS = ['அடிப்படை விவரங்கள்', 'ஜாதகம்', 'குடும்பம்', 'பரிந்துரையாளர்', 'நிகழ்வு'];
+import { useAuth } from '../../contexts/AuthContext';
 
 export default function RegistrationWizard() {
-  const { user, isAuthenticated, updateUser } = useAuth();
+  const { establishSession } = useAuth();
   const navigate = useNavigate();
-  const isMemberSession = isAuthenticated && user?.role === 'member';
 
-  const [loading, setLoading] = useState(isMemberSession);
-  const [activeStep, setActiveStep] = useState(1);
-  const [profile, setProfile] = useState(null);
-  const [completed, setCompleted] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [serverError, setServerError] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+  const [paymentScreenshot, setPaymentScreenshot] = useState(null);
+  const [screenshotError, setScreenshotError] = useState('');
+  const [registeredNumber, setRegisteredNumber] = useState(null);
 
-  useEffect(() => {
-    if (!isMemberSession) {
-      setLoading(false);
+  const {
+    register,
+    control,
+    handleSubmit,
+    formState: { errors },
+  } = useForm({
+    resolver: yupResolver(registrationSchema),
+    defaultValues: { brothers: 0, sisters: 0 },
+  });
+
+  const { options: educations } = useMasterOptions('educations');
+  const { options: occupations } = useMasterOptions('occupations');
+  const { options: stars } = useMasterOptions('stars');
+  const { options: rasis } = useMasterOptions('rasis');
+
+  const onSubmit = async (values) => {
+    setServerError('');
+    setScreenshotError('');
+    if (!paymentScreenshot) {
+      setScreenshotError('கட்டண ஸ்கிரீன்ஷாட் தேவை');
       return;
     }
-    if ((user?.registration_step ?? 1) >= 6) {
-      setCompleted(true);
-      setLoading(false);
-      return;
+
+    setSubmitting(true);
+    try {
+      const res = await registrationService.register(values, { paymentScreenshot });
+      establishSession(res.data);
+      setRegisteredNumber(res.data.user.registration_number);
+    } catch (err) {
+      if (err.errors?.payment_screenshot) {
+        setScreenshotError(err.errors.payment_screenshot);
+      }
+      setServerError(err.message || 'சமர்ப்பிக்க முடியவில்லை');
+    } finally {
+      setSubmitting(false);
     }
-    registrationService
-      .me()
-      .then((res) => {
-        setProfile(res.data);
-        setActiveStep(Math.min(res.data.member.registration_step, 5));
-      })
-      .finally(() => setLoading(false));
-  }, [isMemberSession]);
+  };
 
-  if (loading) return <Loader fullscreen />;
-
-  if (completed) {
+  if (registeredNumber) {
     return (
-      <CenteredCard>
-        <CheckCircleOutline color="success" sx={{ fontSize: 56, mb: 1 }} />
-        <Typography variant="h6" sx={{ mb: 1 }}>
-          உங்கள் பதிவு ஏற்கனவே முடிக்கப்பட்டது
-        </Typography>
-        <Typography color="text.secondary" sx={{ mb: 3 }}>
-          பதிவு எண்: {user?.registration_number} — நிர்வாகி அனுமதிக்காக காத்திருக்கிறது.
-        </Typography>
-        <Button variant="contained" onClick={() => navigate('/dashboard')}>
-          டாஷ்போர்டு செல்க
-        </Button>
-      </CenteredCard>
+      <Box sx={{ minHeight: '100dvh', display: 'flex', alignItems: 'center', justifyContent: 'center', bgcolor: 'background.default', p: 3 }}>
+        <Paper variant="outlined" sx={{ p: 4, borderRadius: 3, textAlign: 'center', maxWidth: 420 }}>
+          <CheckCircleOutline color="success" sx={{ fontSize: 56, mb: 1 }} />
+          <Typography variant="h6" sx={{ mb: 1 }}>
+            உங்கள் பதிவு முடிக்கப்பட்டது
+          </Typography>
+          <Typography color="text.secondary" sx={{ mb: 3 }}>
+            பதிவு எண்: {registeredNumber} — நிர்வாகி அனுமதிக்காக காத்திருக்கிறது.
+          </Typography>
+          <Button variant="contained" onClick={() => navigate('/dashboard')}>
+            டாஷ்போர்டு செல்க
+          </Button>
+        </Paper>
+      </Box>
     );
   }
-
-  const handleStep1Success = (sessionData) => {
-    setActiveStep(2);
-    setProfile({ member: { registration_step: 2 } });
-    void sessionData;
-  };
-
-  const advanceTo = (step) => {
-    updateUser({ registration_step: step });
-    if (step >= 6) {
-      setCompleted(true);
-    } else {
-      setActiveStep(step);
-    }
-  };
 
   return (
     <Box sx={{ minHeight: '100dvh', bgcolor: 'background.default', py: { xs: 3, sm: 5 } }}>
@@ -89,37 +108,216 @@ export default function RegistrationWizard() {
           </Typography>
         </Box>
 
-        {isMemberSession && (
-          <Stepper activeStep={activeStep - 1} alternativeLabel sx={{ mb: 4, flexWrap: 'wrap' }}>
-            {STEP_LABELS.map((label) => (
-              <Step key={label}>
-                <StepLabel>{label}</StepLabel>
-              </Step>
-            ))}
-          </Stepper>
-        )}
-
         <Paper variant="outlined" sx={{ borderRadius: 3, overflow: 'hidden' }}>
           <KolamDivider />
-          <Box sx={{ p: { xs: 2.5, sm: 4 } }}>
-            {!isMemberSession && <Step1BioData onSuccess={handleStep1Success} />}
+          <Box component="form" onSubmit={handleSubmit(onSubmit)} noValidate sx={{ p: { xs: 2.5, sm: 4 } }}>
+            {serverError && (
+              <Alert severity="error" sx={{ mb: 2 }}>
+                {serverError}
+              </Alert>
+            )}
 
-            {isMemberSession && activeStep === 2 && (
-              <Step2Horoscope
-                defaults={mapHoroscope(profile?.horoscope)}
-                onSuccess={advanceTo}
-                onBack={() => {}}
+            <Section title="பதிவு வகை">
+              <Controller
+                name="gender"
+                control={control}
+                render={({ field }) => (
+                  <ToggleButtonGroup exclusive value={field.value || null} onChange={(_e, v) => v && field.onChange(v)} color="primary">
+                    <ToggleButton value="groom">மணமகன் (Groom)</ToggleButton>
+                    <ToggleButton value="bride">மணமகள் (Bride)</ToggleButton>
+                  </ToggleButtonGroup>
+                )}
               />
-            )}
-            {isMemberSession && activeStep === 3 && (
-              <Step3Family defaults={profile?.family} onSuccess={advanceTo} onBack={() => setActiveStep(2)} />
-            )}
-            {isMemberSession && activeStep === 4 && (
-              <Step4Reference defaults={profile?.reference} onSuccess={advanceTo} onBack={() => setActiveStep(3)} />
-            )}
-            {isMemberSession && activeStep === 5 && (
-              <Step5Event defaults={mapEvent(profile?.event)} onSuccess={advanceTo} onBack={() => setActiveStep(4)} />
-            )}
+              {errors.gender && (
+                <Typography variant="caption" color="error" display="block" sx={{ mt: 0.5 }}>
+                  {errors.gender.message}
+                </Typography>
+              )}
+            </Section>
+
+            <Section title="அடிப்படை விவரங்கள்">
+              <Grid container spacing={2}>
+                <Grid item xs={12} sm={6}>
+                  <TextField fullWidth label="பெயர்" {...register('name')} error={!!errors.name} helperText={errors.name?.message} />
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    fullWidth
+                    type="date"
+                    label="பிறந்த தேதி"
+                    {...register('dob')}
+                    error={!!errors.dob}
+                    helperText={errors.dob?.message}
+                    slotProps={{ inputLabel: { shrink: true } }}
+                  />
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <TextField fullWidth label="கோத்திரம்" {...register('gothram')} error={!!errors.gothram} helperText={errors.gothram?.message} />
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <TextField fullWidth type="number" label="உயரம் (cm)" {...register('height_cm')} error={!!errors.height_cm} helperText={errors.height_cm?.message} />
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <MasterSelect control={control} name="star_id" label="நட்சத்திரம்" options={stars} errors={errors} />
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <MasterSelect control={control} name="rasi_id" label="ராசி" options={rasis} errors={errors} />
+                </Grid>
+              </Grid>
+            </Section>
+
+            <Section title="கல்வி மற்றும் தொழில்">
+              <Grid container spacing={2}>
+                <Grid item xs={12} sm={6}>
+                  <MasterSelect control={control} name="education_id" label="கல்வி" options={educations} errors={errors} />
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <MasterSelect control={control} name="occupation_id" label="தொழில்" options={occupations} errors={errors} />
+                </Grid>
+              </Grid>
+            </Section>
+
+            <Section title="குடும்பம்">
+              <Grid container spacing={2}>
+                <Grid item xs={12} sm={6}>
+                  <TextField fullWidth label="தந்தை பெயர்" {...register('father_name')} error={!!errors.father_name} helperText={errors.father_name?.message} />
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <TextField fullWidth label="தாய் பெயர்" {...register('mother_name')} error={!!errors.mother_name} helperText={errors.mother_name?.message} />
+                </Grid>
+                <Grid item xs={6} sm={3}>
+                  <TextField fullWidth type="number" label="சகோதரர்கள்" {...register('brothers')} error={!!errors.brothers} helperText={errors.brothers?.message} />
+                </Grid>
+                <Grid item xs={6} sm={3}>
+                  <TextField fullWidth type="number" label="சகோதரிகள்" {...register('sisters')} error={!!errors.sisters} helperText={errors.sisters?.message} />
+                </Grid>
+              </Grid>
+            </Section>
+
+            <Section title="முகவரி">
+              <Grid container spacing={2}>
+                <Grid item xs={12}>
+                  <TextField fullWidth multiline minRows={2} label="முகவரி" {...register('address')} error={!!errors.address} helperText={errors.address?.message} />
+                </Grid>
+                <Grid item xs={12} sm={4}>
+                  <TextField fullWidth label="குடியிருப்பு / குறை (Quarter)" {...register('quarter')} error={!!errors.quarter} helperText={errors.quarter?.message} />
+                </Grid>
+                <Grid item xs={12} sm={4}>
+                  <TextField fullWidth label="சொந்த ஊர்" {...register('native_place')} error={!!errors.native_place} helperText={errors.native_place?.message} />
+                </Grid>
+                <Grid item xs={12} sm={4}>
+                  <TextField fullWidth label="தற்போதைய இருப்பிடம்" {...register('residence')} error={!!errors.residence} helperText={errors.residence?.message} />
+                </Grid>
+              </Grid>
+            </Section>
+
+            <Section title="பதிவாளர்">
+              <TextField
+                fullWidth
+                label="பதிவாளர் பெயர் (பரிந்துரையாளர்/சாட்சி)"
+                {...register('registrar_name')}
+                error={!!errors.registrar_name}
+                helperText={errors.registrar_name?.message}
+              />
+            </Section>
+
+            <Section title="தொடர்பு விவரங்கள்">
+              <Grid container spacing={2}>
+                <Grid item xs={12} sm={4}>
+                  <TextField fullWidth label="மொபைல் எண் 1" {...register('phone1')} error={!!errors.phone1} helperText={errors.phone1?.message} />
+                </Grid>
+                <Grid item xs={12} sm={4}>
+                  <TextField fullWidth label="மொபைல் எண் 2 (விருப்பம்)" {...register('phone2')} error={!!errors.phone2} helperText={errors.phone2?.message} />
+                </Grid>
+                <Grid item xs={12} sm={4}>
+                  <TextField fullWidth label="மின்னஞ்சல்" {...register('email')} error={!!errors.email} helperText={errors.email?.message} />
+                </Grid>
+              </Grid>
+            </Section>
+
+            <Section title="நிகழ்வு">
+              <ToggleGroupField
+                label="நேரில் கலந்துகொள்வீர்களா?"
+                name="participating"
+                control={control}
+                errors={errors}
+                options={[
+                  ['no', 'இல்லை'],
+                  ['yes', 'ஆம்'],
+                ]}
+              />
+            </Section>
+
+            <Section title="கடவுச்சொல் உருவாக்கு">
+              <Grid container spacing={2}>
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    fullWidth
+                    type={showPassword ? 'text' : 'password'}
+                    label="கடவுச்சொல்"
+                    {...register('password')}
+                    error={!!errors.password}
+                    helperText={errors.password?.message}
+                    slotProps={{
+                      input: {
+                        endAdornment: (
+                          <InputAdornment position="end">
+                            <IconButton size="small" onClick={() => setShowPassword((s) => !s)}>
+                              {showPassword ? <VisibilityOff fontSize="small" /> : <Visibility fontSize="small" />}
+                            </IconButton>
+                          </InputAdornment>
+                        ),
+                      },
+                    }}
+                  />
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    fullWidth
+                    type={showPassword ? 'text' : 'password'}
+                    label="கடவுச்சொல்லை உறுதிப்படுத்தவும்"
+                    {...register('password_confirmation')}
+                    error={!!errors.password_confirmation}
+                    helperText={errors.password_confirmation?.message}
+                  />
+                </Grid>
+              </Grid>
+            </Section>
+
+            <Section title="கட்டணம்">
+              <Grid container spacing={2}>
+                <Grid item xs={12} sm={4}>
+                  <TextField fullWidth type="number" label="தொகை" {...register('payment_amount')} error={!!errors.payment_amount} helperText={errors.payment_amount?.message} />
+                </Grid>
+                <Grid item xs={12} sm={4}>
+                  <TextField
+                    fullWidth
+                    type="date"
+                    label="தேதி"
+                    {...register('payment_date')}
+                    error={!!errors.payment_date}
+                    helperText={errors.payment_date?.message}
+                    slotProps={{ inputLabel: { shrink: true } }}
+                  />
+                </Grid>
+                <Grid item xs={12} sm={4}>
+                  <TextField fullWidth label="குறிப்பு எண் (Reference ID)" {...register('payment_reference')} error={!!errors.payment_reference} helperText={errors.payment_reference?.message} />
+                </Grid>
+                <Grid item xs={12}>
+                  <FileDropInput
+                    label="கட்டண ஸ்கிரீன்ஷாட் (jpg/png/pdf, அதிகபட்சம் 5MB)"
+                    accept="image/jpeg,image/png,application/pdf"
+                    file={paymentScreenshot}
+                    onChange={setPaymentScreenshot}
+                    error={screenshotError}
+                  />
+                </Grid>
+              </Grid>
+            </Section>
+
+            <Button type="submit" variant="contained" size="large" fullWidth disabled={submitting} sx={{ mt: 1 }}>
+              {submitting ? 'சமர்ப்பிக்கிறது...' : 'பதிவு செய்யவும்'}
+            </Button>
           </Box>
         </Paper>
       </Container>
@@ -127,22 +325,43 @@ export default function RegistrationWizard() {
   );
 }
 
-function mapHoroscope(h) {
-  if (!h) return undefined;
-  return { ...h, birth_time: h.birth_time?.slice(0, 5) };
-}
-
-function mapEvent(e) {
-  if (!e) return { participating: 'no' };
-  return e;
-}
-
-function CenteredCard({ children }) {
+function Section({ title, children }) {
   return (
-    <Box sx={{ minHeight: '100dvh', display: 'flex', alignItems: 'center', justifyContent: 'center', bgcolor: 'background.default', p: 3 }}>
-      <Paper variant="outlined" sx={{ p: 4, borderRadius: 3, textAlign: 'center', maxWidth: 420 }}>
-        {children}
-      </Paper>
+    <Box sx={{ mb: 3 }}>
+      <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 1.5, color: 'primary.main' }}>
+        {title}
+      </Typography>
+      {children}
+      <Divider sx={{ mt: 3 }} />
+    </Box>
+  );
+}
+
+function ToggleGroupField({ label, name, control, errors, options }) {
+  const err = errors?.[name];
+  return (
+    <Box>
+      <Typography variant="body2" sx={{ mb: 0.5 }}>
+        {label}
+      </Typography>
+      <Controller
+        name={name}
+        control={control}
+        render={({ field }) => (
+          <ToggleButtonGroup exclusive value={field.value || null} onChange={(_e, v) => v && field.onChange(v)} size="small" color="primary" fullWidth>
+            {options.map(([val, lab]) => (
+              <ToggleButton key={val} value={val}>
+                {lab}
+              </ToggleButton>
+            ))}
+          </ToggleButtonGroup>
+        )}
+      />
+      {err && (
+        <Typography variant="caption" color="error" display="block">
+          {err.message}
+        </Typography>
+      )}
     </Box>
   );
 }

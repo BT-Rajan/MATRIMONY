@@ -305,7 +305,7 @@ REM 3. Uploads & logs folders
 REM ---------------------------------------------------------------------
 echo.
 echo ==^> Preparing uploads\ and logs\ directories
-for %%D in (photos id_proofs horoscopes family_photos receipts) do (
+for %%D in (payment_screenshots) do (
   if not exist "%API_DIR%\uploads\%%D" mkdir "%API_DIR%\uploads\%%D"
 )
 if not exist "%API_DIR%\logs" mkdir "%API_DIR%\logs"

@@ -97,55 +97,15 @@ final class MemberModel
         $stmt->execute(['id' => $id]);
     }
 
-    /** Full profile with all wizard sub-tables + additional photos, for the resume screen and admin view (Pass 4). */
+    /**
+     * Full profile for the admin view. Registration is now a single flat
+     * row on `members` (no more wizard sub-tables), so this is just
+     * findById kept under its existing name for callers in Pass 4/5/6.
+     */
     public static function findFullProfile(int $id): ?array
     {
-        $db = Database::connection();
-
         $member = self::findById($id);
-        if (!$member) {
-            return null;
-        }
-
-        $horoscope = self::fetchOne($db, 'SELECT * FROM member_horoscopes WHERE member_id = :id', $id);
-        $family = self::fetchOne($db, 'SELECT * FROM member_family WHERE member_id = :id', $id);
-        $reference = self::fetchOne($db, 'SELECT * FROM member_references WHERE member_id = :id', $id);
-        $event = self::fetchOne($db, 'SELECT * FROM member_event_participation WHERE member_id = :id', $id);
-
-        $photosStmt = $db->prepare('SELECT id, file_path, original_filename FROM member_photos WHERE member_id = :id ORDER BY id ASC');
-        $photosStmt->execute(['id' => $id]);
-
-        return [
-            'member' => $member,
-            'photos' => $photosStmt->fetchAll(),
-            'horoscope' => $horoscope,
-            'family' => $family,
-            'reference' => $reference,
-            'event' => $event,
-        ];
-    }
-
-    public static function countPhotos(int $id): int
-    {
-        $stmt = Database::connection()->prepare('SELECT COUNT(*) FROM member_photos WHERE member_id = :id');
-        $stmt->execute(['id' => $id]);
-        return (int) $stmt->fetchColumn();
-    }
-
-    public static function addPhoto(int $memberId, string $path, string $originalName): void
-    {
-        $stmt = Database::connection()->prepare(
-            'INSERT INTO member_photos (member_id, file_path, original_filename) VALUES (:member_id, :path, :name)'
-        );
-        $stmt->execute(['member_id' => $memberId, 'path' => $path, 'name' => $originalName]);
-    }
-
-    private static function fetchOne(PDO $db, string $sql, int $id): ?array
-    {
-        $stmt = $db->prepare($sql);
-        $stmt->execute(['id' => $id]);
-        $row = $stmt->fetch();
-        return $row ?: null;
+        return $member ? ['member' => $member] : null;
     }
 
     // ---------------------------------------------------------------

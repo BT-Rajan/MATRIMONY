@@ -2,121 +2,85 @@
 declare(strict_types=1);
 
 require_once __DIR__ . '/../models/MemberModel.php';
-require_once __DIR__ . '/../models/HoroscopeModel.php';
-require_once __DIR__ . '/../models/FamilyModel.php';
-require_once __DIR__ . '/../models/ReferenceModel.php';
-require_once __DIR__ . '/../models/MemberEventModel.php';
 require_once __DIR__ . '/../helpers/FileUpload.php';
 require_once __DIR__ . '/../helpers/Jwt.php';
 require_once __DIR__ . '/../helpers/Audit.php';
-require_once __DIR__ . '/NotificationService.php';
+require_once __DIR__ . '/../helpers/Logger.php';
 
+/**
+ * Single-step registration: bio-data + payment, matching only the
+ * fields the app now collects (see docs/SETUP.md "Registration fields").
+ */
 final class RegistrationService
 {
-    private const MAX_ADDITIONAL_PHOTOS = 10;
-    private const IMAGE_EXT = ['jpg', 'jpeg', 'png'];
-    private const IMAGE_MAX = 5 * 1024 * 1024;
-    private const ID_PROOF_EXT = ['jpg', 'jpeg', 'png', 'pdf'];
-    private const ID_PROOF_MAX = 5 * 1024 * 1024;
-    private const HOROSCOPE_EXT = ['jpg', 'jpeg', 'png', 'pdf'];
-    private const HOROSCOPE_MAX = 10 * 1024 * 1024;
-    private const RECEIPT_EXT = ['jpg', 'jpeg', 'png', 'pdf'];
-    private const RECEIPT_MAX = 5 * 1024 * 1024;
+    private const SCREENSHOT_EXT = ['jpg', 'jpeg', 'png', 'pdf'];
+    private const SCREENSHOT_MAX = 5 * 1024 * 1024;
 
     /** @throws RegistrationException */
-    public static function step1(array $input, array $files): array
+    public static function register(array $input, array $files): array
     {
-        $errors = self::validateStep1($input);
-        if (!isset($files['photo']) || ($files['photo']['error'] ?? UPLOAD_ERR_NO_FILE) === UPLOAD_ERR_NO_FILE) {
-            $errors['photo'] = 'புகைப்படம் தேவை';
+        $errors = self::validate($input);
+
+        $hasScreenshot = isset($files['payment_screenshot'])
+            && ($files['payment_screenshot']['error'] ?? UPLOAD_ERR_NO_FILE) !== UPLOAD_ERR_NO_FILE;
+        if (!$hasScreenshot) {
+            $errors['payment_screenshot'] = 'கட்டண ஸ்கிரீன்ஷாட் தேவை';
         }
-        if (!isset($files['id_proof']) || ($files['id_proof']['error'] ?? UPLOAD_ERR_NO_FILE) === UPLOAD_ERR_NO_FILE) {
-            $errors['id_proof'] = 'அடையாள சான்று தேவை';
-        }
+
         if ($errors) {
             throw new RegistrationException('சரிபார்ப்பு தோல்வியடைந்தது', 422, $errors);
         }
 
         try {
-            $photo = FileUpload::store($files['photo'], 'photos', self::IMAGE_EXT, self::IMAGE_MAX);
-            $idProof = FileUpload::store($files['id_proof'], 'id_proofs', self::ID_PROOF_EXT, self::ID_PROOF_MAX);
+            $screenshot = FileUpload::store(
+                $files['payment_screenshot'],
+                'payment_screenshots',
+                self::SCREENSHOT_EXT,
+                self::SCREENSHOT_MAX
+            );
         } catch (UploadException $e) {
-            throw new RegistrationException($e->getMessage(), 422);
+            throw new RegistrationException($e->getMessage(), 422, ['payment_screenshot' => $e->getMessage()]);
         }
 
         $regNumber = MemberModel::nextRegistrationNumber();
 
         $fields = [
             'registration_number' => $regNumber,
-            'name_english' => trim($input['name_english']),
-            'name_tamil' => trim($input['name_tamil']),
-            'gender' => $input['registration_type'],
+            'name_english' => trim($input['name']),
+            'name_tamil' => trim($input['name']),
+            'gender' => $input['gender'],
             'email' => strtolower(trim($input['email'])),
-            'mobile' => trim($input['mobile']),
-            'whatsapp' => ($input['whatsapp'] ?? '') !== '' ? trim($input['whatsapp']) : null,
+            'mobile' => trim($input['phone1']),
+            'whatsapp' => trim($input['phone2'] ?? '') !== '' ? trim($input['phone2']) : null,
             'password_hash' => password_hash($input['password'], PASSWORD_DEFAULT),
-            'status' => 'draft',
-            'registration_step' => 2,
-            'marital_status' => $input['marital_status'],
+            'status' => 'pending_approval',
+            'registration_step' => 1,
             'dob' => $input['dob'],
+            'gothram' => ($input['gothram'] ?? '') !== '' ? trim($input['gothram']) : null,
+            'address' => trim($input['address']),
+            'quarter' => ($input['quarter'] ?? '') !== '' ? trim($input['quarter']) : null,
             'height_cm' => (int) $input['height_cm'],
-            'weight_kg' => ($input['weight_kg'] ?? '') !== '' ? (int) $input['weight_kg'] : null,
             'education_id' => (int) $input['education_id'],
             'occupation_id' => (int) $input['occupation_id'],
-            'company_name' => ($input['company_name'] ?? '') !== '' ? trim($input['company_name']) : null,
-            'work_location' => ($input['work_location'] ?? '') !== '' ? trim($input['work_location']) : null,
-            'income_id' => ($input['income_id'] ?? '') !== '' ? (int) $input['income_id'] : null,
-            'religion_id' => (int) $input['religion_id'],
-            'caste_id' => (int) $input['caste_id'],
-            'sub_caste_id' => ($input['sub_caste_id'] ?? '') !== '' ? (int) $input['sub_caste_id'] : null,
+            'father_name' => trim($input['father_name']),
+            'mother_name' => trim($input['mother_name']),
             'star_id' => (int) $input['star_id'],
             'rasi_id' => (int) $input['rasi_id'],
-            'dosham_id' => (int) $input['dosham_id'],
             'native_place' => trim($input['native_place']),
-            'district_id' => (int) $input['district_id'],
-            'current_address' => trim($input['current_address']),
-            'pincode' => ($input['pincode'] ?? '') !== '' ? trim($input['pincode']) : null,
-            'state' => trim($input['state']),
-            'country' => trim($input['country']),
-            'photo_path' => $photo['path'],
-            'id_proof_path' => $idProof['path'],
-            'about_myself' => ($input['about_myself'] ?? '') !== '' ? trim($input['about_myself']) : null,
-            'diet' => $input['diet'],
-            'smoking' => $input['smoking'],
-            'drinking' => $input['drinking'],
-            'physically_challenged' => $input['physically_challenged'],
+            'residence' => trim($input['residence']),
+            'registrar_name' => trim($input['registrar_name']),
+            'brothers' => (int) ($input['brothers'] ?? 0),
+            'sisters' => (int) ($input['sisters'] ?? 0),
+            'participating' => $input['participating'],
+            'payment_amount' => (float) $input['payment_amount'],
+            'payment_date' => $input['payment_date'],
+            'payment_reference' => trim($input['payment_reference']),
+            'payment_screenshot_path' => $screenshot['path'],
         ];
 
         $memberId = MemberModel::createDraft($fields);
 
-        // Additional photos (optional, up to 10)
-        if (isset($files['additional_photos']) && is_array($files['additional_photos']['name'])) {
-            $count = count(array_filter($files['additional_photos']['name']));
-            if ($count > self::MAX_ADDITIONAL_PHOTOS) {
-                $count = self::MAX_ADDITIONAL_PHOTOS;
-            }
-            for ($i = 0; $i < $count; $i++) {
-                if (($files['additional_photos']['error'][$i] ?? UPLOAD_ERR_NO_FILE) !== UPLOAD_ERR_OK) {
-                    continue;
-                }
-                $single = [
-                    'name' => $files['additional_photos']['name'][$i],
-                    'type' => $files['additional_photos']['type'][$i],
-                    'tmp_name' => $files['additional_photos']['tmp_name'][$i],
-                    'error' => $files['additional_photos']['error'][$i],
-                    'size' => $files['additional_photos']['size'][$i],
-                ];
-                try {
-                    $saved = FileUpload::store($single, 'photos', self::IMAGE_EXT, self::IMAGE_MAX);
-                    MemberModel::addPhoto($memberId, $saved['path'], $saved['original_filename']);
-                } catch (UploadException $e) {
-                    // Skip a single bad extra photo rather than failing the whole registration.
-                    Logger::error("Additional photo skipped for member {$memberId}: " . $e->getMessage());
-                }
-            }
-        }
-
-        Audit::log($memberId, 'member', 'registration_step1_completed', 'member', $memberId, null, ['registration_number' => $regNumber]);
+        Audit::log($memberId, 'member', 'registration_completed', 'member', $memberId, null, ['registration_number' => $regNumber]);
 
         $token = Jwt::encode(['sub' => $memberId, 'role' => 'member', 'registration_number' => $regNumber]);
 
@@ -126,272 +90,45 @@ final class RegistrationService
                 'id' => $memberId,
                 'name' => $fields['name_english'],
                 'registration_number' => $regNumber,
-                'status' => 'draft',
-                'registration_step' => 2,
+                'status' => 'pending_approval',
+                'registration_step' => 1,
                 'role' => 'member',
             ],
         ];
     }
 
-    /** @throws RegistrationException */
-    public static function step2(int $memberId, array $input, array $files): array
+    public static function currentState(int $memberId): ?array
     {
-        $errors = self::validateStep2($input);
-
-        $existing = HoroscopeModel::find($memberId);
-        $needsFile = !$existing || (isset($files['horoscope_document']) && ($files['horoscope_document']['error'] ?? UPLOAD_ERR_NO_FILE) !== UPLOAD_ERR_NO_FILE);
-        $fileProvided = isset($files['horoscope_document']) && ($files['horoscope_document']['error'] ?? UPLOAD_ERR_NO_FILE) === UPLOAD_ERR_OK;
-
-        if (!$existing && !$fileProvided) {
-            $errors['horoscope_document'] = 'ஜாதக ஆவணம் தேவை';
-        }
-
-        $member = MemberModel::findById($memberId);
-        if ($member && $input['birth_date'] !== $member['dob']) {
-            $errors['birth_date'] = 'பிறந்த தேதி படிவம் 1 இல் உள்ள பிறந்த தேதியுடன் பொருந்த வேண்டும்';
-        }
-
-        if ($errors) {
-            throw new RegistrationException('சரிபார்ப்பு தோல்வியடைந்தது', 422, $errors);
-        }
-
-        $fields = [
-            'birth_date' => $input['birth_date'],
-            'birth_time' => $input['birth_time'],
-            'birth_place' => trim($input['birth_place']),
-            'star_id' => (int) $input['star_id'],
-            'rasi_id' => (int) $input['rasi_id'],
-            'lagnam' => trim($input['lagnam']),
-            'gothram' => ($input['gothram'] ?? '') !== '' ? trim($input['gothram']) : null,
-            'chevvai_dosham' => $input['chevvai_dosham'],
-            'rahu_dosham' => $input['rahu_dosham'],
-            'kethu_dosham' => $input['kethu_dosham'],
-            'kalasarpa_dosham' => $input['kalasarpa_dosham'],
-        ];
-
-        if ($fileProvided) {
-            try {
-                $doc = FileUpload::store($files['horoscope_document'], 'horoscopes', self::HOROSCOPE_EXT, self::HOROSCOPE_MAX);
-                $fields['horoscope_file_path'] = $doc['path'];
-            } catch (UploadException $e) {
-                throw new RegistrationException($e->getMessage(), 422, ['horoscope_document' => $e->getMessage()]);
-            }
-        } elseif ($existing) {
-            $fields['horoscope_file_path'] = $existing['horoscope_file_path'];
-        }
-
-        HoroscopeModel::upsert($memberId, $fields);
-        MemberModel::advanceStep($memberId, 3);
-        Audit::log($memberId, 'member', 'registration_step2_saved', 'member_horoscopes', $memberId);
-
-        return ['registration_step' => 3];
+        return MemberModel::findById($memberId);
     }
 
-    /** @throws RegistrationException */
-    public static function step3(int $memberId, array $input, array $files): array
-    {
-        $errors = self::validateStep3($input);
-        if ($errors) {
-            throw new RegistrationException('சரிபார்ப்பு தோல்வியடைந்தது', 422, $errors);
-        }
-
-        $fields = [
-            'father_name' => trim($input['father_name']),
-            'mother_name' => trim($input['mother_name']),
-            'father_occupation' => ($input['father_occupation'] ?? '') !== '' ? trim($input['father_occupation']) : null,
-            'father_native_place' => ($input['father_native_place'] ?? '') !== '' ? trim($input['father_native_place']) : null,
-            'father_mobile' => ($input['father_mobile'] ?? '') !== '' ? trim($input['father_mobile']) : null,
-            'father_email' => ($input['father_email'] ?? '') !== '' ? strtolower(trim($input['father_email'])) : null,
-            'mother_native_place' => ($input['mother_native_place'] ?? '') !== '' ? trim($input['mother_native_place']) : null,
-            'mother_mobile' => ($input['mother_mobile'] ?? '') !== '' ? trim($input['mother_mobile']) : null,
-            'parents_alive' => $input['parents_alive'],
-            'brothers' => (int) $input['brothers'],
-            'married_brothers' => (int) $input['married_brothers'],
-            'sisters' => (int) $input['sisters'],
-            'married_sisters' => (int) $input['married_sisters'],
-            'birth_order' => in_array($input['birth_order'] ?? '', ['eldest', 'middle', 'youngest'], true) ? $input['birth_order'] : null,
-            'family_type' => $input['family_type'],
-            'own_house' => $input['own_house'],
-            'family_income_id' => ($input['family_income_id'] ?? '') !== '' ? (int) $input['family_income_id'] : null,
-        ];
-
-        if (isset($files['family_photo']) && ($files['family_photo']['error'] ?? UPLOAD_ERR_NO_FILE) === UPLOAD_ERR_OK) {
-            try {
-                $photo = FileUpload::store($files['family_photo'], 'family_photos', self::IMAGE_EXT, self::IMAGE_MAX);
-                $fields['family_photo_path'] = $photo['path'];
-            } catch (UploadException $e) {
-                throw new RegistrationException($e->getMessage(), 422, ['family_photo' => $e->getMessage()]);
-            }
-        }
-
-        FamilyModel::upsert($memberId, $fields);
-        MemberModel::advanceStep($memberId, 4);
-        Audit::log($memberId, 'member', 'registration_step3_saved', 'member_family', $memberId);
-
-        return ['registration_step' => 4];
-    }
-
-    /** @throws RegistrationException */
-    public static function step4(int $memberId, array $input): array
-    {
-        $errors = self::validateStep4($memberId, $input);
-        if ($errors) {
-            throw new RegistrationException('சரிபார்ப்பு தோல்வியடைந்தது', 422, $errors);
-        }
-
-        ReferenceModel::upsert($memberId, [
-            'reference_name' => trim($input['reference_name']),
-            'relationship_id' => (int) $input['relationship_id'],
-            'phone' => trim($input['phone']),
-            'address' => ($input['address'] ?? '') !== '' ? trim($input['address']) : null,
-            'known_since' => ($input['known_since'] ?? '') !== '' ? trim($input['known_since']) : null,
-            'remarks' => ($input['remarks'] ?? '') !== '' ? trim($input['remarks']) : null,
-        ]);
-        MemberModel::advanceStep($memberId, 5);
-        Audit::log($memberId, 'member', 'registration_step4_saved', 'member_references', $memberId);
-
-        return ['registration_step' => 5];
-    }
-
-    /** @throws RegistrationException */
-    public static function step5(int $memberId, array $input, array $files): array
-    {
-        $participating = $input['participating'] ?? 'no';
-        $errors = [];
-
-        $fields = ['participating' => $participating];
-
-        if ($participating === 'yes') {
-            if (empty($input['event_id'])) $errors['event_id'] = 'நிகழ்வு தேவை';
-            if (empty($input['batch'])) $errors['batch'] = 'தொகுதி தேவை';
-            if (empty($input['food_preference'])) $errors['food_preference'] = 'உணவு விருப்பம் தேவை';
-            if (empty($input['payment_type_id'])) $errors['payment_type_id'] = 'கட்டண வகை தேவை';
-            if (empty($input['amount']) || (float) $input['amount'] <= 0) $errors['amount'] = 'தொகை பூஜ்ஜியத்தை விட அதிகமாக இருக்க வேண்டும்';
-            if (empty($input['transaction_number'])) {
-                $errors['transaction_number'] = 'பரிவர்த்தனை எண் தேவை';
-            } elseif (MemberEventModel::transactionNumberExists(trim($input['transaction_number']), $memberId)) {
-                $errors['transaction_number'] = 'இந்த பரிவர்த்தனை எண் ஏற்கனவே பயன்படுத்தப்பட்டுள்ளது';
-            }
-
-            $existing = MemberEventModel::find($memberId);
-            $fileProvided = isset($files['receipt']) && ($files['receipt']['error'] ?? UPLOAD_ERR_NO_FILE) === UPLOAD_ERR_OK;
-            if (!$existing && !$fileProvided) {
-                $errors['receipt'] = 'ரசீது பதிவேற்றம் தேவை';
-            }
-
-            if ($errors) {
-                throw new RegistrationException('சரிபார்ப்பு தோல்வியடைந்தது', 422, $errors);
-            }
-
-            $fields['event_id'] = (int) $input['event_id'];
-            $fields['batch'] = trim($input['batch']);
-            $fields['food_preference'] = $input['food_preference'];
-            $fields['payment_type_id'] = (int) $input['payment_type_id'];
-            $fields['amount'] = (float) $input['amount'];
-            $fields['transaction_number'] = trim($input['transaction_number']);
-
-            if ($fileProvided) {
-                try {
-                    $receipt = FileUpload::store($files['receipt'], 'receipts', self::RECEIPT_EXT, self::RECEIPT_MAX);
-                    $fields['receipt_path'] = $receipt['path'];
-                } catch (UploadException $e) {
-                    throw new RegistrationException($e->getMessage(), 422, ['receipt' => $e->getMessage()]);
-                }
-            } elseif ($existing) {
-                $fields['receipt_path'] = $existing['receipt_path'];
-            }
-        } else {
-            $fields += [
-                'event_id' => null, 'batch' => null, 'food_preference' => null,
-                'payment_type_id' => null, 'amount' => null, 'transaction_number' => null, 'receipt_path' => null,
-            ];
-        }
-
-        MemberEventModel::upsert($memberId, $fields);
-        MemberModel::markPendingApproval($memberId);
-        NotificationService::send($memberId, 'registration_completed');
-        Audit::log($memberId, 'member', 'registration_completed', 'members', $memberId, null, ['status' => 'pending_approval']);
-
-        return ['status' => 'pending_approval', 'registration_step' => 6];
-    }
-
-    public static function currentState(int $memberId): array
-    {
-        $profile = MemberModel::findFullProfile($memberId);
-        if (!$profile) {
-            throw new RegistrationException('கிடைக்கவில்லை', 404);
-        }
-        unset($profile['member']['password_hash']);
-        return $profile;
-    }
-
-    // ---------------------------------------------------------------
-    // Validation
-    // ---------------------------------------------------------------
-
-    private static function validateStep1(array $in): array
+    private static function validate(array $in): array
     {
         $e = [];
-
-        if (!in_array($in['registration_type'] ?? '', ['bride', 'groom'], true)) {
-            $e['registration_type'] = 'பதிவு வகை தேவை';
-        }
-
-        self::req($e, $in, 'name_tamil', 'தமிழ் பெயர்');
-        self::lenBetween($e, $in, 'name_tamil', 3, 100, 'தமிழ் பெயர்');
-        self::req($e, $in, 'name_english', 'ஆங்கில பெயர்');
-        self::lenBetween($e, $in, 'name_english', 3, 100, 'ஆங்கில பெயர்');
-
-        if (empty($in['dob'])) {
-            $e['dob'] = 'பிறந்த தேதி தேவை';
-        } else {
-            $dob = DateTime::createFromFormat('Y-m-d', $in['dob']);
-            if (!$dob) {
-                $e['dob'] = 'சரியான தேதி இல்லை';
-            } elseif ($dob > new DateTime()) {
-                $e['dob'] = 'எதிர்கால தேதி அனுமதிக்கப்படாது';
-            } else {
-                $age = (new DateTime())->diff($dob)->y;
-                if ($age < 18 || $age > 60) {
-                    $e['dob'] = 'வயது 18 முதல் 60 வரை இருக்க வேண்டும்';
-                }
-            }
-        }
-
-        self::numBetween($e, $in, 'height_cm', 90, 250, 'உயரம்', true);
-        if (($in['weight_kg'] ?? '') !== '') {
-            self::numBetween($e, $in, 'weight_kg', 20, 250, 'எடை', true);
-        }
-
-        if (!in_array($in['marital_status'] ?? '', ['single', 'divorced', 'widowed', 'separated'], true)) {
-            $e['marital_status'] = 'திருமண நிலை தேவை';
-        }
-
-        self::reqInt($e, $in, 'education_id', 'கல்வி');
-        self::reqInt($e, $in, 'occupation_id', 'தொழில்');
-        self::reqInt($e, $in, 'religion_id', 'மதம்');
-        self::reqInt($e, $in, 'caste_id', 'சாதி');
+        self::req($e, $in, 'name', 'பெயர்');
+        self::req($e, $in, 'dob', 'பிறந்த தேதி');
+        self::req($e, $in, 'address', 'முகவரி');
         self::reqInt($e, $in, 'star_id', 'நட்சத்திரம்');
         self::reqInt($e, $in, 'rasi_id', 'ராசி');
-        self::reqInt($e, $in, 'dosham_id', 'தோஷம்');
-        self::reqInt($e, $in, 'district_id', 'மாவட்டம்');
-
+        self::reqInt($e, $in, 'education_id', 'கல்வி');
+        self::reqInt($e, $in, 'occupation_id', 'தொழில்');
+        self::req($e, $in, 'father_name', 'தந்தை பெயர்');
+        self::req($e, $in, 'mother_name', 'தாய் பெயர்');
         self::req($e, $in, 'native_place', 'சொந்த ஊர்');
-        self::req($e, $in, 'current_address', 'தற்போதைய முகவரி');
-        self::lenBetween($e, $in, 'current_address', 15, 500, 'தற்போதைய முகவரி');
-        self::req($e, $in, 'state', 'மாநிலம்');
-        self::req($e, $in, 'country', 'நாடு');
+        self::req($e, $in, 'residence', 'தற்போதைய இருப்பிடம்');
+        self::req($e, $in, 'registrar_name', 'பதிவாளர் பெயர்');
 
-        if (empty($in['mobile']) || !preg_match('/^[6-9]\d{9}$/', $in['mobile'])) {
-            $e['mobile'] = 'சரியான மொபைல் எண் (10 இலக்கம்) தேவை';
-        } elseif (MemberModel::existsByMobile($in['mobile'])) {
-            $e['mobile'] = 'இந்த மொபைல் எண் ஏற்கனவே பதிவு செய்யப்பட்டுள்ளது';
+        if (!in_array($in['gender'] ?? '', ['bride', 'groom'], true)) {
+            $e['gender'] = 'பாலினம் தேவை';
         }
-        if (!empty($in['whatsapp']) && !preg_match('/^[6-9]\d{9}$/', $in['whatsapp'])) {
-            $e['whatsapp'] = 'சரியான வாட்ஸ்அப் எண் தேவை';
+
+        if (empty($in['phone1']) || !preg_match('/^[6-9]\d{9}$/', $in['phone1'])) {
+            $e['phone1'] = 'சரியான மொபைல் எண் (10 இலக்கம்) தேவை';
+        } elseif (MemberModel::existsByMobile(trim($in['phone1']))) {
+            $e['phone1'] = 'இந்த மொபைல் எண் ஏற்கனவே பதிவு செய்யப்பட்டுள்ளது';
         }
-        if (!empty($in['pincode']) && !preg_match('/^\d{6}$/', $in['pincode'])) {
-            $e['pincode'] = 'சரியான 6 இலக்க பின்கோடு தேவை';
+        if (!empty($in['phone2']) && !preg_match('/^[6-9]\d{9}$/', $in['phone2'])) {
+            $e['phone2'] = 'சரியான மொபைல் எண் (10 இலக்கம்) தேவை';
         }
 
         if (empty($in['email']) || !filter_var($in['email'], FILTER_VALIDATE_EMAIL)) {
@@ -406,116 +143,32 @@ final class RegistrationService
             $e['password_confirmation'] = 'கடவுச்சொற்கள் பொருந்தவில்லை';
         }
 
-        if (isset($in['about_myself']) && mb_strlen($in['about_myself']) > 2000) {
-            $e['about_myself'] = 'அதிகபட்சம் 2000 எழுத்துகள்';
+        if (empty($in['height_cm']) || !ctype_digit((string) $in['height_cm']) || (int) $in['height_cm'] < 100 || (int) $in['height_cm'] > 250) {
+            $e['height_cm'] = 'சரியான உயரம் (செ.மீ.) தேவை';
         }
 
-        if (!in_array($in['diet'] ?? '', ['veg', 'nonveg'], true)) {
-            $e['diet'] = 'உணவுப் பழக்கம் தேவை';
-        }
-        if (!in_array($in['smoking'] ?? '', ['yes', 'no', 'occasionally'], true)) {
-            $e['smoking'] = 'புகைபிடித்தல் விவரம் தேவை';
-        }
-        if (!in_array($in['drinking'] ?? '', ['yes', 'no', 'occasionally'], true)) {
-            $e['drinking'] = 'மது அருந்துதல் விவரம் தேவை';
-        }
-        if (!in_array($in['physically_challenged'] ?? '', ['yes', 'no'], true)) {
-            $e['physically_challenged'] = 'இந்த புலம் தேவை';
-        }
-
-        return $e;
-    }
-
-    private static function validateStep2(array $in): array
-    {
-        $e = [];
-        self::req($e, $in, 'birth_date', 'பிறந்த தேதி');
-        self::req($e, $in, 'birth_time', 'பிறந்த நேரம்');
-        self::req($e, $in, 'birth_place', 'பிறந்த இடம்');
-        self::reqInt($e, $in, 'star_id', 'நட்சத்திரம்');
-        self::reqInt($e, $in, 'rasi_id', 'ராசி');
-        self::req($e, $in, 'lagnam', 'லக்னம்');
-        foreach (['chevvai_dosham', 'rahu_dosham', 'kethu_dosham', 'kalasarpa_dosham'] as $f) {
-            if (!in_array($in[$f] ?? '', ['yes', 'no'], true)) {
-                $e[$f] = 'இந்த புலம் தேவை';
-            }
-        }
-        return $e;
-    }
-
-    private static function validateStep3(array $in): array
-    {
-        $e = [];
-        self::req($e, $in, 'father_name', 'தந்தை பெயர்');
-        self::req($e, $in, 'mother_name', 'தாய் பெயர்');
-        if (!empty($in['father_mobile']) && !preg_match('/^[6-9]\d{9}$/', $in['father_mobile'])) {
-            $e['father_mobile'] = 'சரியான மொபைல் எண் (10 இலக்கம்) தேவை';
-        }
-        if (!empty($in['mother_mobile']) && !preg_match('/^[6-9]\d{9}$/', $in['mother_mobile'])) {
-            $e['mother_mobile'] = 'சரியான மொபைல் எண் (10 இலக்கம்) தேவை';
-        }
-        if (!empty($in['father_email']) && !filter_var($in['father_email'], FILTER_VALIDATE_EMAIL)) {
-            $e['father_email'] = 'சரியான மின்னஞ்சல் தேவை';
-        }
-        if (!in_array($in['parents_alive'] ?? '', ['yes', 'no'], true)) {
-            $e['parents_alive'] = 'இந்த புலம் தேவை';
-        }
-        if (!in_array($in['family_type'] ?? '', ['nuclear', 'joint'], true)) {
-            $e['family_type'] = 'குடும்ப வகை தேவை';
-        }
-        if (!in_array($in['own_house'] ?? '', ['yes', 'no'], true)) {
-            $e['own_house'] = 'இந்த புலம் தேவை';
-        }
-
-        $brothers = self::intOrNull($in['brothers'] ?? null);
-        $marriedBrothers = self::intOrNull($in['married_brothers'] ?? null);
-        $sisters = self::intOrNull($in['sisters'] ?? null);
-        $marriedSisters = self::intOrNull($in['married_sisters'] ?? null);
-
-        foreach (['brothers' => $brothers, 'married_brothers' => $marriedBrothers, 'sisters' => $sisters, 'married_sisters' => $marriedSisters] as $field => $val) {
-            if ($val === null || $val < 0 || $val > 20) {
+        foreach (['brothers' => $in['brothers'] ?? '0', 'sisters' => $in['sisters'] ?? '0'] as $field => $val) {
+            if ($val === '' || !ctype_digit((string) $val) || (int) $val < 0 || (int) $val > 20) {
                 $e[$field] = '0 முதல் 20 வரை இருக்க வேண்டும்';
             }
         }
-        if (!isset($e['brothers']) && !isset($e['married_brothers']) && $marriedBrothers > $brothers) {
-            $e['married_brothers'] = 'மொத்த சகோதரர்களை விட அதிகமாக இருக்க முடியாது';
+
+        if (!in_array($in['participating'] ?? '', ['yes', 'no'], true)) {
+            $e['participating'] = 'இந்த புலம் தேவை';
         }
-        if (!isset($e['sisters']) && !isset($e['married_sisters']) && $marriedSisters > $sisters) {
-            $e['married_sisters'] = 'மொத்த சகோதரிகளை விட அதிகமாக இருக்க முடியாது';
+
+        if (empty($in['payment_amount']) || !is_numeric($in['payment_amount']) || (float) $in['payment_amount'] <= 0) {
+            $e['payment_amount'] = 'சரியான தொகை தேவை';
         }
+        self::req($e, $in, 'payment_date', 'கட்டண தேதி');
+        self::req($e, $in, 'payment_reference', 'குறிப்பு எண்');
 
         return $e;
     }
-
-    private static function validateStep4(int $memberId, array $in): array
-    {
-        $e = [];
-        self::req($e, $in, 'reference_name', 'பரிந்துரையாளர் பெயர்');
-        self::reqInt($e, $in, 'relationship_id', 'உறவுமுறை');
-
-        if (empty($in['phone']) || !preg_match('/^[6-9]\d{9}$/', $in['phone'])) {
-            $e['phone'] = 'சரியான மொபைல் எண் (10 இலக்கம்) தேவை';
-        } else {
-            $member = MemberModel::findById($memberId);
-            if ($member && $member['mobile'] === $in['phone']) {
-                $e['phone'] = 'பரிந்துரையாளர் எண் விண்ணப்பதாரர் எண்ணுடன் ஒரே மாதிரி இருக்க முடியாது';
-            }
-        }
-
-        if (isset($in['remarks']) && mb_strlen($in['remarks']) > 500) {
-            $e['remarks'] = 'அதிகபட்சம் 500 எழுத்துகள்';
-        }
-
-        return $e;
-    }
-
-    // ---------------------------------------------------------------
-    // Small validation helpers
-    // ---------------------------------------------------------------
 
     private static function req(array &$e, array $in, string $field, string $label): void
     {
-        if (empty(trim((string) ($in[$field] ?? '')))) {
+        if (trim((string) ($in[$field] ?? '')) === '') {
             $e[$field] = "{$label} தேவை";
         }
     }
@@ -525,32 +178,6 @@ final class RegistrationService
         if (empty($in[$field]) || !ctype_digit((string) $in[$field])) {
             $e[$field] = "{$label} தேவை";
         }
-    }
-
-    private static function lenBetween(array &$e, array $in, string $field, int $min, int $max, string $label): void
-    {
-        if (isset($e[$field])) return;
-        $len = mb_strlen(trim((string) ($in[$field] ?? '')));
-        if ($len < $min || $len > $max) {
-            $e[$field] = "{$label} {$min}-{$max} எழுத்துகளுக்குள் இருக்க வேண்டும்";
-        }
-    }
-
-    private static function numBetween(array &$e, array $in, string $field, int $min, int $max, string $label, bool $required): void
-    {
-        $val = $in[$field] ?? '';
-        if ($val === '' || !is_numeric($val)) {
-            if ($required) $e[$field] = "{$label} தேவை";
-            return;
-        }
-        if ((float) $val < $min || (float) $val > $max) {
-            $e[$field] = "{$label} {$min}-{$max} க்குள் இருக்க வேண்டும்";
-        }
-    }
-
-    private static function intOrNull($val): ?int
-    {
-        return ($val !== null && $val !== '' && ctype_digit((string) $val)) ? (int) $val : null;
     }
 }
 

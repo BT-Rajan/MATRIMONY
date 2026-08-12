@@ -7,11 +7,7 @@ frontend/*.local
 # Backend
 backend/.env
 backend/api/logs/*.log
-backend/api/uploads/photos/*
-backend/api/uploads/horoscopes/*
-backend/api/uploads/family_photos/*
-backend/api/uploads/id_proofs/*
-backend/api/uploads/receipts/*
+backend/api/uploads/payment_screenshots/*
 !backend/api/uploads/**/.gitkeep
 
 # OS / editor

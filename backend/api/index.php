@@ -40,14 +40,9 @@ $routes = [
     'POST /auth/logout' => [AuthController::class, 'logout'],
     'GET /masters' => [MasterController::class, 'registry'],
 
-    // Registration wizard. Steps 1/2/3/5 accept file uploads, so they are
-    // POST (multipart/form-data) rather than PUT — PHP does not populate
-    // $_FILES for PUT requests. Step 4 has no file, so it accepts JSON via PUT.
-    'POST /registration/step1' => [RegistrationController::class, 'step1'],
-    'POST /registration/step2' => [RegistrationController::class, 'step2'],
-    'POST /registration/step3' => [RegistrationController::class, 'step3'],
-    'PUT /registration/step4' => [RegistrationController::class, 'step4'],
-    'POST /registration/step5' => [RegistrationController::class, 'step5'],
+    // Registration: single-step submit (bio-data + payment together),
+    // multipart/form-data because it includes the payment screenshot.
+    'POST /registration' => [RegistrationController::class, 'register'],
     'GET /registration/me' => [RegistrationController::class, 'me'],
     'GET /admin/members' => [AdminMemberController::class, 'index'],
     'GET /admin/members/export' => [AdminMemberController::class, 'export'],

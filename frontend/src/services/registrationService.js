@@ -8,37 +8,14 @@ function toFormData(fields, files = {}) {
   });
   Object.entries(files).forEach(([key, value]) => {
     if (!value) return;
-    if (Array.isArray(value)) {
-      value.forEach((f) => f && fd.append(`${key}[]`, f));
-    } else {
-      fd.append(key, value);
-    }
+    fd.append(key, value);
   });
   return fd;
 }
 
 export const registrationService = {
-  step1: (fields, files) =>
-    api
-      .post('/registration/step1', toFormData(fields, { photo: files.photo, id_proof: files.idProof, additional_photos: files.additionalPhotos }))
-      .then((r) => r.data),
-
-  step2: (fields, files) =>
-    api
-      .post('/registration/step2', toFormData(fields, { horoscope_document: files.horoscopeDocument }))
-      .then((r) => r.data),
-
-  step3: (fields, files) =>
-    api
-      .post('/registration/step3', toFormData(fields, { family_photo: files.familyPhoto }))
-      .then((r) => r.data),
-
-  step4: (fields) => api.put('/registration/step4', fields).then((r) => r.data),
-
-  step5: (fields, files) =>
-    api
-      .post('/registration/step5', toFormData(fields, { receipt: files.receipt }))
-      .then((r) => r.data),
+  register: (fields, files) =>
+    api.post('/registration', toFormData(fields, { payment_screenshot: files.paymentScreenshot })).then((r) => r.data),
 
   me: () => api.get('/registration/me').then((r) => r.data),
 };

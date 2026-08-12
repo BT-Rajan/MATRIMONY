@@ -254,7 +254,7 @@ fi
 # ---------------------------------------------------------------------------
 echo
 echo "==> Preparing uploads/ and logs/ directories"
-for d in photos id_proofs horoscopes family_photos receipts; do
+for d in payment_screenshots; do
   mkdir -p "$API_DIR/uploads/$d"
 done
 mkdir -p "$API_DIR/logs"
