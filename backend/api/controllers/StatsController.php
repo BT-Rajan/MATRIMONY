@@ -24,25 +24,9 @@ final class StatsController
         }
     }
 
-    public static function breakdown(string $dimension): void
-    {
-        AuthMiddleware::requireAuth(['admin']);
-        try {
-            Response::success(StatsService::breakdown($dimension));
-        } catch (StatsException $e) {
-            Response::error($e->getMessage(), $e->httpCode());
-        }
-    }
-
     public static function payments(): void
     {
         AuthMiddleware::requireAuth(['admin']);
         Response::success(StatsService::payments());
-    }
-
-    public static function events(): void
-    {
-        AuthMiddleware::requireAuth(['admin']);
-        Response::success(StatsService::events());
     }
 }

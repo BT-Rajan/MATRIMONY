@@ -9,42 +9,23 @@ import {
   YAxis,
   CartesianGrid,
   Tooltip as ChartTooltip,
-  BarChart,
-  Bar,
-  PieChart,
-  Pie,
-  Cell,
 } from 'recharts';
 import { useAuth } from '../../contexts/AuthContext';
 import { statsService } from '../../services/statsService';
 import Loader from '../../components/common/Loader';
-
-const CHART_COLORS = ['#7A1F3D', '#C9962C', '#155E5A', '#9C3E5E', '#E8C572', '#3D7A6E', '#B23A2E'];
 
 export default function AdminDashboard() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [overview, setOverview] = useState(null);
   const [trend, setTrend] = useState([]);
-  const [religionBreakdown, setReligionBreakdown] = useState([]);
-  const [districtBreakdown, setDistrictBreakdown] = useState([]);
-  const [ageBreakdown, setAgeBreakdown] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    Promise.all([
-      statsService.overview(),
-      statsService.trend('daily'),
-      statsService.breakdown('religion'),
-      statsService.breakdown('district'),
-      statsService.breakdown('age'),
-    ])
-      .then(([ov, tr, rel, dist, age]) => {
+    Promise.all([statsService.overview(), statsService.trend('daily')])
+      .then(([ov, tr]) => {
         setOverview(ov.data);
         setTrend(tr.data.map((r) => ({ label: r.bucket.slice(5), count: r.count })));
-        setReligionBreakdown(rel.data.slice(0, 6));
-        setDistrictBreakdown(dist.data.slice(0, 8));
-        setAgeBreakdown(age.data);
       })
       .finally(() => setLoading(false));
   }, []);
@@ -85,7 +66,7 @@ export default function AdminDashboard() {
         ))}
       </Grid>
 
-      <Grid container spacing={2} sx={{ mb: 3 }}>
+      <Grid container spacing={2}>
         <Grid item xs={12} md={7}>
           <Paper variant="outlined" sx={{ p: 2.5, borderRadius: 3, height: '100%' }}>
             <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 2 }}>
@@ -121,58 +102,6 @@ export default function AdminDashboard() {
                 மணமகன்: {overview.by_gender.groom} • மணமகள்: {overview.by_gender.bride}
               </Typography>
             </Box>
-          </Paper>
-        </Grid>
-      </Grid>
-
-      <Grid container spacing={2}>
-        <Grid item xs={12} md={4}>
-          <Paper variant="outlined" sx={{ p: 2.5, borderRadius: 3, height: '100%' }}>
-            <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 2 }}>
-              மதம் வாரியாக
-            </Typography>
-            <ResponsiveContainer width="100%" height={220}>
-              <PieChart>
-                <Pie data={religionBreakdown} dataKey="count" nameKey="name_tamil" cx="50%" cy="50%" outerRadius={80} label={(e) => e.name_tamil}>
-                  {religionBreakdown.map((_, i) => (
-                    <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />
-                  ))}
-                </Pie>
-                <ChartTooltip />
-              </PieChart>
-            </ResponsiveContainer>
-          </Paper>
-        </Grid>
-
-        <Grid item xs={12} md={4}>
-          <Paper variant="outlined" sx={{ p: 2.5, borderRadius: 3, height: '100%' }}>
-            <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 2 }}>
-              மாவட்டம் வாரியாக (முதல் 8)
-            </Typography>
-            <ResponsiveContainer width="100%" height={220}>
-              <BarChart data={districtBreakdown} layout="vertical" margin={{ left: 20 }}>
-                <XAxis type="number" allowDecimals={false} fontSize={11} />
-                <YAxis type="category" dataKey="name_tamil" width={70} fontSize={11} />
-                <ChartTooltip />
-                <Bar dataKey="count" fill="#155E5A" radius={[0, 4, 4, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
-          </Paper>
-        </Grid>
-
-        <Grid item xs={12} md={4}>
-          <Paper variant="outlined" sx={{ p: 2.5, borderRadius: 3, height: '100%' }}>
-            <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 2 }}>
-              வயது வாரியாக
-            </Typography>
-            <ResponsiveContainer width="100%" height={220}>
-              <BarChart data={ageBreakdown}>
-                <XAxis dataKey="age_band" fontSize={11} />
-                <YAxis allowDecimals={false} fontSize={11} />
-                <ChartTooltip />
-                <Bar dataKey="count" fill="#C9962C" radius={[4, 4, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
           </Paper>
         </Grid>
       </Grid>

@@ -9,25 +9,27 @@ import {
   TextField,
   MenuItem,
 } from '@mui/material';
-import { useMasterOptions } from '../../../hooks/useMasterOptions';const YES_NO = [
+import { useMasterOptions } from '../../../hooks/useMasterOptions';
+
+const YES_NO = [
   ['', 'அனைத்தும்'],
   ['1', 'ஆம்'],
   ['0', 'இல்லை'],
 ];
 
+const PARTICIPATING = [
+  ['', 'அனைத்தும்'],
+  ['yes', 'ஆம்'],
+  ['no', 'இல்லை'],
+];
+
 export default function AdvancedSearchDialog({ open, onClose, initial, onApply }) {
   const [form, setForm] = useState(initial || {});
 
-  const { options: religions } = useMasterOptions('religions');
-  const { options: castes } = useMasterOptions('castes', form.religionId);
-  const { options: districts } = useMasterOptions('districts');
   const { options: educations } = useMasterOptions('educations');
   const { options: occupations } = useMasterOptions('occupations');
-  const { options: incomes } = useMasterOptions('incomes');
   const { options: stars } = useMasterOptions('stars');
   const { options: rasis } = useMasterOptions('rasis');
-  const { options: doshams } = useMasterOptions('doshams');
-  const { options: events } = useMasterOptions('events');
 
   const set = (key) => (e) => setForm((f) => ({ ...f, [key]: e.target.value }));
 
@@ -66,23 +68,13 @@ export default function AdvancedSearchDialog({ open, onClose, initial, onApply }
           </Grid>
 
           <Grid item xs={12} sm={4}>
-            <SimpleSelect label="மதம்" value={form.religionId} onChange={(v) => setForm((f) => ({ ...f, religionId: v, casteId: '' }))} options={religions} />
-          </Grid>
-          <Grid item xs={12} sm={4}>
-            <SimpleSelect label="சாதி" value={form.casteId} onChange={(v) => setForm((f) => ({ ...f, casteId: v }))} options={castes} disabled={!form.religionId} />
-          </Grid>
-          <Grid item xs={12} sm={4}>
-            <SimpleSelect label="மாவட்டம்" value={form.districtId} onChange={(v) => setForm((f) => ({ ...f, districtId: v }))} options={districts} />
-          </Grid>
-
-          <Grid item xs={12} sm={4}>
             <SimpleSelect label="கல்வி" value={form.educationId} onChange={(v) => setForm((f) => ({ ...f, educationId: v }))} options={educations} />
           </Grid>
           <Grid item xs={12} sm={4}>
             <SimpleSelect label="தொழில்" value={form.occupationId} onChange={(v) => setForm((f) => ({ ...f, occupationId: v }))} options={occupations} />
           </Grid>
           <Grid item xs={12} sm={4}>
-            <SimpleSelect label="வருமானம்" value={form.incomeId} onChange={(v) => setForm((f) => ({ ...f, incomeId: v }))} options={incomes} />
+            <TextField fullWidth size="small" label="சொந்த ஊர்" value={form.nativePlace || ''} onChange={set('nativePlace')} />
           </Grid>
 
           <Grid item xs={12} sm={4}>
@@ -92,40 +84,13 @@ export default function AdvancedSearchDialog({ open, onClose, initial, onApply }
             <SimpleSelect label="ராசி" value={form.rasiId} onChange={(v) => setForm((f) => ({ ...f, rasiId: v }))} options={rasis} />
           </Grid>
           <Grid item xs={12} sm={4}>
-            <SimpleSelect label="தோஷம்" value={form.doshamId} onChange={(v) => setForm((f) => ({ ...f, doshamId: v }))} options={doshams} />
+            <TextField fullWidth size="small" select label="நேரில் கலந்துகொள்வது" value={form.participating ?? ''} onChange={set('participating')}>
+              {PARTICIPATING.map(([v, l]) => <MenuItem key={v} value={v}>{l}</MenuItem>)}
+            </TextField>
           </Grid>
 
           <Grid item xs={6} sm={4}>
-            <TextField fullWidth size="small" label="மாநிலம்" value={form.state || ''} onChange={set('state')} />
-          </Grid>
-          <Grid item xs={6} sm={4}>
-            <TextField fullWidth size="small" label="நாடு" value={form.country || ''} onChange={set('country')} />
-          </Grid>
-          <Grid item xs={12} sm={4}>
-            <SimpleSelect label="நிகழ்வு" value={form.eventId} onChange={(v) => setForm((f) => ({ ...f, eventId: v }))} options={events} />
-          </Grid>
-
-          <Grid item xs={12} sm={6}>
-            <TextField fullWidth size="small" label="பரிந்துரையாளர் (பெயர்/எண்)" value={form.reference || ''} onChange={set('reference')} />
-          </Grid>
-          <Grid item xs={6} sm={3}>
             <TextField fullWidth size="small" select label="சரிபார்க்கப்பட்டதா" value={form.isVerified ?? ''} onChange={set('isVerified')}>
-              {YES_NO.map(([v, l]) => <MenuItem key={v} value={v}>{l}</MenuItem>)}
-            </TextField>
-          </Grid>
-          <Grid item xs={6} sm={3}>
-            <TextField fullWidth size="small" select label="கட்டணம் செலுத்தியதா" value={form.payment ?? ''} onChange={set('payment')}>
-              {YES_NO.map(([v, l]) => <MenuItem key={v} value={v}>{l}</MenuItem>)}
-            </TextField>
-          </Grid>
-
-          <Grid item xs={6} sm={3}>
-            <TextField fullWidth size="small" select label="புகைப்படம் உள்ளதா" value={form.photoAvailable ?? ''} onChange={set('photoAvailable')}>
-              {YES_NO.map(([v, l]) => <MenuItem key={v} value={v}>{l}</MenuItem>)}
-            </TextField>
-          </Grid>
-          <Grid item xs={6} sm={3}>
-            <TextField fullWidth size="small" select label="ஜாதகம் உள்ளதா" value={form.horoscopeAvailable ?? ''} onChange={set('horoscopeAvailable')}>
               {YES_NO.map(([v, l]) => <MenuItem key={v} value={v}>{l}</MenuItem>)}
             </TextField>
           </Grid>

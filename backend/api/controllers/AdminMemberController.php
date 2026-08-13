@@ -41,8 +41,9 @@ final class AdminMemberController
         fwrite($out, "\xEF\xBB\xBF"); // UTF-8 BOM so Tamil text opens correctly in Excel
 
         $headers = ['registration_number', 'name_tamil', 'name_english', 'gender', 'mobile', 'whatsapp', 'email',
-            'status', 'is_verified', 'age', 'height_cm', 'weight_kg', 'marital_status', 'native_place',
-            'state', 'country', 'created_at'];
+            'status', 'is_verified', 'age', 'gothram', 'address', 'quarter', 'height_cm', 'father_name',
+            'mother_name', 'native_place', 'residence', 'registrar_name', 'brothers', 'sisters',
+            'participating', 'payment_amount', 'payment_date', 'payment_reference', 'created_at'];
         fputcsv($out, $headers);
         foreach ($rows as $row) {
             fputcsv($out, array_map(fn($h) => $row[$h] ?? '', $headers));
@@ -67,30 +68,18 @@ final class AdminMemberController
             'status' => $_GET['status'] ?? '',
             'gender' => $_GET['gender'] ?? '',
             'is_verified' => $_GET['is_verified'] ?? '',
-            'religion_id' => $_GET['religion_id'] ?? '',
-            'caste_id' => $_GET['caste_id'] ?? '',
-            'district_id' => $_GET['district_id'] ?? '',
             'education_id' => $_GET['education_id'] ?? '',
             'occupation_id' => $_GET['occupation_id'] ?? '',
-            'income_id' => $_GET['income_id'] ?? '',
             'star_id' => $_GET['star_id'] ?? '',
             'rasi_id' => $_GET['rasi_id'] ?? '',
-            'dosham_id' => $_GET['dosham_id'] ?? '',
-            'state' => trim((string) ($_GET['state'] ?? '')),
-            'country' => trim((string) ($_GET['country'] ?? '')),
+            'native_place' => trim((string) ($_GET['native_place'] ?? '')),
             'phone' => trim((string) ($_GET['phone'] ?? '')),
             'email' => trim((string) ($_GET['email'] ?? '')),
             'age_min' => $_GET['age_min'] ?? '',
             'age_max' => $_GET['age_max'] ?? '',
             'height_min' => $_GET['height_min'] ?? '',
             'height_max' => $_GET['height_max'] ?? '',
-            'weight_min' => $_GET['weight_min'] ?? '',
-            'weight_max' => $_GET['weight_max'] ?? '',
-            'photo_available' => $_GET['photo_available'] ?? '',
-            'horoscope_available' => $_GET['horoscope_available'] ?? '',
-            'payment' => $_GET['payment'] ?? '',
-            'event_id' => $_GET['event_id'] ?? '',
-            'reference' => trim((string) ($_GET['reference'] ?? '')),
+            'participating' => $_GET['participating'] ?? '',
         ];
     }
 
@@ -159,13 +148,6 @@ final class AdminMemberController
         $payload = AuthMiddleware::requireAuth(['admin']);
         $body = self::body();
         self::respond(fn() => MemberAdminService::updateCore($id, (int) $payload['sub'], $body), 'புதுப்பிக்கப்பட்டது');
-    }
-
-    public static function updateEvent(int $id): void
-    {
-        $payload = AuthMiddleware::requireAuth(['admin']);
-        $body = self::body();
-        self::respond(fn() => MemberAdminService::updateEventParticipation($id, (int) $payload['sub'], $body), 'புதுப்பிக்கப்பட்டது');
     }
 
     private static function respond(callable $action, ?string $message = null): void

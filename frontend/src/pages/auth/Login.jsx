@@ -50,10 +50,9 @@ export default function Login() {
         toast.success('நிர்வாகி உள்நுழைவு வெற்றி');
         navigate(ROUTES.ADMIN_DASHBOARD, { replace: true });
       } else {
-        const memberSession = await loginMember({ identifier: values.identifier, password: values.password });
+        await loginMember({ identifier: values.identifier, password: values.password });
         toast.success('உள்நுழைவு வெற்றி');
-        const incomplete = (memberSession.user.registration_step ?? 1) < 6;
-        navigate(incomplete ? '/register' : ROUTES.MEMBER_DASHBOARD, { replace: true });
+        navigate(ROUTES.MEMBER_DASHBOARD, { replace: true });
       }
     } catch (err) {
       setServerError(err.message || 'உள்நுழைவு தோல்வியடைந்தது');

@@ -2,7 +2,6 @@
 declare(strict_types=1);
 
 require_once __DIR__ . '/../config/Database.php';
-require_once __DIR__ . '/../config/StatsDimensionRegistry.php';
 
 final class StatsModel
 {
@@ -71,85 +70,18 @@ final class StatsModel
         return $stmt->fetchAll();
     }
 
-    /** Breakdown by a whitelisted master-linked dimension (religion/caste/education/occupation/income/district). */
-    public static function breakdown(string $dimensionKey, int $limit = 15): array
-    {
-        $dim = StatsDimensionRegistry::find($dimensionKey);
-        $db = Database::connection();
-
-        $sql = "SELECT t.name_tamil, t.name_english, COUNT(m.id) AS count
-                FROM members m
-                JOIN {$dim['table']} t ON t.id = m.{$dim['column']}
-                GROUP BY t.id, t.name_tamil, t.name_english
-                ORDER BY count DESC
-                LIMIT :limit";
-        $stmt = $db->prepare($sql);
-        $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
-        $stmt->execute();
-
-        return $stmt->fetchAll();
-    }
-
-    public static function ageBreakdown(): array
-    {
-        $db = Database::connection();
-
-        $sql = "SELECT
-                    CASE
-                        WHEN TIMESTAMPDIFF(YEAR, dob, CURDATE()) BETWEEN 18 AND 25 THEN '18-25'
-                        WHEN TIMESTAMPDIFF(YEAR, dob, CURDATE()) BETWEEN 26 AND 30 THEN '26-30'
-                        WHEN TIMESTAMPDIFF(YEAR, dob, CURDATE()) BETWEEN 31 AND 35 THEN '31-35'
-                        WHEN TIMESTAMPDIFF(YEAR, dob, CURDATE()) BETWEEN 36 AND 40 THEN '36-40'
-                        WHEN TIMESTAMPDIFF(YEAR, dob, CURDATE()) BETWEEN 41 AND 50 THEN '41-50'
-                        WHEN TIMESTAMPDIFF(YEAR, dob, CURDATE()) > 50 THEN '50+'
-                        ELSE 'தெரியாத'
-                    END AS age_band,
-                    COUNT(*) AS count
-                FROM members
-                WHERE dob IS NOT NULL
-                GROUP BY age_band
-                ORDER BY FIELD(age_band, '18-25','26-30','31-35','36-40','41-50','50+','தெரியாத')";
-
-        return $db->query($sql)->fetchAll();
-    }
-
     public static function payments(): array
     {
         $db = Database::connection();
 
         $summary = $db->query(
-            "SELECT COUNT(*) AS paid_count, COALESCE(SUM(amount), 0) AS total_amount
-             FROM member_event_participation WHERE amount IS NOT NULL"
+            "SELECT COUNT(*) AS paid_count, COALESCE(SUM(payment_amount), 0) AS total_amount
+             FROM members WHERE payment_amount IS NOT NULL"
         )->fetch();
-
-        $byType = $db->query(
-            "SELECT pt.name_tamil, pt.name_english, COUNT(*) AS count, COALESCE(SUM(ep.amount), 0) AS total_amount
-             FROM member_event_participation ep
-             JOIN payment_types pt ON pt.id = ep.payment_type_id
-             WHERE ep.amount IS NOT NULL
-             GROUP BY pt.id, pt.name_tamil, pt.name_english
-             ORDER BY total_amount DESC"
-        )->fetchAll();
 
         return [
             'paid_count' => (int) $summary['paid_count'],
             'total_amount' => (float) $summary['total_amount'],
-            'by_payment_type' => $byType,
         ];
-    }
-
-    public static function events(): array
-    {
-        $db = Database::connection();
-
-        return $db->query(
-            "SELECT e.id, e.name_tamil, e.name_english, e.event_date,
-                    COUNT(ep.member_id) AS participant_count,
-                    COALESCE(SUM(ep.amount), 0) AS total_amount
-             FROM events e
-             LEFT JOIN member_event_participation ep ON ep.event_id = e.id AND ep.participating = 'yes'
-             GROUP BY e.id, e.name_tamil, e.name_english, e.event_date
-             ORDER BY e.event_date DESC"
-        )->fetchAll();
     }
 }

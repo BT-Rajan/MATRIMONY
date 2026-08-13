@@ -126,7 +126,7 @@ final class MemberModel
 
         $offset = max(0, ($page - 1) * $perPage);
         $sql = "SELECT id, registration_number, name_tamil, name_english, gender, mobile, email,
-                       status, registration_step, is_verified, photo_path, created_at,
+                       status, is_verified, created_at,
                        TIMESTAMPDIFF(YEAR, dob, CURDATE()) AS age
                 FROM members {$whereSql}
                 ORDER BY created_at DESC
@@ -150,7 +150,9 @@ final class MemberModel
 
         $sql = "SELECT registration_number, name_tamil, name_english, gender, mobile, whatsapp, email,
                        status, is_verified, TIMESTAMPDIFF(YEAR, dob, CURDATE()) AS age,
-                       height_cm, weight_kg, marital_status, native_place, state, country, created_at
+                       gothram, address, quarter, height_cm, father_name, mother_name,
+                       native_place, residence, registrar_name, brothers, sisters, participating,
+                       payment_amount, payment_date, payment_reference, created_at
                 FROM members {$whereSql}
                 ORDER BY created_at DESC
                 LIMIT :limit";
@@ -165,9 +167,11 @@ final class MemberModel
     }
 
     /**
-     * Same filters, joined against every master table so the booklet can
-     * print human-readable names (education/occupation/religion/caste/
-     * district/star/rasi/dosham) rather than raw IDs. Capped like export.
+     * Same filters, joined against the remaining master tables so the
+     * booklet can print human-readable names (education/occupation/
+     * star/sign) rather than raw IDs. Capped like export. Shows the
+     * payment screenshot in place of a profile photo — there's no
+     * photo upload in this form.
      */
     public static function searchForBooklet(array $filters, int $maxRows = 200): array
     {
@@ -177,25 +181,18 @@ final class MemberModel
         $sql = "SELECT
                     m.id, m.registration_number, m.name_tamil, m.name_english, m.gender,
                     TIMESTAMPDIFF(YEAR, m.dob, CURDATE()) AS age,
-                    m.height_cm, m.weight_kg, m.marital_status, m.photo_path, m.native_place,
-                    m.state, m.country,
+                    m.height_cm, m.gothram, m.address, m.quarter, m.native_place, m.residence,
+                    m.father_name, m.mother_name, m.registrar_name, m.brothers, m.sisters,
+                    m.participating, m.payment_screenshot_path,
                     edu.name_tamil AS education_tamil, edu.name_english AS education_english,
                     occ.name_tamil AS occupation_tamil, occ.name_english AS occupation_english,
-                    rel.name_tamil AS religion_tamil, rel.name_english AS religion_english,
-                    cas.name_tamil AS caste_tamil, cas.name_english AS caste_english,
-                    dist.name_tamil AS district_tamil, dist.name_english AS district_english,
                     star.name_tamil AS star_tamil, star.name_english AS star_english,
-                    rasi.name_tamil AS rasi_tamil, rasi.name_english AS rasi_english,
-                    dosh.name_tamil AS dosham_tamil, dosh.name_english AS dosham_english
+                    rasi.name_tamil AS rasi_tamil, rasi.name_english AS rasi_english
                 FROM members m
                 LEFT JOIN educations edu ON edu.id = m.education_id
                 LEFT JOIN occupations occ ON occ.id = m.occupation_id
-                LEFT JOIN religions rel ON rel.id = m.religion_id
-                LEFT JOIN castes cas ON cas.id = m.caste_id
-                LEFT JOIN districts dist ON dist.id = m.district_id
                 LEFT JOIN stars star ON star.id = m.star_id
                 LEFT JOIN rasis rasi ON rasi.id = m.rasi_id
-                LEFT JOIN doshams dosh ON dosh.id = m.dosham_id
                 {$whereSql}
                 ORDER BY m.registration_number ASC
                 LIMIT :limit";
@@ -236,18 +233,6 @@ final class MemberModel
             $where[] = 'is_verified = :is_verified';
             $params['is_verified'] = (int) $filters['is_verified'];
         }
-        if (!empty($filters['religion_id'])) {
-            $where[] = 'religion_id = :religion_id';
-            $params['religion_id'] = (int) $filters['religion_id'];
-        }
-        if (!empty($filters['caste_id'])) {
-            $where[] = 'caste_id = :caste_id';
-            $params['caste_id'] = (int) $filters['caste_id'];
-        }
-        if (!empty($filters['district_id'])) {
-            $where[] = 'district_id = :district_id';
-            $params['district_id'] = (int) $filters['district_id'];
-        }
         if (!empty($filters['education_id'])) {
             $where[] = 'education_id = :education_id';
             $params['education_id'] = (int) $filters['education_id'];
@@ -255,10 +240,6 @@ final class MemberModel
         if (!empty($filters['occupation_id'])) {
             $where[] = 'occupation_id = :occupation_id';
             $params['occupation_id'] = (int) $filters['occupation_id'];
-        }
-        if (!empty($filters['income_id'])) {
-            $where[] = 'income_id = :income_id';
-            $params['income_id'] = (int) $filters['income_id'];
         }
         if (!empty($filters['star_id'])) {
             $where[] = 'star_id = :star_id';
@@ -268,17 +249,9 @@ final class MemberModel
             $where[] = 'rasi_id = :rasi_id';
             $params['rasi_id'] = (int) $filters['rasi_id'];
         }
-        if (!empty($filters['dosham_id'])) {
-            $where[] = 'dosham_id = :dosham_id';
-            $params['dosham_id'] = (int) $filters['dosham_id'];
-        }
-        if (!empty($filters['state'])) {
-            $where[] = 'state LIKE :state';
-            $params['state'] = "%{$filters['state']}%";
-        }
-        if (!empty($filters['country'])) {
-            $where[] = 'country LIKE :country';
-            $params['country'] = "%{$filters['country']}%";
+        if (!empty($filters['native_place'])) {
+            $where[] = 'native_place LIKE :native_place';
+            $params['native_place'] = "%{$filters['native_place']}%";
         }
         if (!empty($filters['phone'])) {
             $where[] = 'mobile LIKE :phone';
@@ -304,35 +277,9 @@ final class MemberModel
             $where[] = 'height_cm <= :height_max';
             $params['height_max'] = (int) $filters['height_max'];
         }
-        if (!empty($filters['weight_min'])) {
-            $where[] = 'weight_kg >= :weight_min';
-            $params['weight_min'] = (int) $filters['weight_min'];
-        }
-        if (!empty($filters['weight_max'])) {
-            $where[] = 'weight_kg <= :weight_max';
-            $params['weight_max'] = (int) $filters['weight_max'];
-        }
-        if (isset($filters['photo_available']) && $filters['photo_available'] !== '') {
-            $where[] = $filters['photo_available'] ? 'photo_path IS NOT NULL' : 'photo_path IS NULL';
-        }
-        if (isset($filters['horoscope_available']) && $filters['horoscope_available'] !== '') {
-            $where[] = $filters['horoscope_available']
-                ? 'EXISTS (SELECT 1 FROM member_horoscopes h WHERE h.member_id = members.id)'
-                : 'NOT EXISTS (SELECT 1 FROM member_horoscopes h WHERE h.member_id = members.id)';
-        }
-        if (isset($filters['payment']) && $filters['payment'] !== '') {
-            $where[] = $filters['payment']
-                ? 'EXISTS (SELECT 1 FROM member_event_participation ep WHERE ep.member_id = members.id AND ep.amount IS NOT NULL)'
-                : 'NOT EXISTS (SELECT 1 FROM member_event_participation ep WHERE ep.member_id = members.id AND ep.amount IS NOT NULL)';
-        }
-        if (!empty($filters['event_id'])) {
-            $where[] = 'EXISTS (SELECT 1 FROM member_event_participation ep2 WHERE ep2.member_id = members.id AND ep2.participating = \'yes\' AND ep2.event_id = :event_id)';
-            $params['event_id'] = (int) $filters['event_id'];
-        }
-        if (!empty($filters['reference'])) {
-            $where[] = 'EXISTS (SELECT 1 FROM member_references r WHERE r.member_id = members.id AND (r.reference_name LIKE :ref_name OR r.phone = :ref_phone))';
-            $params['ref_name'] = "%{$filters['reference']}%";
-            $params['ref_phone'] = $filters['reference'];
+        if (isset($filters['participating']) && $filters['participating'] !== '') {
+            $where[] = 'participating = :participating';
+            $params['participating'] = $filters['participating'];
         }
 
         $whereSql = $where ? ('WHERE ' . implode(' AND ', $where)) : '';

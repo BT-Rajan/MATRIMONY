@@ -191,10 +191,7 @@ export default function MembersListPage() {
                     onClick={() => navigate(`/admin/members/${row.id}`)}
                   >
                     <TableCell sx={{ width: 48 }}>
-                      <Avatar
-                        src={row.photo_path ? apiFileUrl(row.photo_path) : undefined}
-                        sx={{ width: 32, height: 32 }}
-                      >
+                      <Avatar sx={{ width: 32, height: 32 }}>
                         {row.name_english?.slice(0, 1)}
                       </Avatar>
                     </TableCell>

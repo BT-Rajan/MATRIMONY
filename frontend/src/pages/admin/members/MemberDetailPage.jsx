@@ -63,7 +63,7 @@ export default function MemberDetailPage() {
   if (loading) return <Loader fullscreen />;
   if (!data) return null;
 
-  const { member, photos, horoscope, family, reference, event } = data;
+  const { member } = data;
   const statusInfo = STATUS_LABELS[member.status] || { label: member.status, color: 'default' };
 
   const runAction = async (fn, successMsg) => {
@@ -111,7 +111,7 @@ export default function MemberDetailPage() {
       <Paper variant="outlined" sx={{ p: 3, borderRadius: 3, mb: 3 }}>
         <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2, alignItems: 'center', justifyContent: 'space-between' }}>
           <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
-            <Avatar src={member.photo_path ? apiFileUrl(member.photo_path) : undefined} sx={{ width: 64, height: 64 }}>
+            <Avatar sx={{ width: 64, height: 64 }}>
               {member.name_english?.slice(0, 1)}
             </Avatar>
             <Box>
@@ -226,87 +226,39 @@ export default function MemberDetailPage() {
         <Grid item xs={12} md={6}>
           <InfoCard title="அடிப்படை விவரங்கள்">
             <Field label="பிறந்த தேதி" value={member.dob} />
-            <Field label="உயரம் / எடை" value={`${member.height_cm || '-'} cm / ${member.weight_kg || '-'} kg`} />
-            <Field label="திருமண நிலை" value={member.marital_status} />
-            <Field label="நிறுவனம் / பணி இடம்" value={[member.company_name, member.work_location].filter(Boolean).join(' • ') || '-'} />
-            <Field label="மொபைல்" value={member.mobile} />
-            <Field label="வாட்ஸ்அப்" value={member.whatsapp} />
+            <Field label="உயரம் (Msheight)" value={member.height_cm ? `${member.height_cm} cm` : '-'} />
+            <Field label="கோத்திரம்" value={member.gothram} />
+            <Field label="நட்சத்திரம் / ராசி (sign)" value={`${member.star_id || '-'} / ${member.rasi_id || '-'}`} />
+            <Field label="மொபைல் 1 / 2" value={`${member.mobile || '-'} / ${member.whatsapp || '-'}`} />
             <Field label="மின்னஞ்சல்" value={member.email} />
+            <Field label="முகவரி" value={member.address} />
+            <Field label="குடியிருப்பு (quarter)" value={member.quarter} />
             <Field label="சொந்த ஊர்" value={member.native_place} />
-            <Field label="முகவரி" value={member.current_address} />
-            <Field label="பின்கோடு" value={member.pincode} />
-            <Field label="மாநிலம் / நாடு" value={`${member.state || '-'}, ${member.country || '-'}`} />
-            <Field label="எனை பற்றி" value={member.about_myself} />
-            <Field label="உணவு / புகை / மது" value={`${member.diet || '-'} / ${member.smoking || '-'} / ${member.drinking || '-'}`} />
+            <Field label="தற்போதைய இருப்பிடம்" value={member.residence} />
           </InfoCard>
         </Grid>
 
         <Grid item xs={12} md={6}>
-          <InfoCard title="ஜாதக விவரங்கள்">
-            {horoscope ? (
-              <>
-                <Field label="பிறந்த நேரம் / இடம்" value={`${horoscope.birth_time} • ${horoscope.birth_place}`} />
-                <Field label="லக்னம் / கோத்திரம்" value={`${horoscope.lagnam} / ${horoscope.gothram || '-'}`} />
-                <Field label="செவ்வாய் / ராகு / கேது / கால சர்ப்பம்" value={`${horoscope.chevvai_dosham} / ${horoscope.rahu_dosham} / ${horoscope.kethu_dosham} / ${horoscope.kalasarpa_dosham}`} />
-                {horoscope.horoscope_file_path && (
-                  <FileLink label="ஜாதக ஆவணம்" path={horoscope.horoscope_file_path} />
-                )}
-              </>
-            ) : (
-              <Typography color="text.secondary">தரவு இல்லை</Typography>
-            )}
+          <InfoCard title="குடும்பம் / பதிவாளர்">
+            <Field label="தந்தை பெயர்" value={member.father_name} />
+            <Field label="தாய் பெயர்" value={member.mother_name} />
+            <Field label="சகோதரர்கள் / சகோதரிகள்" value={`${member.brothers ?? '-'} / ${member.sisters ?? '-'}`} />
+            <Field label="பதிவாளர் (பரிந்துரையாளர்/சாட்சி)" value={member.registrar_name} />
+            <Field label="நேரில் கலந்துகொள்வது" value={member.participating === 'yes' ? 'ஆம்' : member.participating === 'no' ? 'இல்லை' : '-'} />
           </InfoCard>
 
-          <InfoCard title="குடும்ப விவரங்கள்" sx={{ mt: 2 }}>
-            {family ? (
-              <>
-                <Field label="தந்தை / தாய்" value={`${family.father_name} / ${family.mother_name}`} />
-                <Field label="தந்தை தொடர்பு" value={[family.father_mobile, family.father_email].filter(Boolean).join(' • ') || '-'} />
-                <Field label="பெற்றோர் பூர்வீகம்" value={[family.father_native_place, family.mother_native_place].filter(Boolean).join(' / ') || '-'} />
-                <Field label="பெற்றோர் உயிருடன்" value={family.parents_alive} />
-                <Field label="பிறப்பு வரிசை" value={family.birth_order} />
-                <Field label="சகோதரர் / சகோதரி" value={`${family.brothers} (${family.married_brothers} மணமானவர்) / ${family.sisters} (${family.married_sisters} மணமானவர்)`} />
-                <Field label="குடும்ப வகை / சொந்த வீடு" value={`${family.family_type} / ${family.own_house}`} />
-              </>
-            ) : (
-              <Typography color="text.secondary">தரவு இல்லை</Typography>
-            )}
-          </InfoCard>
-
-          <InfoCard title="பரிந்துரையாளர்" sx={{ mt: 2 }}>
-            {reference ? (
-              <>
-                <Field label="பெயர்" value={reference.reference_name} />
-                <Field label="தொலைபேசி" value={reference.phone} />
-                <Field label="குறிப்புகள்" value={reference.remarks} />
-              </>
-            ) : (
-              <Typography color="text.secondary">தரவு இல்லை</Typography>
-            )}
-          </InfoCard>
-
-          <InfoCard title="நிகழ்வு பங்கேற்பு" sx={{ mt: 2 }}>
-            {event && event.participating === 'yes' ? (
-              <>
-                <Field label="தொகுதி" value={event.batch} />
-                <Field label="தொகை" value={event.amount ? `₹${event.amount}` : '-'} />
-                <Field label="பரிவர்த்தனை எண்" value={event.transaction_number} />
-                {event.receipt_path && <FileLink label="ரசீது" path={event.receipt_path} />}
-              </>
-            ) : (
-              <Typography color="text.secondary">பங்கேற்கவில்லை</Typography>
-            )}
+          <InfoCard title="கட்டணம்" sx={{ mt: 2 }}>
+            <Field label="தொகை" value={member.payment_amount ? `₹${member.payment_amount}` : '-'} />
+            <Field label="தேதி" value={member.payment_date} />
+            <Field label="குறிப்பு எண் (Reference ID)" value={member.payment_reference} />
+            {member.payment_screenshot_path && <FileLink label="ஸ்கிரீன்ஷாட்" path={member.payment_screenshot_path} />}
           </InfoCard>
         </Grid>
 
-        {photos?.length > 0 && (
+        {member.payment_screenshot_path && (
           <Grid item xs={12}>
-            <InfoCard title="கூடுதல் புகைப்படங்கள்">
-              <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
-                {photos.map((p) => (
-                  <Avatar key={p.id} src={apiFileUrl(p.file_path)} variant="rounded" sx={{ width: 72, height: 72 }} />
-                ))}
-              </Stack>
+            <InfoCard title="கட்டண ஸ்கிரீன்ஷாட்">
+              <Avatar src={apiFileUrl(member.payment_screenshot_path)} variant="rounded" sx={{ width: 160, height: 160 }} />
             </InfoCard>
           </Grid>
         )}
@@ -407,8 +359,12 @@ function EditMemberDialog({ open, onClose, member, onSaved }) {
         mobile: member.mobile || '',
         whatsapp: member.whatsapp || '',
         email: member.email || '',
-        current_address: member.current_address || '',
-        state: member.state || '',
+        gothram: member.gothram || '',
+        address: member.address || '',
+        quarter: member.quarter || '',
+        native_place: member.native_place || '',
+        residence: member.residence || '',
+        registrar_name: member.registrar_name || '',
       });
     }
   }, [open, member]);
@@ -426,18 +382,24 @@ function EditMemberDialog({ open, onClose, member, onSaved }) {
     }
   };
 
+  const set = (key) => (e) => setForm((f) => ({ ...f, [key]: e.target.value }));
+
   return (
     <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
       <DialogTitle>சுயவிவரத்தை திருத்து</DialogTitle>
       <DialogContent>
         <Stack spacing={2} sx={{ mt: 1 }}>
-          <TextField label="தமிழ் பெயர்" fullWidth value={form.name_tamil || ''} onChange={(e) => setForm({ ...form, name_tamil: e.target.value })} />
-          <TextField label="ஆங்கில பெயர்" fullWidth value={form.name_english || ''} onChange={(e) => setForm({ ...form, name_english: e.target.value })} />
-          <TextField label="மொபைல்" fullWidth value={form.mobile || ''} onChange={(e) => setForm({ ...form, mobile: e.target.value })} />
-          <TextField label="வாட்ஸ்அப்" fullWidth value={form.whatsapp || ''} onChange={(e) => setForm({ ...form, whatsapp: e.target.value })} />
-          <TextField label="மின்னஞ்சல்" fullWidth value={form.email || ''} onChange={(e) => setForm({ ...form, email: e.target.value })} />
-          <TextField label="முகவரி" fullWidth multiline minRows={2} value={form.current_address || ''} onChange={(e) => setForm({ ...form, current_address: e.target.value })} />
-          <TextField label="மாநிலம்" fullWidth value={form.state || ''} onChange={(e) => setForm({ ...form, state: e.target.value })} />
+          <TextField label="தமிழ் பெயர்" fullWidth value={form.name_tamil || ''} onChange={set('name_tamil')} />
+          <TextField label="ஆங்கில பெயர்" fullWidth value={form.name_english || ''} onChange={set('name_english')} />
+          <TextField label="மொபைல் 1" fullWidth value={form.mobile || ''} onChange={set('mobile')} />
+          <TextField label="மொபைல் 2" fullWidth value={form.whatsapp || ''} onChange={set('whatsapp')} />
+          <TextField label="மின்னஞ்சல்" fullWidth value={form.email || ''} onChange={set('email')} />
+          <TextField label="கோத்திரம்" fullWidth value={form.gothram || ''} onChange={set('gothram')} />
+          <TextField label="முகவரி" fullWidth multiline minRows={2} value={form.address || ''} onChange={set('address')} />
+          <TextField label="குடியிருப்பு (quarter)" fullWidth value={form.quarter || ''} onChange={set('quarter')} />
+          <TextField label="சொந்த ஊர்" fullWidth value={form.native_place || ''} onChange={set('native_place')} />
+          <TextField label="தற்போதைய இருப்பிடம்" fullWidth value={form.residence || ''} onChange={set('residence')} />
+          <TextField label="பதிவாளர்" fullWidth value={form.registrar_name || ''} onChange={set('registrar_name')} />
         </Stack>
       </DialogContent>
       <DialogActions sx={{ px: 3, pb: 2.5 }}>

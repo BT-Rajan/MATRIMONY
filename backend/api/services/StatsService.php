@@ -2,7 +2,6 @@
 declare(strict_types=1);
 
 require_once __DIR__ . '/../models/StatsModel.php';
-require_once __DIR__ . '/../config/StatsDimensionRegistry.php';
 
 final class StatsService
 {
@@ -21,26 +20,9 @@ final class StatsService
         return StatsModel::registrationTrend($period, $points);
     }
 
-    /** @throws StatsException */
-    public static function breakdown(string $dimension): array
-    {
-        if ($dimension === 'age') {
-            return StatsModel::ageBreakdown();
-        }
-        if (!StatsDimensionRegistry::exists($dimension)) {
-            throw new StatsException('இந்த வகைப்பாடு கிடைக்கவில்லை', 404);
-        }
-        return StatsModel::breakdown($dimension);
-    }
-
     public static function payments(): array
     {
         return StatsModel::payments();
-    }
-
-    public static function events(): array
-    {
-        return StatsModel::events();
     }
 }
 

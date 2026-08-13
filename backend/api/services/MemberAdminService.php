@@ -2,20 +2,20 @@
 declare(strict_types=1);
 
 require_once __DIR__ . '/../models/MemberModel.php';
-require_once __DIR__ . '/../models/MemberEventModel.php';
 require_once __DIR__ . '/../helpers/Audit.php';
 require_once __DIR__ . '/NotificationService.php';
 
 final class MemberAdminService
 {
     // Fields an admin may correct directly (typos, contact-detail fixes).
-    // Photo/ID-proof/horoscope/family-photo re-upload and full bio-data
-    // edit are intentionally out of scope for this pass — see PASSES.md.
+    // A full re-collection of bio-data is intentionally out of scope for
+    // this pass — see PASSES.md.
     private const EDITABLE_FIELDS = [
         'name_tamil', 'name_english', 'mobile', 'whatsapp', 'email',
-        'native_place', 'current_address', 'state', 'country',
-        'district_id', 'education_id', 'occupation_id', 'income_id',
-        'marital_status', 'diet', 'smoking', 'drinking', 'physically_challenged', 'about_myself',
+        'gothram', 'address', 'quarter', 'education_id', 'occupation_id',
+        'star_id', 'rasi_id', 'father_name', 'mother_name', 'native_place',
+        'residence', 'registrar_name', 'brothers', 'sisters', 'participating',
+        'height_cm', 'payment_amount', 'payment_date', 'payment_reference',
     ];
 
     public static function list(array $filters, int $page, int $perPage): array
@@ -51,9 +51,6 @@ final class MemberAdminService
 
         if (!in_array($member['status'], ['pending_approval', 'rejected'], true)) {
             throw new MemberAdminException('இந்த நிலையில் உள்ள சுயவிவரத்தை அனுமதிக்க முடியாது', 409);
-        }
-        if ((int) $member['registration_step'] < 6) {
-            throw new MemberAdminException('முழுமையடையாத சுயவிவரத்தை அனுமதிக்க முடியாது', 422);
         }
 
         MemberModel::setStatus($id, 'approved', $adminId);
@@ -186,22 +183,6 @@ final class MemberAdminService
         return self::show($id);
     }
 
-    /** @throws MemberAdminException */
-    public static function updateEventParticipation(int $id, int $adminId, array $fields): array
-    {
-        $member = self::requireMember($id);
-
-        if ($member['status'] === 'approved') {
-            throw new MemberAdminException('அனுமதிக்கப்பட்ட கட்டணத்தை திருத்த முடியாது', 409);
-        }
-
-        $existing = MemberEventModel::find($id);
-        MemberEventModel::upsert($id, $fields);
-        Audit::log($adminId, 'admin', 'member_event_edited', 'member_event_participation', $id, $existing, $fields);
-
-        return self::show($id);
-    }
-
     private static function requireMember(int $id): array
     {
         $member = MemberModel::findById($id);
@@ -219,19 +200,12 @@ final class MemberAdminService
     private static function cleanupFiles(?array $profile): void
     {
         if (!$profile) return;
-        $paths = [];
-        if (!empty($profile['member']['photo_path'])) $paths[] = $profile['member']['photo_path'];
-        if (!empty($profile['member']['id_proof_path'])) $paths[] = $profile['member']['id_proof_path'];
-        foreach ($profile['photos'] ?? [] as $p) $paths[] = $p['file_path'];
-        if (!empty($profile['horoscope']['horoscope_file_path'])) $paths[] = $profile['horoscope']['horoscope_file_path'];
-        if (!empty($profile['family']['family_photo_path'])) $paths[] = $profile['family']['family_photo_path'];
-        if (!empty($profile['event']['receipt_path'])) $paths[] = $profile['event']['receipt_path'];
+        $path = $profile['member']['payment_screenshot_path'] ?? null;
+        if (!$path) return;
 
-        foreach ($paths as $relative) {
-            $full = __DIR__ . '/../uploads/' . $relative;
-            if (is_file($full)) {
-                @unlink($full);
-            }
+        $full = __DIR__ . '/../uploads/' . $path;
+        if (is_file($full)) {
+            @unlink($full);
         }
     }
 }

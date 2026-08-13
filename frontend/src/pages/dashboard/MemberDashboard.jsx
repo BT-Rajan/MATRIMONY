@@ -1,5 +1,4 @@
 import { Paper, Typography, Box, Chip } from '@mui/material';
-import { Navigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 
 const STATUS_LABELS = {
@@ -12,10 +11,6 @@ const STATUS_LABELS = {
 
 export default function MemberDashboard() {
   const { user } = useAuth();
-
-  if ((user?.registration_step ?? 1) < 6) {
-    return <Navigate to="/register" replace />;
-  }
 
   const statusInfo = STATUS_LABELS[user?.status] || null;
 

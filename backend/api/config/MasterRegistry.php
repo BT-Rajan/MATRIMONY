@@ -9,41 +9,15 @@ declare(strict_types=1);
  * SQL in MasterModel safe from injection.
  *
  * type: 'simple'  -> id, name_tamil, name_english, sort_order, is_active
- *       'hierarchical' -> simple + parent_column referencing parent_slug
- *       'event' -> its own shape (name, event_date, venue) — handled by
- *                  a small amount of special-casing in the controller.
+ *
+ * Only the masters registration actually uses remain here (education,
+ * occupation, star, sign/rasi). Religion, caste, sub-caste, district,
+ * taluk, village, income, dosham, relationship, event, and payment-type
+ * were dropped along with the fields they backed — see migration 012.
  */
 final class MasterRegistry
 {
     private const REGISTRY = [
-        'religions' => [
-            'table' => 'religions', 'type' => 'simple',
-            'label_ta' => 'மதம்', 'label_en' => 'Religion',
-        ],
-        'castes' => [
-            'table' => 'castes', 'type' => 'hierarchical',
-            'parent_slug' => 'religions', 'parent_column' => 'religion_id',
-            'label_ta' => 'சாதி', 'label_en' => 'Caste',
-        ],
-        'sub-castes' => [
-            'table' => 'sub_castes', 'type' => 'hierarchical',
-            'parent_slug' => 'castes', 'parent_column' => 'caste_id',
-            'label_ta' => 'உப சாதி', 'label_en' => 'Sub Caste',
-        ],
-        'districts' => [
-            'table' => 'districts', 'type' => 'simple',
-            'label_ta' => 'மாவட்டம்', 'label_en' => 'District',
-        ],
-        'taluks' => [
-            'table' => 'taluks', 'type' => 'hierarchical',
-            'parent_slug' => 'districts', 'parent_column' => 'district_id',
-            'label_ta' => 'வட்டம்', 'label_en' => 'Taluk',
-        ],
-        'villages' => [
-            'table' => 'villages', 'type' => 'hierarchical',
-            'parent_slug' => 'taluks', 'parent_column' => 'taluk_id',
-            'label_ta' => 'கிராமம்', 'label_en' => 'Village',
-        ],
         'educations' => [
             'table' => 'educations', 'type' => 'simple',
             'label_ta' => 'கல்வி', 'label_en' => 'Education',
@@ -52,33 +26,13 @@ final class MasterRegistry
             'table' => 'occupations', 'type' => 'simple',
             'label_ta' => 'தொழில்', 'label_en' => 'Occupation',
         ],
-        'incomes' => [
-            'table' => 'incomes', 'type' => 'simple',
-            'label_ta' => 'வருமானம்', 'label_en' => 'Income',
-        ],
         'stars' => [
             'table' => 'stars', 'type' => 'simple',
             'label_ta' => 'நட்சத்திரம்', 'label_en' => 'Star',
         ],
         'rasis' => [
             'table' => 'rasis', 'type' => 'simple',
-            'label_ta' => 'ராசி', 'label_en' => 'Rasi',
-        ],
-        'doshams' => [
-            'table' => 'doshams', 'type' => 'simple',
-            'label_ta' => 'தோஷம்', 'label_en' => 'Dosham',
-        ],
-        'relationships' => [
-            'table' => 'relationships', 'type' => 'simple',
-            'label_ta' => 'உறவுமுறை', 'label_en' => 'Relationship',
-        ],
-        'events' => [
-            'table' => 'events', 'type' => 'event',
-            'label_ta' => 'நிகழ்வு', 'label_en' => 'Event',
-        ],
-        'payment-types' => [
-            'table' => 'payment_types', 'type' => 'simple',
-            'label_ta' => 'கட்டண வகை', 'label_en' => 'Payment Type',
+            'label_ta' => 'ராசி', 'label_en' => 'Sign',
         ],
     ];
 

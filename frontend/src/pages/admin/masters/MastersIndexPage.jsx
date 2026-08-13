@@ -3,11 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { MASTER_CONFIG } from '../../../config/masterConfig';
 
 const GROUPS = [
-  { title: 'மத / சாதி தகவல்', slugs: ['religions', 'castes', 'sub-castes'] },
-  { title: 'இடம் தகவல்', slugs: ['districts', 'taluks', 'villages'] },
-  { title: 'சுயவிவரம் தகவல்', slugs: ['educations', 'occupations', 'incomes'] },
-  { title: 'ஜாதக தகவல்', slugs: ['stars', 'rasis', 'doshams'] },
-  { title: 'பிற', slugs: ['relationships', 'events', 'payment-types'] },
+  { title: 'பதிவு தகவல்', slugs: ['educations', 'occupations', 'stars', 'rasis'] },
 ];
 
 export default function MastersIndexPage() {

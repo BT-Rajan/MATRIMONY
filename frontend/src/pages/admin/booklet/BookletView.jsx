@@ -142,8 +142,8 @@ export default function BookletView() {
           <Box sx={{ display: 'flex', gap: 3, mb: 3 }}>
             <Box
               component="img"
-              src={apiFileUrl(m.photo_path)}
-              alt={m.name_english}
+              src={apiFileUrl(m.payment_screenshot_path)}
+              alt="கட்டண ஸ்கிரீன்ஷாட்"
               sx={{ width: 140, height: 170, objectFit: 'cover', borderRadius: 1, border: '1px solid #ddd' }}
             />
             <Box sx={{ flex: 1 }}>
@@ -163,18 +163,20 @@ export default function BookletView() {
 
           <BookletGrid
             items={[
-              ['உயரம் / எடை', `${m.height_cm || '-'} cm / ${m.weight_kg || '-'} kg`],
-              ['திருமண நிலை', m.marital_status || '-'],
+              ['உயரம் (Msheight)', m.height_cm ? `${m.height_cm} cm` : '-'],
+              ['கோத்திரம்', m.gothram || '-'],
               ['கல்வி', m.education_tamil ? `${m.education_tamil} (${m.education_english})` : '-'],
               ['தொழில்', m.occupation_tamil ? `${m.occupation_tamil} (${m.occupation_english})` : '-'],
-              ['மதம்', m.religion_tamil ? `${m.religion_tamil} (${m.religion_english})` : '-'],
-              ['சாதி', m.caste_tamil ? `${m.caste_tamil} (${m.caste_english})` : '-'],
-              ['மாவட்டம்', m.district_tamil ? `${m.district_tamil} (${m.district_english})` : '-'],
-              ['சொந்த ஊர்', m.native_place || '-'],
               ['நட்சத்திரம்', m.star_tamil ? `${m.star_tamil} (${m.star_english})` : '-'],
-              ['ராசி', m.rasi_tamil ? `${m.rasi_tamil} (${m.rasi_english})` : '-'],
-              ['தோஷம்', m.dosham_tamil ? `${m.dosham_tamil} (${m.dosham_english})` : '-'],
-              ['மாநிலம் / நாடு', `${m.state || '-'}, ${m.country || '-'}`],
+              ['ராசி (sign)', m.rasi_tamil ? `${m.rasi_tamil} (${m.rasi_english})` : '-'],
+              ['தந்தை / தாய்', `${m.father_name || '-'} / ${m.mother_name || '-'}`],
+              ['சகோதரர் / சகோதரி', `${m.brothers ?? '-'} / ${m.sisters ?? '-'}`],
+              ['முகவரி', m.address || '-'],
+              ['குடியிருப்பு (quarter)', m.quarter || '-'],
+              ['சொந்த ஊர்', m.native_place || '-'],
+              ['தற்போதைய இருப்பிடம்', m.residence || '-'],
+              ['பதிவாளர்', m.registrar_name || '-'],
+              ['நேரில் கலந்துகொள்வது', m.participating === 'yes' ? 'ஆம்' : m.participating === 'no' ? 'இல்லை' : '-'],
             ]}
           />
         </Box>

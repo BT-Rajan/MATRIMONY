@@ -52,7 +52,6 @@ $routes = [
     'GET /admin/stats/overview' => [StatsController::class, 'overview'],
     'GET /admin/stats/trend' => [StatsController::class, 'trend'],
     'GET /admin/stats/payments' => [StatsController::class, 'payments'],
-    'GET /admin/stats/events' => [StatsController::class, 'events'],
     'GET /admin/notifications' => [NotificationController::class, 'index'],
     'GET /admin/notifications/counts' => [NotificationController::class, 'counts'],
     'GET /admin/notifications/channel-status' => [NotificationController::class, 'channelStatus'],
@@ -84,9 +83,7 @@ $patternRoutes = [
     ['POST', '#^/admin/members/(\d+)/deactivate$#', [AdminMemberController::class, 'deactivate']],
     ['POST', '#^/admin/members/(\d+)/reactivate$#', [AdminMemberController::class, 'reactivate']],
     ['POST', '#^/admin/members/(\d+)/archive$#', [AdminMemberController::class, 'archive']],
-    ['PUT', '#^/admin/members/(\d+)/event$#', [AdminMemberController::class, 'updateEvent']],
     ['DELETE', '#^/admin/saved-searches/(\d+)$#', [SavedSearchController::class, 'destroy']],
-    ['GET', '#^/admin/stats/breakdown/([a-z]+)$#', [StatsController::class, 'breakdown']],
 ];
 
 foreach ($patternRoutes as [$routeMethod, $pattern, $handler]) {

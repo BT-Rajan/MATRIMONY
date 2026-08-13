@@ -1,19 +1,16 @@
 import api from './api';
 
 const FILTER_KEYS = [
-  'search', 'registrationNumber', 'status', 'gender', 'isVerified', 'religionId', 'casteId', 'districtId',
-  'educationId', 'occupationId', 'incomeId', 'starId', 'rasiId', 'doshamId', 'state', 'country', 'phone',
-  'email', 'ageMin', 'ageMax', 'heightMin', 'heightMax', 'weightMin', 'weightMax',
-  'photoAvailable', 'horoscopeAvailable', 'payment', 'eventId', 'reference',
+  'search', 'registrationNumber', 'status', 'gender', 'isVerified',
+  'educationId', 'occupationId', 'starId', 'rasiId', 'nativePlace', 'phone',
+  'email', 'ageMin', 'ageMax', 'heightMin', 'heightMax', 'participating',
 ];
 
 const CAMEL_TO_SNAKE = {
-  registrationNumber: 'registration_number', isVerified: 'is_verified', religionId: 'religion_id',
-  casteId: 'caste_id', districtId: 'district_id', educationId: 'education_id', occupationId: 'occupation_id',
-  incomeId: 'income_id', starId: 'star_id', rasiId: 'rasi_id', doshamId: 'dosham_id', ageMin: 'age_min',
-  ageMax: 'age_max', heightMin: 'height_min', heightMax: 'height_max', weightMin: 'weight_min',
-  weightMax: 'weight_max', photoAvailable: 'photo_available', horoscopeAvailable: 'horoscope_available',
-  eventId: 'event_id',
+  registrationNumber: 'registration_number', isVerified: 'is_verified',
+  educationId: 'education_id', occupationId: 'occupation_id',
+  starId: 'star_id', rasiId: 'rasi_id', nativePlace: 'native_place',
+  ageMin: 'age_min', ageMax: 'age_max', heightMin: 'height_min', heightMax: 'height_max',
 };
 
 export function toApiParams(filters) {
@@ -60,4 +57,3 @@ export const adminMemberService = {
     window.URL.revokeObjectURL(url);
   },
 };
-
