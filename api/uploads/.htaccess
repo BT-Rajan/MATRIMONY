@@ -1,0 +1,5 @@
+# Uploaded files are user-supplied — never let the server execute them.
+<FilesMatch "\.(php|phtml|php\d?)$">
+    Require all denied
+</FilesMatch>
+Options -Indexes

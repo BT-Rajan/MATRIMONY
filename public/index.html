@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="ta">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>கார்காத்தார் மங்கள சந்திப்பு - பதிவு</title>
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<header class="site">
+  <h1>கார்காத்தார் மங்கள சந்திப்பு</h1>
+  <p>குரோம்பேட்டை — சுயவிவரப் பதிவு</p>
+</header>
+<main>
+  <p class="center"><a href="edit.html">ஏற்கனவே பதிவு செய்தவரா? சுயவிவரத்தை திருத்த</a></p>
+
+  <div id="banner"></div>
+
+  <form id="regForm" class="card" enctype="multipart/form-data">
+    <h2>தனிப்பட்ட விவரங்கள்</h2>
+
+    <label>பெயர் <span class="req">*</span></label>
+    <input name="name" required>
+
+    <div class="row">
+      <div>
+        <label>பாலினம் <span class="req">*</span></label>
+        <select name="gender" required>
+          <option value="">-- தேர்வு செய்யவும் --</option>
+          <option value="groom">மணமகன்</option>
+          <option value="bride">மணமகள்</option>
+        </select>
+      </div>
+      <div>
+        <label>பிறந்த தேதி <span class="req">*</span></label>
+        <input type="date" name="dob" required>
+      </div>
+    </div>
+
+    <div class="row">
+      <div>
+        <label>மின்னஞ்சல் <span class="req">*</span></label>
+        <input type="email" name="email" required>
+        <p class="help">இந்த மின்னஞ்சல் மூலமே பின்னர் சுயவிவரத்தை திருத்த முடியும்.</p>
+      </div>
+      <div>
+        <label>மொபைல் எண் <span class="req">*</span></label>
+        <input name="phone1" maxlength="10" required>
+      </div>
+    </div>
+    <label>வாட்ஸ்அப் / மற்றொரு எண் (விருப்பம்)</label>
+    <input name="phone2" maxlength="10">
+
+    <label>கோத்திரம் (விருப்பம்)</label>
+    <input name="gothram">
+
+    <label>முகவரி <span class="req">*</span></label>
+    <textarea name="address" rows="2" required></textarea>
+
+    <label>வட்டாரம் / குடும்பம் (விருப்பம்)</label>
+    <input name="quarter">
+
+    <div class="row">
+      <div>
+        <label>உயரம் (செ.மீ.) <span class="req">*</span></label>
+        <input type="number" name="height_cm" min="100" max="250" required>
+      </div>
+      <div>
+        <label>கல்வி <span class="req">*</span></label>
+        <select name="education" id="education" required></select>
+      </div>
+    </div>
+
+    <label>தொழில் <span class="req">*</span></label>
+    <select name="occupation" id="occupation" required></select>
+
+    <div class="row">
+      <div>
+        <label>தந்தை பெயர் <span class="req">*</span></label>
+        <input name="father_name" required>
+      </div>
+      <div>
+        <label>தாய் பெயர் <span class="req">*</span></label>
+        <input name="mother_name" required>
+      </div>
+    </div>
+
+    <div class="row">
+      <div>
+        <label>நட்சத்திரம் <span class="req">*</span></label>
+        <select name="star" id="star" required></select>
+      </div>
+      <div>
+        <label>ராசி <span class="req">*</span></label>
+        <select name="rasi" id="rasi" required></select>
+      </div>
+    </div>
+
+    <div class="row">
+      <div>
+        <label>சொந்த ஊர் <span class="req">*</span></label>
+        <input name="native_place" required>
+      </div>
+      <div>
+        <label>தற்போதைய இருப்பிடம் <span class="req">*</span></label>
+        <input name="residence" required>
+      </div>
+    </div>
+
+    <label>பதிவாளர் பெயர் (உங்களை பரிந்துரைத்தவர்) <span class="req">*</span></label>
+    <input name="registrar_name" required>
+
+    <div class="row">
+      <div>
+        <label>சகோதரர்கள் எண்ணிக்கை</label>
+        <input type="number" name="brothers" min="0" max="20" value="0">
+      </div>
+      <div>
+        <label>சகோதரிகள் எண்ணிக்கை</label>
+        <input type="number" name="sisters" min="0" max="20" value="0">
+      </div>
+    </div>
+
+    <label>நிகழ்வில் நேரில் கலந்துகொள்வீர்களா? <span class="req">*</span></label>
+    <select name="participating" required>
+      <option value="">-- தேர்வு செய்யவும் --</option>
+      <option value="yes">ஆம்</option>
+      <option value="no">இல்லை</option>
+    </select>
+
+    <h2 style="margin-top:28px">கட்டணம்</h2>
+    <div class="row">
+      <div>
+        <label>கட்டண தொகை (₹) <span class="req">*</span></label>
+        <input type="number" step="0.01" name="payment_amount" required>
+      </div>
+      <div>
+        <label>கட்டண தேதி <span class="req">*</span></label>
+        <input type="date" name="payment_date" required>
+      </div>
+    </div>
+    <label>பரிவர்த்தனை / குறிப்பு எண் <span class="req">*</span></label>
+    <input name="payment_reference" required>
+
+    <label>கட்டண சான்று (Screenshot / Receipt) — JPG, PNG அல்லது PDF, 5MB வரை <span class="req">*</span></label>
+    <input type="file" name="payment_proof" accept=".jpg,.jpeg,.png,.pdf" required>
+
+    <button type="submit" id="submitBtn">பதிவு செய்யவும்</button>
+  </form>
+</main>
+<script src="assets/data.js"></script>
+<script src="assets/register.js"></script>
+</body>
+</html>
