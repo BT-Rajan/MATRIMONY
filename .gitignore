@@ -1,3 +1,0 @@
-.env
-api/uploads/payment_proofs/*
-!api/uploads/payment_proofs/.gitkeep
