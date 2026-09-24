@@ -24,7 +24,6 @@ export const STRINGS = {
     bank_acc: 'இந்தியன் வங்கி, கணக்கு எண்',
     bank_branch: 'சிட்லபாக்கம் கிளை',
     contact_title: 'தொடர்புக்கு',
-    c_web: 'இணையதளம்', c_wa: 'வாட்ஸ்அப்', c_mail: 'மின்னஞ்சல்',
     staff_login: 'நிர்வாகி உள்நுழைவு',
 
     login_title: 'நிர்வாக உள்நுழைவு',
@@ -101,7 +100,6 @@ export const STRINGS = {
     bank_acc: 'Indian Bank, A/c No.',
     bank_branch: 'Sitlapakkam branch',
     contact_title: 'Contact',
-    c_web: 'Website', c_wa: 'WhatsApp', c_mail: 'E-mail',
     staff_login: 'Staff login',
 
     login_title: 'Staff sign in',

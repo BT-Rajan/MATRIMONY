@@ -5,7 +5,6 @@ import { SITE } from '../config';
 
 export default function Landing() {
   const { t, lang } = useI18n();
-  const c = SITE.contact;
   return (
     <PublicShell>
       <section className="hero">
@@ -44,9 +43,15 @@ export default function Landing() {
 
       <section className="card" aria-labelledby="contact">
         <h2 id="contact">{t('contact_title')}</h2>
-        <p><strong>{t('c_web')}:</strong> <a href={c.websiteUrl} target="_blank" rel="noopener noreferrer">{c.website}</a></p>
-        <p><strong>{t('c_wa')}:</strong> <a href={`https://wa.me/91${c.whatsapp}`} target="_blank" rel="noopener noreferrer">{c.whatsapp}</a></p>
-        <p><strong>{t('c_mail')}:</strong> <a href={`mailto:${c.email}`}>{c.email}</a></p>
+        <ul className="officers">
+          {SITE.officers.map((o) => (
+            <li key={o.role.en}>
+              <span>{o.role[lang]}</span>
+              <strong>{o.name[lang]}</strong>
+              <a href={`tel:${o.tel}`}>{o.phone}</a>
+            </li>
+          ))}
+        </ul>
       </section>
 
       <p className="foot"><Link to="/admin">{t('staff_login')}</Link></p>

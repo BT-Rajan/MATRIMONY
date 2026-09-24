@@ -37,7 +37,7 @@ CREATE TABLE IF NOT EXISTS applications (
   email VARCHAR(120) NULL,
   payment_ref VARCHAR(40) NOT NULL,
   payment_date DATE NOT NULL,
-  payment_amount DECIMAL(10,2) NOT NULL DEFAULT 500.00,
+  payment_amount DECIMAL(10,2) NOT NULL DEFAULT 800.00,
   signature VARCHAR(120) NOT NULL,
   terms_version VARCHAR(10) NOT NULL,
   terms_accepted_at DATETIME NOT NULL,

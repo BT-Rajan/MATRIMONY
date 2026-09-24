@@ -3,8 +3,8 @@ declare(strict_types=1);
 
 date_default_timezone_set('Asia/Kolkata');
 
-const TERMS_VERSION = '1';
-const FEE = 500;
+const TERMS_VERSION = '2';
+const FEE = 800;
 
 final class ApiError extends Exception
 {
