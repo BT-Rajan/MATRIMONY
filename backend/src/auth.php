@@ -14,7 +14,7 @@ function h_login(): void
     $ip = client_ip();
 
     throttle_check('login_ip', $ip, 20, 900);
-    throttle_check('login_user', $username, 6, 900);
+    throttle_check('login_user', $ip . '|' . $username, 6, 900);
 
     $st = db()->prepare('SELECT id, name, username, role, is_active, password_hash FROM users WHERE username = ?');
     $st->execute([$username]);
@@ -24,7 +24,7 @@ function h_login(): void
     $ok = password_verify($password, $hash) && $row && (int)$row['is_active'] === 1;
     if (!$ok) {
         throttle_hit('login_ip', $ip);
-        throttle_hit('login_user', $username);
+        throttle_hit('login_user', $ip . '|' . $username);
         fail(401, 'invalid_credentials');
     }
 

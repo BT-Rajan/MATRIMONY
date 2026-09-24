@@ -6,6 +6,7 @@ import AdminLayout from './pages/admin/AdminLayout';
 import Dashboard from './pages/admin/Dashboard';
 import Applications from './pages/admin/Applications';
 import ApplicationView from './pages/admin/ApplicationView';
+import Users from './pages/admin/Users';
 
 export default function App() {
   return (
@@ -17,6 +18,7 @@ export default function App() {
         <Route index element={<Dashboard />} />
         <Route path="applications" element={<Applications />} />
         <Route path="applications/:id" element={<ApplicationView />} />
+        <Route path="users" element={<Users />} />
       </Route>
       <Route path="*" element={<Landing />} />
     </Routes>
