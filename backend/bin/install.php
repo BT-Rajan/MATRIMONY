@@ -6,7 +6,11 @@ require __DIR__ . '/../src/helpers.php';
 $name = env('DB_NAME', 'matrimony');
 $raw = new PDO('mysql:host=' . env('DB_HOST', '127.0.0.1') . ';port=' . env('DB_PORT', '3306') . ';charset=utf8mb4',
     env('DB_USER', 'root'), env('DB_PASS', ''), [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]);
-$raw->exec('CREATE DATABASE IF NOT EXISTS `' . str_replace('`', '', $name) . '` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci');
+try {
+    $raw->exec('CREATE DATABASE IF NOT EXISTS `' . str_replace('`', '', $name) . '` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci');
+} catch (PDOException $e) {
+    echo "Could not create database (assuming it already exists): " . $e->getMessage() . "\n";
+}
 
 foreach (array_filter(array_map('trim', explode(';', file_get_contents(__DIR__ . '/../schema.sql')))) as $sql) {
     db()->exec($sql);
