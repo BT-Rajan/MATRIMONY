@@ -10,18 +10,10 @@ import { api } from '../api';
 const DRAFT = 'kks_draft';
 
 function Gate({ onAccept }) {
-  const boxRef = useRef(null);
-  const [read, setRead] = useState(false);
   const [ok, setOk] = useState(false);
-
-  const check = () => {
-    const el = boxRef.current;
-    if (el && el.scrollTop + el.clientHeight >= el.scrollHeight - 8) setRead(true);
-  };
-  useEffect(check, []);
-
   return (
     <>
+      <p><Link to="/" className="btn secondary small">← முகப்பு</Link></p>
       <h1>மங்கல சந்திப்பு விண்ணப்பம்</h1>
 
       <div className="notice" role="note">
@@ -38,15 +30,12 @@ function Gate({ onAccept }) {
 
       <section className="card" aria-labelledby="tt">
         <h2 id="tt">விதிமுறைகள் மற்றும் நிபந்தனைகள்</h2>
-        <div className="terms" ref={boxRef} onScroll={check} tabIndex={0} role="region" aria-labelledby="tt">
-          <ol>{TERMS_TA.map((x, i) => <li key={i}>{x}</li>)}</ol>
+        <ol className="terms-list">{TERMS_TA.map((x, i) => <li key={i}>{x}</li>)}</ol>
+        <div className="check big">
+          <input id="accept" type="checkbox" checked={ok} onChange={(e) => setOk(e.target.checked)} />
+          <label htmlFor="accept">நான் ஏற்றுக்கொள்கிறேன்</label>
         </div>
-        <p className="hint" id="rh">{read ? 'நீங்கள் விதிமுறைகளை முழுமையாகப் படித்துவிட்டீர்கள்.' : 'கீழே வரை படித்த பின்னரே ஏற்பு பெட்டி செயல்படும்.'}</p>
-        <div className="check">
-          <input id="accept" type="checkbox" checked={ok} disabled={!read} aria-describedby="rh" onChange={(e) => setOk(e.target.checked)} />
-          <label htmlFor="accept">மேற்கண்ட விதிமுறைகள் மற்றும் நிபந்தனைகளைப் படித்துப் புரிந்துகொண்டேன்; அவற்றை ஏற்றுக்கொள்கிறேன்.</label>
-        </div>
-        <button type="button" className="btn block" disabled={!ok} onClick={onAccept}>ஏற்று படிவத்தைத் தொடங்கு</button>
+        <button type="button" className="btn block" disabled={!ok} onClick={onAccept}>தொடரவும்</button>
       </section>
     </>
   );
@@ -96,6 +85,7 @@ export default function Apply() {
         {step === 'gate' && <Gate onAccept={() => setStep('form')} />}
         {step === 'form' && (
           <>
+            <p><Link to="/" className="btn secondary small">← முகப்பு</Link></p>
             <h1 ref={head} tabIndex={-1}>விண்ணப்பப் படிவம்</h1>
             <p className="hint">* குறியிட்ட விவரங்கள் அவசியம். கட்டணம் செலுத்திய பின் மட்டுமே சமர்ப்பிக்கவும்.</p>
             <ApplicationForm
@@ -106,6 +96,7 @@ export default function Apply() {
               submitLabel="விண்ணப்பத்தை சமர்ப்பிக்கவும்"
               busyLabel="சமர்ப்பிக்கிறது…"
             />
+            <p><Link to="/" className="btn secondary block">முகப்பு</Link></p>
           </>
         )}
         {step === 'done' && <Done reg={reg} />}
