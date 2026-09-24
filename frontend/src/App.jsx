@@ -4,6 +4,8 @@ import Apply from './pages/Apply';
 import Login from './pages/admin/Login';
 import AdminLayout from './pages/admin/AdminLayout';
 import Dashboard from './pages/admin/Dashboard';
+import Applications from './pages/admin/Applications';
+import ApplicationView from './pages/admin/ApplicationView';
 
 export default function App() {
   return (
@@ -13,6 +15,8 @@ export default function App() {
       <Route path="/admin/login" element={<Login />} />
       <Route path="/admin" element={<AdminLayout />}>
         <Route index element={<Dashboard />} />
+        <Route path="applications" element={<Applications />} />
+        <Route path="applications/:id" element={<ApplicationView />} />
       </Route>
       <Route path="*" element={<Landing />} />
     </Routes>
