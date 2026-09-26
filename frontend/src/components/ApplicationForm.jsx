@@ -1,8 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
-import { ALL_FIELDS, GROUPS, validate } from '../fields';
+import { ALL_FIELDS, GROUPS, ageYears, maskDMY, validate } from '../fields';
 import { STRINGS } from '../strings';
-
-const localToday = () => new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 10);
 
 function loadDraft(key, initial) {
   if (!key) return initial;
@@ -80,23 +78,36 @@ export default function ApplicationForm({ initial, lang, submitLabel, busyLabel,
                 );
               } else if (f.type === 'textarea') {
                 control = <textarea {...common} rows={3} maxLength={f.max} />;
+              } else if (f.dateField) {
+                control = (
+                  <input
+                    {...common}
+                    type="text"
+                    inputMode="numeric"
+                    autoComplete="off"
+                    maxLength={10}
+                    placeholder="DD-MM-YYYY"
+                    onChange={(e) => set(f.k, maskDMY(e.target.value))}
+                  />
+                );
               } else {
                 control = (
                   <input
                     {...common}
-                    type={f.type === 'tel' || f.type === 'email' || f.type === 'date' ? f.type : 'text'}
+                    type={f.type === 'tel' || f.type === 'email' ? f.type : 'text'}
                     maxLength={f.max}
-                    inputMode={f.type === 'tel' ? 'tel' : f.k === 'payment_ref' ? 'text' : undefined}
-                    max={f.type === 'date' ? localToday() : undefined}
+                    inputMode={f.type === 'tel' ? 'tel' : undefined}
                     placeholder={f.ph}
                   />
                 );
               }
+              const age = f.k === 'dob' ? ageYears(v.dob) : null;
               return (
                 <div className={`field${f.full ? ' full' : ''}`} key={f.k}>
                   <label htmlFor={f.k}>{f[lang]}{f.req ? <span aria-hidden="true"> *</span> : null}</label>
                   {control}
                   {err && <p className="err" id={`${f.k}-err`}>{S['e_' + err] || S.e_invalid}</p>}
+                  {!err && age !== null && age < 21 && <p className="hint warn">{S.w_age_18_21}</p>}
                 </div>
               );
             })}

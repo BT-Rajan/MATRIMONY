@@ -3,6 +3,7 @@ import { Navigate } from 'react-router-dom';
 import { api } from '../../api';
 import { useAuth } from '../../auth';
 import { useI18n } from '../../i18n';
+import { fmtDateTime } from '../../date';
 
 const BLANK = { name: '', username: '', role: 'manager', is_active: true, password: '' };
 
@@ -130,7 +131,7 @@ export default function Users() {
                 <td data-label={t('username')}>{u.username}</td>
                 <td data-label={t('u_role')}>{t('role_' + u.role)}</td>
                 <td data-label={t('u_status')}>{Number(u.is_active) ? t('u_active') : t('u_inactive')}</td>
-                <td data-label={t('u_last')}>{u.last_login_at ? u.last_login_at.slice(0, 16) : t('u_never')}</td>
+                <td data-label={t('u_last')}>{u.last_login_at ? fmtDateTime(u.last_login_at) : t('u_never')}</td>
                 <td>
                   <div className="row" style={{ justifyContent: 'flex-end' }}>
                     <button type="button" className="btn secondary small" onClick={() => open(u)}>{t('edit')}</button>

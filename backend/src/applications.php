@@ -26,7 +26,7 @@ function h_apply(): void
     try {
         $pdo->prepare($sql)->execute($args);
         $id = (int)$pdo->lastInsertId();
-        $reg = sprintf('KKS%s%05d', date('Y'), $id);
+        $reg = sprintf('%02d%04d', (int)date('y'), $id); // e.g. 260001 = year '26' + 4-digit sequence
         $pdo->prepare('UPDATE applications SET reg_no = ? WHERE id = ?')->execute([$reg, $id]);
         audit($id, null, 'created', null, 'pending');
         $pdo->commit();

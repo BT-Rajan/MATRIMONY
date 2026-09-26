@@ -67,6 +67,7 @@ input:focus, select:focus, textarea:focus { outline: 3px solid #1a5fb4; outline-
 [aria-invalid=true] { border-color: var(--bad) !important; background: #fff6f5; }
 .err { color: var(--bad); font-size: .88rem; margin: 4px 0 0; font-weight: 600; }
 .hint { color: var(--muted); font-size: .88rem; margin: 4px 0 0; }
+.hint.warn { color: var(--warn); font-weight: 600; }
 .alert { padding: 12px 14px; border-radius: 8px; margin-block: 12px; border: 1px solid; font-weight: 600; }
 .alert.bad { background: #fdecea; color: var(--bad); border-color: var(--bad); }
 .alert.good { background: #e8f5e9; color: var(--ok); border-color: var(--ok); }

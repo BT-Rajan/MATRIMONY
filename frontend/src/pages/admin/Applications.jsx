@@ -3,6 +3,7 @@ import { Link, useSearchParams } from 'react-router-dom';
 import { api } from '../../api';
 import { useI18n } from '../../i18n';
 import StatusBadge from '../../components/StatusBadge';
+import { fmtDateTime } from '../../date';
 
 export default function Applications() {
   const { t } = useI18n();
@@ -68,7 +69,7 @@ export default function Applications() {
                   <td data-label={t('a_reg')}><Link to={`/admin/applications/${a.id}`}>{a.reg_no}</Link></td>
                   <td data-label={t('a_name')}>{a.full_name}</td>
                   <td data-label={t('a_phone')}>{a.phone}</td>
-                  <td data-label={t('a_date')}>{a.created_at.slice(0, 16)}</td>
+                  <td data-label={t('a_date')}>{fmtDateTime(a.created_at)}</td>
                   <td data-label={t('a_status')}><StatusBadge status={a.status} /></td>
                 </tr>
               ))}

@@ -15,10 +15,19 @@ const APP_COLS = [
     'address', 'phone', 'email', 'payment_ref', 'payment_date', 'signature',
 ];
 
-function valid_date(string $s): ?DateTimeImmutable
+// All dates travel over the API as DD-MM-YYYY; only the DB layer sees Y-m-d.
+function valid_date_dmy(string $s): ?DateTimeImmutable
 {
-    $d = DateTimeImmutable::createFromFormat('!Y-m-d', $s);
-    return ($d && $d->format('Y-m-d') === $s) ? $d : null;
+    if (!preg_match('/^\d{2}-\d{2}-\d{4}$/', $s)) return null;
+    $d = DateTimeImmutable::createFromFormat('!d-m-Y', $s);
+    return ($d && $d->format('d-m-Y') === $s) ? $d : null;
+}
+
+// Accepts an Indian mobile with an optional +91/91/0 prefix; returns the bare 10-digit number, or null.
+function normalize_mobile(string $raw): ?string
+{
+    $p = preg_replace('/[\s\-()]/', '', $raw) ?? '';
+    return preg_match('/^(?:\+?91|0)?([6-9]\d{9})$/', $p, $m) ? $m[1] : null;
 }
 
 /** @return array{0: array, 1: array} [clean data, field => error code] */
@@ -47,18 +56,22 @@ function validate_application(array $in, bool $public): array
     $d['dob'] = $dobRaw;
     if ($dobRaw === '') {
         $e['dob'] = 'required';
-    } elseif (!($dob = valid_date($dobRaw)) || $dob > $today) {
+    } elseif (!($dob = valid_date_dmy($dobRaw))) {
+        $e['dob'] = 'date_format';
+    } elseif ($dob > $today) {
         $e['dob'] = 'invalid';
     } else {
         $age = $dob->diff($today)->y;
-        if ($age < ($gender === 'male' ? 21 : 18)) $e['dob'] = 'age_min';
-        elseif ($age > 70) $e['dob'] = 'invalid';
+        if ($age < 18) $e['dob'] = 'age_min';
+        elseif ($age > 90) $e['dob'] = 'invalid';
+        else $d['dob'] = $dob->format('Y-m-d'); // normalized for storage only once fully valid
     }
 
-    $phone = preg_replace('/[\s\-()]/', '', clean_str($in['phone'] ?? '')) ?? '';
-    $d['phone'] = $phone;
-    if ($phone === '') $e['phone'] = 'required';
-    elseif (!preg_match('/^\+?\d{10,15}$/', $phone)) $e['phone'] = 'invalid';
+    $phoneRaw = clean_str($in['phone'] ?? '');
+    $mobile = $phoneRaw === '' ? null : normalize_mobile($phoneRaw);
+    $d['phone'] = $mobile ?? $phoneRaw;
+    if ($phoneRaw === '') $e['phone'] = 'required';
+    elseif (!$mobile) $e['phone'] = 'invalid';
 
     $email = clean_str($in['email'] ?? '');
     $d['email'] = $email === '' ? null : $email;
@@ -73,12 +86,14 @@ function validate_application(array $in, bool $public): array
     $d['payment_date'] = $payRaw;
     if ($payRaw === '') {
         $e['payment_date'] = 'required';
-    } elseif (!($pay = valid_date($payRaw))) {
-        $e['payment_date'] = 'invalid';
+    } elseif (!($pay = valid_date_dmy($payRaw))) {
+        $e['payment_date'] = 'date_format';
     } elseif ($pay > $today) {
         $e['payment_date'] = 'future_date';
     } elseif ($public && $pay < $today->modify('-1 year')) {
         $e['payment_date'] = 'invalid';
+    } else {
+        $d['payment_date'] = $pay->format('Y-m-d');
     }
 
     if ($public && ($in['terms_accepted'] ?? false) !== true) $e['terms_accepted'] = 'required';

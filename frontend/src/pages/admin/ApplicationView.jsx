@@ -5,6 +5,7 @@ import { useI18n } from '../../i18n';
 import { ALL_FIELDS, GENDERS, GROUPS, fromRecord } from '../../fields';
 import ApplicationForm from '../../components/ApplicationForm';
 import StatusBadge from '../../components/StatusBadge';
+import { fmtDate, fmtDateTime } from '../../date';
 
 export default function ApplicationView() {
   const { id } = useParams();
@@ -28,6 +29,7 @@ export default function ApplicationView() {
     const val = a[f.k];
     if (val === null || val === '') return '—';
     if (f.k === 'gender') return GENDERS.find((g) => g.v === val)?.[lang] ?? val;
+    if (f.dateField) return fmtDate(val);
     return val;
   };
 
@@ -78,7 +80,7 @@ export default function ApplicationView() {
         <h2 id="dec">{t('v_decision')}</h2>
         {a.status !== 'pending' && (
           <p>
-            <StatusBadge status={a.status} /> {a.decided_by_name && <>{t('v_decided_by')}: <strong>{a.decided_by_name}</strong>, {a.decided_at?.slice(0, 16)}</>}
+            <StatusBadge status={a.status} /> {a.decided_by_name && <>{t('v_decided_by')}: <strong>{a.decided_by_name}</strong>, {fmtDateTime(a.decided_at)}</>}
             {a.decision_note && <><br />{t('v_note')}: {a.decision_note}</>}
           </p>
         )}
@@ -122,8 +124,8 @@ export default function ApplicationView() {
             <dl className="dl">
               <div><dt>{t('v_regno')}</dt><dd>{a.reg_no}</dd></div>
               <div><dt>{t('v_paid')}</dt><dd>Rs. {Number(a.payment_amount)}</dd></div>
-              <div><dt>{t('v_submitted')}</dt><dd>{a.created_at}</dd></div>
-              <div><dt>{t('v_terms')}</dt><dd>{a.terms_accepted_at}</dd></div>
+              <div><dt>{t('v_submitted')}</dt><dd>{fmtDateTime(a.created_at)}</dd></div>
+              <div><dt>{t('v_terms')}</dt><dd>{fmtDateTime(a.terms_accepted_at)}</dd></div>
             </dl>
           </section>
         </>
@@ -133,7 +135,7 @@ export default function ApplicationView() {
         <h2 id="hist">{t('v_history')}</h2>
         <ul style={{ margin: 0, paddingLeft: '1.2em' }}>
           {a.history.map((h, i) => (
-            <li key={i}><small>{h.created_at.slice(0, 16)}</small> — <strong>{h.user_name || t('v_system')}</strong>: {histText(h)}</li>
+            <li key={i}><small>{fmtDateTime(h.created_at)}</small> — <strong>{h.user_name || t('v_system')}</strong>: {histText(h)}</li>
           ))}
         </ul>
       </section>
