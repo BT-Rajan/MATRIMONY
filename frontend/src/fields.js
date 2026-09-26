@@ -5,14 +5,21 @@ export const GENDERS = [
   { v: 'female', ta: 'பெண் (செல்வி)', en: 'Female' },
 ];
 
+export const MARITAL_STATUS = [
+  { v: 'first', ta: 'முதல் திருமணம்', en: 'First marriage' },
+  { v: 'remarriage', ta: 'மறுமணம்', en: 'Remarriage' },
+];
+
 // req: required; full: spans both columns
 export const GROUPS = [
   {
     id: 'personal', ta: 'தனிப்பட்ட விவரங்கள்', en: 'Personal details',
     fields: [
       { k: 'gender', ta: 'பாலினம்', en: 'Gender', type: 'select', options: GENDERS, req: 1 },
+      { k: 'marital_status', ta: 'திருமண நிலை', en: 'Marital status', type: 'select', options: MARITAL_STATUS, req: 1 },
       { k: 'full_name', ta: 'செல்வன் / செல்வி பெயர்', en: 'Name', max: 120, req: 1, full: 1, auto: 'name' },
       { k: 'dob', ta: 'பிறந்த தேதி (DD-MM-YYYY)', en: 'Date of birth (DD-MM-YYYY)', dateField: 1, req: 1, auto: 'bday' },
+      { k: 'height', ta: 'உயரம்', en: 'Height', max: 30, ph: 'எ.கா: 5\'6" / 168 செ.மீ' },
       { k: 'gothram', ta: 'கோத்திரம்', en: 'Gothram', max: 80, req: 1 },
       { k: 'nakshatram', ta: 'நட்சத்திரம்', en: 'Star (Nakshatram)', max: 60, req: 1 },
       { k: 'rasi', ta: 'ராசி', en: 'Rasi', max: 60, req: 1 },
@@ -25,6 +32,7 @@ export const GROUPS = [
       { k: 'occupation', ta: 'பணி', en: 'Occupation', max: 150, req: 1, auto: 'organization-title' },
       { k: 'work_location', ta: 'பணியிடம்', en: 'Work location', max: 150 },
       { k: 'monthly_income', ta: 'மாத வருமானம்', en: 'Monthly income', max: 60 },
+      { k: 'salary', ta: 'சம்பளம்', en: 'Salary', max: 60 },
     ],
   },
   {
@@ -64,6 +72,7 @@ export const GROUPS = [
 
 export const ALL_FIELDS = GROUPS.flatMap((g) => g.fields);
 export const EMPTY = Object.fromEntries(ALL_FIELDS.map((f) => [f.k, '']));
+EMPTY.marital_status = 'first';
 
 export function fromRecord(rec) {
   return Object.fromEntries(ALL_FIELDS.map((f) => {

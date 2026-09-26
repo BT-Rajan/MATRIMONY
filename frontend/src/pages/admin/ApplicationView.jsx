@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { api } from '../../api';
 import { useI18n } from '../../i18n';
-import { ALL_FIELDS, GENDERS, GROUPS, fromRecord } from '../../fields';
+import { ALL_FIELDS, GENDERS, GROUPS, MARITAL_STATUS, fromRecord } from '../../fields';
 import ApplicationForm from '../../components/ApplicationForm';
 import StatusBadge from '../../components/StatusBadge';
 import { fmtDate, fmtDateTime } from '../../date';
@@ -29,6 +29,7 @@ export default function ApplicationView() {
     const val = a[f.k];
     if (val === null || val === '') return '—';
     if (f.k === 'gender') return GENDERS.find((g) => g.v === val)?.[lang] ?? val;
+    if (f.k === 'marital_status') return MARITAL_STATUS.find((m) => m.v === val)?.[lang] ?? val;
     if (f.dateField) return fmtDate(val);
     return val;
   };

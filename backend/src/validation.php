@@ -2,15 +2,17 @@
 declare(strict_types=1);
 
 const APP_TEXT = [ // field => [max length, required]
-    'full_name' => [120, true], 'gothram' => [80, true], 'nakshatram' => [60, true], 'rasi' => [60, true],
+    'full_name' => [120, true], 'height' => [30, false], 'gothram' => [80, true], 'nakshatram' => [60, true], 'rasi' => [60, true],
     'education' => [150, true], 'occupation' => [150, true], 'work_location' => [150, false], 'monthly_income' => [60, false],
+    'salary' => [60, false],
     'father_name' => [120, true], 'father_occupation' => [120, false], 'father_native' => [120, false],
     'mother_name' => [120, true], 'mother_occupation' => [120, false], 'mother_native' => [120, false],
     'siblings' => [255, false], 'address' => [500, true], 'signature' => [120, true],
 ];
 
 const APP_COLS = [
-    'gender', 'full_name', 'dob', 'gothram', 'nakshatram', 'rasi', 'education', 'occupation', 'work_location', 'monthly_income',
+    'gender', 'marital_status', 'full_name', 'dob', 'height', 'gothram', 'nakshatram', 'rasi', 'education', 'occupation',
+    'work_location', 'monthly_income', 'salary',
     'father_name', 'father_occupation', 'father_native', 'mother_name', 'mother_occupation', 'mother_native', 'siblings',
     'address', 'phone', 'email', 'payment_ref', 'payment_date', 'signature',
 ];
@@ -51,6 +53,10 @@ function validate_application(array $in, bool $public): array
     $gender = $in['gender'] ?? '';
     if (!in_array($gender, ['male', 'female'], true)) $e['gender'] = 'required';
     $d['gender'] = $gender;
+
+    $marital = $in['marital_status'] ?? 'first';
+    if (!in_array($marital, ['first', 'remarriage'], true)) $e['marital_status'] = 'invalid';
+    $d['marital_status'] = $marital;
 
     $dobRaw = clean_str($in['dob'] ?? '');
     $d['dob'] = $dobRaw;
