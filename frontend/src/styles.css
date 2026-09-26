@@ -137,3 +137,6 @@ input:focus, select:focus, textarea:focus { outline: 3px solid #1a5fb4; outline-
 .check.big input { width: 32px; height: 32px; margin-top: 0; }
 .check.big label { font-size: 1.15rem; }
 @media (min-width: 640px) { .officers { grid-template-columns: repeat(3, 1fr); gap: 16px; } .officers li { border-bottom: 0; } }
+
+.pay-link { margin-bottom: 14px; }
+.pay-link .hint { text-align: center; }

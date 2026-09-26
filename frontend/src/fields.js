@@ -1,4 +1,5 @@
 import { ymdToDmy } from './date';
+import { SITE } from './config';
 
 export const GENDERS = [
   { v: 'male', ta: 'ஆண் (செல்வன்)', en: 'Male' },
@@ -60,6 +61,9 @@ export const GROUPS = [
     fields: [
       { k: 'payment_ref', ta: 'பரிவர்த்தனை எண் (UTR / Ref No.)', en: 'Transaction no. (UTR / Ref No.)', max: 40, req: 1 },
       { k: 'payment_date', ta: 'பணம் செலுத்திய தேதி (DD-MM-YYYY)', en: 'Payment date (DD-MM-YYYY)', dateField: 1, req: 1 },
+      { k: 'payment_time', ta: 'தோராயமான நேரம்', en: 'Approx. time', max: 15, req: 1, ph: 'எ.கா. 10:30 AM' },
+      { k: 'payment_amount', ta: 'செலுத்திய தொகை (ரூ.)', en: 'Amount paid (Rs.)', max: 10, req: 1, numeric: 1 },
+      { k: 'payment_bank', ta: 'வங்கி பெயர்', en: 'Bank name', max: 60, req: 1, ph: 'எ.கா. இந்தியன் வங்கி' },
     ],
   },
   {
@@ -73,6 +77,7 @@ export const GROUPS = [
 export const ALL_FIELDS = GROUPS.flatMap((g) => g.fields);
 export const EMPTY = Object.fromEntries(ALL_FIELDS.map((f) => [f.k, '']));
 EMPTY.marital_status = 'first';
+EMPTY.payment_amount = String(SITE.fee);
 
 export function fromRecord(rec) {
   return Object.fromEntries(ALL_FIELDS.map((f) => {
@@ -131,6 +136,8 @@ export function validate(v) {
       if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(x)) e[f.k] = 'invalid';
     } else if (f.k === 'payment_ref') {
       if (!/^[A-Za-z0-9\-/]{6,40}$/.test(x)) e[f.k] = 'invalid';
+    } else if (f.k === 'payment_amount') {
+      if (!/^\d{1,6}(\.\d{1,2})?$/.test(x) || Number(x) <= 0) e[f.k] = 'invalid';
     }
   }
   return e;

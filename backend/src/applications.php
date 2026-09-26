@@ -20,9 +20,9 @@ function h_apply(): void
     if ($dup->fetch()) fail(409, 'validation', ['phone' => 'duplicate']);
 
     $cols = APP_COLS;
-    $sql = 'INSERT INTO applications (' . implode(', ', $cols) . ', payment_amount, terms_version, terms_accepted_at) VALUES ('
-        . implode(', ', array_map(fn($c) => ':' . $c, $cols)) . ', :amount, :tv, :ta)';
-    $args = [':amount' => FEE, ':tv' => TERMS_VERSION, ':ta' => now()];
+    $sql = 'INSERT INTO applications (' . implode(', ', $cols) . ', terms_version, terms_accepted_at) VALUES ('
+        . implode(', ', array_map(fn($c) => ':' . $c, $cols)) . ', :tv, :ta)';
+    $args = [':tv' => TERMS_VERSION, ':ta' => now()];
     foreach ($cols as $c) $args[':' . $c] = $d[$c];
 
     $pdo = db();

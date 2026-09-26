@@ -30,6 +30,7 @@ export default function ApplicationView() {
     if (val === null || val === '') return '—';
     if (f.k === 'gender') return GENDERS.find((g) => g.v === val)?.[lang] ?? val;
     if (f.k === 'marital_status') return MARITAL_STATUS.find((m) => m.v === val)?.[lang] ?? val;
+    if (f.k === 'payment_amount') return `Rs. ${Number(val)}`;
     if (f.dateField) return fmtDate(val);
     return val;
   };
@@ -124,7 +125,6 @@ export default function ApplicationView() {
           <section className="card">
             <dl className="dl">
               <div><dt>{t('v_regno')}</dt><dd>{a.reg_no}</dd></div>
-              <div><dt>{t('v_paid')}</dt><dd>Rs. {Number(a.payment_amount)}</dd></div>
               <div><dt>{t('v_submitted')}</dt><dd>{fmtDateTime(a.created_at)}</dd></div>
               <div><dt>{t('v_terms')}</dt><dd>{fmtDateTime(a.terms_accepted_at)}</dd></div>
             </dl>

@@ -8,13 +8,14 @@ const APP_TEXT = [ // field => [max length, required]
     'father_name' => [120, true], 'father_occupation' => [120, false], 'father_native' => [120, false],
     'mother_name' => [120, true], 'mother_occupation' => [120, false], 'mother_native' => [120, false],
     'siblings' => [255, false], 'address' => [500, true], 'signature' => [120, true],
+    'payment_time' => [15, true], 'payment_bank' => [60, true],
 ];
 
 const APP_COLS = [
     'gender', 'marital_status', 'full_name', 'dob', 'height', 'gothram', 'nakshatram', 'rasi', 'education', 'occupation',
     'work_location', 'monthly_income', 'salary',
     'father_name', 'father_occupation', 'father_native', 'mother_name', 'mother_occupation', 'mother_native', 'siblings',
-    'address', 'phone', 'email', 'payment_ref', 'payment_date', 'signature',
+    'address', 'phone', 'email', 'payment_ref', 'payment_date', 'payment_time', 'payment_amount', 'payment_bank', 'signature',
 ];
 
 // All dates travel over the API as DD-MM-YYYY; only the DB layer sees Y-m-d.
@@ -103,6 +104,11 @@ function validate_application(array $in, bool $public): array
     }
 
     if ($public && ($in['terms_accepted'] ?? false) !== true) $e['terms_accepted'] = 'required';
+
+    $amtRaw = clean_str($in['payment_amount'] ?? '');
+    $d['payment_amount'] = $amtRaw;
+    if ($amtRaw === '') $e['payment_amount'] = 'required';
+    elseif (!preg_match('/^\d{1,6}(\.\d{1,2})?$/', $amtRaw) || (float)$amtRaw <= 0) $e['payment_amount'] = 'invalid';
 
     return [$d, $e];
 }

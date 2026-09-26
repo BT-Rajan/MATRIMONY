@@ -9,6 +9,8 @@ require __DIR__ . '/../src/helpers.php';
 db()->exec("ALTER TABLE applications
     ADD COLUMN IF NOT EXISTS marital_status ENUM('first','remarriage') NOT NULL DEFAULT 'first' AFTER gender,
     ADD COLUMN IF NOT EXISTS height VARCHAR(30) NULL AFTER dob,
-    ADD COLUMN IF NOT EXISTS salary VARCHAR(60) NULL AFTER monthly_income");
+    ADD COLUMN IF NOT EXISTS salary VARCHAR(60) NULL AFTER monthly_income,
+    ADD COLUMN IF NOT EXISTS payment_time VARCHAR(15) NOT NULL DEFAULT '' AFTER payment_date,
+    ADD COLUMN IF NOT EXISTS payment_bank VARCHAR(60) NOT NULL DEFAULT '' AFTER payment_amount");
 
 echo "Migration applied (or already up to date).\n";
