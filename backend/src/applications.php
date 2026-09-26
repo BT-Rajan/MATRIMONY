@@ -15,6 +15,10 @@ function h_apply(): void
     [$d, $e] = validate_application($in, true);
     if ($e) fail(422, 'validation', $e);
 
+    $dup = db()->prepare("SELECT id FROM applications WHERE phone = ? AND status <> 'rejected' LIMIT 1");
+    $dup->execute([$d['phone']]);
+    if ($dup->fetch()) fail(409, 'validation', ['phone' => 'duplicate']);
+
     $cols = APP_COLS;
     $sql = 'INSERT INTO applications (' . implode(', ', $cols) . ', payment_amount, terms_version, terms_accepted_at) VALUES ('
         . implode(', ', array_map(fn($c) => ':' . $c, $cols)) . ', :amount, :tv, :ta)';
@@ -122,6 +126,10 @@ function h_app_update(int $id): void
 
     [$d, $e] = validate_application(body(), false);
     if ($e) fail(422, 'validation', $e);
+
+    $dup = db()->prepare("SELECT id FROM applications WHERE phone = ? AND id <> ? AND status <> 'rejected' LIMIT 1");
+    $dup->execute([$d['phone'], $id]);
+    if ($dup->fetch()) fail(409, 'validation', ['phone' => 'duplicate']);
 
     $changed = [];
     foreach (APP_COLS as $c) {
