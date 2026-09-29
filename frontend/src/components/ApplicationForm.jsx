@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { ALL_FIELDS, GROUPS, ageYears, maskDMY, validate } from '../fields';
 import { STRINGS } from '../strings';
-import PaymentLink from './PaymentLink';
 
 function loadDraft(key, initial) {
   if (!key) return initial;
@@ -61,7 +60,7 @@ export default function ApplicationForm({ initial, lang, submitLabel, busyLabel,
       {GROUPS.map((g) => (
         <fieldset key={g.id}>
           <legend>{g[lang]}</legend>
-          {g.id === 'payment' && <PaymentLink />}
+          {g.id === 'payment' && <p className="hint">{S.pay_note}</p>}
           <div className="grid">
             {g.fields.map((f) => {
               const err = errs[f.k];

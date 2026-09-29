@@ -33,7 +33,6 @@ export const GROUPS = [
       { k: 'occupation', ta: 'பணி', en: 'Occupation', max: 150, req: 1, auto: 'organization-title' },
       { k: 'work_location', ta: 'பணியிடம்', en: 'Work location', max: 150 },
       { k: 'monthly_income', ta: 'மாத வருமானம்', en: 'Monthly income', max: 60 },
-      { k: 'salary', ta: 'சம்பளம்', en: 'Salary', max: 60 },
     ],
   },
   {
@@ -41,7 +40,7 @@ export const GROUPS = [
     fields: [
       { k: 'father_name', ta: 'தந்தை பெயர்', en: "Father's name", max: 120, req: 1 },
       { k: 'father_occupation', ta: 'தந்தை பணி', en: "Father's occupation", max: 120 },
-      { k: 'father_native', ta: 'தந்தை பூர்வீகம்', en: "Father's native place", max: 120 },
+      { k: 'father_native', ta: 'தந்தை பூர்வீகம்', en: "Father's native place", max: 120, req: 1 },
       { k: 'mother_name', ta: 'தாய் பெயர்', en: "Mother's name", max: 120, req: 1 },
       { k: 'mother_occupation', ta: 'தாய் பணி', en: "Mother's occupation", max: 120 },
       { k: 'mother_native', ta: 'தாய் பூர்வீகம்', en: "Mother's native place", max: 120 },
@@ -59,17 +58,11 @@ export const GROUPS = [
   {
     id: 'payment', ta: 'கட்டண விவரங்கள்', en: 'Payment details',
     fields: [
-      { k: 'payment_ref', ta: 'பரிவர்த்தனை எண் (UTR / Ref No.)', en: 'Transaction no. (UTR / Ref No.)', max: 40, req: 1 },
+      { k: 'payment_ref', ta: 'பரிவர்த்தனை எண் (UTR / Ref No.)', en: 'Transaction no. (UTR / Ref No.)', max: 40 },
       { k: 'payment_date', ta: 'பணம் செலுத்திய தேதி (DD-MM-YYYY)', en: 'Payment date (DD-MM-YYYY)', dateField: 1, req: 1 },
       { k: 'payment_time', ta: 'தோராயமான நேரம்', en: 'Approx. time', max: 15, req: 1, ph: 'எ.கா. 10:30 AM' },
       { k: 'payment_amount', ta: 'செலுத்திய தொகை (ரூ.)', en: 'Amount paid (Rs.)', max: 10, req: 1, numeric: 1 },
       { k: 'payment_bank', ta: 'வங்கி பெயர்', en: 'Bank name', max: 60, req: 1, ph: 'எ.கா. இந்தியன் வங்கி' },
-    ],
-  },
-  {
-    id: 'sign', ta: 'உறுதிமொழி', en: 'Declaration',
-    fields: [
-      { k: 'signature', ta: 'கையொப்பம் (முழு பெயரை தட்டச்சு செய்யவும்)', en: 'Signature (type full name)', max: 120, req: 1, full: 1 },
     ],
   },
 ];

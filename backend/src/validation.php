@@ -4,16 +4,15 @@ declare(strict_types=1);
 const APP_TEXT = [ // field => [max length, required]
     'full_name' => [120, true], 'height' => [30, false], 'gothram' => [80, true], 'nakshatram' => [60, true], 'rasi' => [60, true],
     'education' => [150, true], 'occupation' => [150, true], 'work_location' => [150, false], 'monthly_income' => [60, false],
-    'salary' => [60, false],
-    'father_name' => [120, true], 'father_occupation' => [120, false], 'father_native' => [120, false],
+    'father_name' => [120, true], 'father_occupation' => [120, false], 'father_native' => [120, true],
     'mother_name' => [120, true], 'mother_occupation' => [120, false], 'mother_native' => [120, false],
-    'siblings' => [255, false], 'address' => [500, true], 'signature' => [120, true],
+    'siblings' => [255, false], 'address' => [500, true],
     'payment_time' => [15, true], 'payment_bank' => [60, true],
 ];
 
 const APP_COLS = [
     'gender', 'marital_status', 'full_name', 'dob', 'height', 'gothram', 'nakshatram', 'rasi', 'education', 'occupation',
-    'work_location', 'monthly_income', 'salary',
+    'work_location', 'monthly_income',
     'father_name', 'father_occupation', 'father_native', 'mother_name', 'mother_occupation', 'mother_native', 'siblings',
     'address', 'phone', 'email', 'payment_ref', 'payment_date', 'payment_time', 'payment_amount', 'payment_bank', 'signature',
 ];
@@ -85,9 +84,8 @@ function validate_application(array $in, bool $public): array
     if ($email !== '' && (mb_strlen($email) > 120 || !filter_var($email, FILTER_VALIDATE_EMAIL))) $e['email'] = 'invalid';
 
     $ref = strtoupper(clean_str($in['payment_ref'] ?? ''));
-    $d['payment_ref'] = $ref;
-    if ($ref === '') $e['payment_ref'] = 'required';
-    elseif (!preg_match('#^[A-Z0-9/-]{6,40}$#', $ref)) $e['payment_ref'] = 'invalid';
+    if ($ref !== '' && !preg_match('#^[A-Z0-9/-]{6,40}$#', $ref)) $e['payment_ref'] = 'invalid';
+    $d['payment_ref'] = $ref === '' ? null : $ref;
 
     $payRaw = clean_str($in['payment_date'] ?? '');
     $d['payment_date'] = $payRaw;
@@ -109,6 +107,8 @@ function validate_application(array $in, bool $public): array
     $d['payment_amount'] = $amtRaw;
     if ($amtRaw === '') $e['payment_amount'] = 'required';
     elseif (!preg_match('/^\d{1,6}(\.\d{1,2})?$/', $amtRaw) || (float)$amtRaw <= 0) $e['payment_amount'] = 'invalid';
+
+    $d['signature'] = $d['full_name'] ?? '';
 
     return [$d, $e];
 }

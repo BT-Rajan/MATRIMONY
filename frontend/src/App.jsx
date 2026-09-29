@@ -1,7 +1,6 @@
 import { Route, Routes } from 'react-router-dom';
 import Landing from './pages/Landing';
 import Apply from './pages/Apply';
-import PaymentInfo from './pages/PaymentInfo';
 import Login from './pages/admin/Login';
 import AdminLayout from './pages/admin/AdminLayout';
 import Dashboard from './pages/admin/Dashboard';
@@ -14,7 +13,6 @@ export default function App() {
     <Routes>
       <Route path="/" element={<Landing />} />
       <Route path="/apply" element={<Apply />} />
-      <Route path="/payment" element={<PaymentInfo />} />
       <Route path="/admin/login" element={<Login />} />
       <Route path="/admin" element={<AdminLayout />}>
         <Route index element={<Dashboard />} />
