@@ -10,7 +10,6 @@ import { api } from '../api';
 const DRAFT = 'kks_draft';
 
 function Gate({ onAccept }) {
-  const [ok, setOk] = useState(false);
   return (
     <>
       <p><Link to="/" className="btn secondary small">← முகப்பு</Link></p>
@@ -31,11 +30,7 @@ function Gate({ onAccept }) {
       <section className="card" aria-labelledby="tt">
         <h2 id="tt">விதிமுறைகள் மற்றும் நிபந்தனைகள்</h2>
         <ol className="terms-list">{TERMS_TA.map((x, i) => <li key={i}>{x}</li>)}</ol>
-        <div className="check big">
-          <input id="accept" type="checkbox" checked={ok} onChange={(e) => setOk(e.target.checked)} />
-          <label htmlFor="accept">நான் ஏற்றுக்கொள்கிறேன்</label>
-        </div>
-        <button type="button" className="btn block" disabled={!ok} onClick={onAccept}>தொடரவும்</button>
+        <button type="button" className="btn block" onClick={onAccept}>படித்தேன், தொடரவும்</button>
       </section>
     </>
   );

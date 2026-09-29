@@ -11,9 +11,7 @@ export default function Landing() {
         <h1>{t('brand')}</h1>
         <h2>{t('event')}</h2>
         <p>{t('hero_tag')}</p>
-        {SITE.event.date && (
-          <p><strong>{t('when')}:</strong> {SITE.event.date} &nbsp;|&nbsp; <strong>{t('where')}:</strong> {SITE.event.venue[lang]}</p>
-        )}
+        <p><Link to="/event" className="btn secondary small">{t('event_link')} →</Link></p>
       </section>
 
       <div className="notice" role="note">
@@ -54,7 +52,7 @@ export default function Landing() {
         </ul>
       </section>
 
-      <p className="foot"><Link to="/admin">{t('staff_login')}</Link></p>
+      <p className="foot"><Link to="/admin" className="btn secondary small">{t('staff_login')}</Link></p>
     </PublicShell>
   );
 }
