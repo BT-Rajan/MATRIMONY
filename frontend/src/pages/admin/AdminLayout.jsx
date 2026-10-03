@@ -28,6 +28,7 @@ export default function AdminLayout() {
         <NavLink to="/admin.html" end className={link}>{t('nav_dashboard')}</NavLink>
         <NavLink to="/admin.html/applications" className={link}>{t('nav_apps')}</NavLink>
         {user.role === 'admin' && <NavLink to="/admin.html/users" className={link}>{t('nav_users')}</NavLink>}
+        {user.role === 'admin' && <NavLink to="/admin.html/settings" className={link}>{t('nav_settings')}</NavLink>}
       </nav>
       <main id="main" className="wrap"><Outlet /></main>
     </>

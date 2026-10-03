@@ -52,6 +52,8 @@ a { color: var(--maroon); }
 .steps li::before { content: counter(s); flex: none; width: 32px; height: 32px; border-radius: 50%; background: var(--maroon); color: #fff; display: grid; place-items: center; font-weight: 700; }
 .bank { background: #eef7ee; border: 1px dashed #2e7d32; border-radius: var(--r); padding: 12px 14px; }
 .bank p { margin: 2px 0; }
+.bank .qr { margin-top: 10px; text-align: center; }
+.bank .qr img { max-width: 220px; width: 100%; height: auto; border-radius: 8px; border: 1px solid var(--line); background: #fff; padding: 6px; }
 .foot { text-align: center; color: var(--muted); font-size: .9rem; padding-block: 24px; }
 
 fieldset { border: 1px solid var(--line); border-radius: var(--r); padding: 12px 14px 16px; margin: 0 0 16px; background: #fafafa; min-width: 0; }

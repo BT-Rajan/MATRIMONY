@@ -2,9 +2,12 @@ import { Link } from 'react-router-dom';
 import PublicShell from '../components/PublicShell';
 import { useI18n } from '../i18n';
 import { SITE } from '../config';
+import { useSettings } from '../useSettings';
+import BankDetails from '../components/BankDetails';
 
 export default function Landing() {
   const { t, lang } = useI18n();
+  const { settings } = useSettings();
   return (
     <PublicShell>
       <section className="hero">
@@ -33,10 +36,8 @@ export default function Landing() {
 
       <section className="card" aria-labelledby="pay">
         <h2 id="pay">{t('bank_title')}</h2>
-        <div className="bank">
-          <p><strong>{t('bank_fee')}:</strong> Rs. {SITE.fee}/-</p>
-          <p>{t('bank_acc')}: <strong>{SITE.bank.account}</strong>, {t('bank_branch')}</p>
-        </div>
+        <p><strong>{t('bank_fee')}:</strong> Rs. {SITE.fee}/-</p>
+        <BankDetails settings={settings} lang={lang} />
       </section>
 
       <section className="card" aria-labelledby="contact">

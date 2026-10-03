@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 $backend = getenv('BACKEND_PATH') ?: __DIR__ . '/../../backend';
 require $backend . '/src/helpers.php';
-foreach (['validation', 'auth', 'applications', 'users'] as $f) {
+foreach (['validation', 'auth', 'applications', 'users', 'settings'] as $f) {
     if (is_file("$backend/src/$f.php")) require "$backend/src/$f.php";
 }
 
@@ -20,6 +20,8 @@ $routes = [
     ['POST',   '#^/auth/logout$#',                'h_logout'],
     ['POST',   '#^/applications$#',               'h_apply'],
     ['GET',    '#^/stats$#',                      'h_stats'],
+    ['GET',    '#^/settings$#',                   'h_settings_get'],
+    ['PUT',    '#^/settings$#',                   'h_settings_update'],
     ['GET',    '#^/applications$#',               'h_app_list'],
     ['GET',    '#^/applications/(\d+)$#',         'h_app_get'],
     ['PUT',    '#^/applications/(\d+)$#',         'h_app_update'],

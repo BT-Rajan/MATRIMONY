@@ -74,7 +74,7 @@ function body(): array
     static $b = null;
     if ($b === null) {
         $raw = (string)file_get_contents('php://input');
-        if (strlen($raw) > 65536) fail(413, 'too_large');
+        if (strlen($raw) > 3 * 1024 * 1024) fail(413, 'too_large');
         $b = $raw === '' ? [] : json_decode($raw, true);
         if (!is_array($b)) fail(400, 'bad_request');
     }

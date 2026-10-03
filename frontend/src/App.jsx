@@ -8,6 +8,7 @@ import Dashboard from './pages/admin/Dashboard';
 import Applications from './pages/admin/Applications';
 import ApplicationView from './pages/admin/ApplicationView';
 import Users from './pages/admin/Users';
+import Settings from './pages/admin/Settings';
 
 export default function App() {
   return (
@@ -21,6 +22,7 @@ export default function App() {
         <Route path="applications" element={<Applications />} />
         <Route path="applications/:id" element={<ApplicationView />} />
         <Route path="users" element={<Users />} />
+        <Route path="settings" element={<Settings />} />
       </Route>
       <Route path="*" element={<Landing />} />
     </Routes>

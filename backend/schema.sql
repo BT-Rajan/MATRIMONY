@@ -78,3 +78,21 @@ CREATE TABLE IF NOT EXISTS throttle (
   created_at DATETIME NOT NULL,
   KEY idx_throttle (k, created_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS site_settings (
+  id TINYINT UNSIGNED NOT NULL PRIMARY KEY,
+  event_date VARCHAR(60) NOT NULL DEFAULT '',
+  venue_ta VARCHAR(255) NOT NULL DEFAULT '',
+  venue_en VARCHAR(255) NOT NULL DEFAULT '',
+  bank_name VARCHAR(150) NOT NULL DEFAULT '',
+  bank_account VARCHAR(40) NOT NULL DEFAULT '',
+  bank_ifsc VARCHAR(20) NOT NULL DEFAULT '',
+  qr_code MEDIUMTEXT NULL,
+  updated_by INT UNSIGNED NULL,
+  updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  CONSTRAINT fk_settings_updated FOREIGN KEY (updated_by) REFERENCES users (id) ON DELETE SET NULL,
+  CONSTRAINT chk_settings_singleton CHECK (id = 1)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+INSERT IGNORE INTO site_settings (id, event_date, venue_ta, venue_en, bank_name, bank_account, bank_ifsc) VALUES
+  (1, '', 'ஸ்ரீ கணபதி ஹால், Dr. ராஜேந்திரபிரசாத் ரோடு, குரோம்பேட்டை', 'Sri Ganapathi Hall, Dr. Rajendra Prasad Road, Chromepet', 'இந்தியன் வங்கி, சிட்லபாக்கம் கிளை', '935934700', '');

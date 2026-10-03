@@ -6,10 +6,12 @@ import { TERMS_TA } from '../content/terms';
 import { EMPTY } from '../fields';
 import { SITE } from '../config';
 import { api } from '../api';
+import { useSettings } from '../useSettings';
+import BankDetails from '../components/BankDetails';
 
 const DRAFT = 'kks_draft';
 
-function Gate({ onAccept }) {
+function Gate({ onAccept, settings }) {
   return (
     <>
       <p><Link to="/" className="btn secondary small">← முகப்பு</Link></p>
@@ -21,11 +23,9 @@ function Gate({ onAccept }) {
         <span className="sub" lang="en">Only paid and fully submitted applications will be accepted.</span>
       </div>
 
-      <div className="bank">
-        <p><strong>பதிவு கட்டணம்:</strong> ரூ. {SITE.fee}/-</p>
-        <p>இந்தியன் வங்கி, கணக்கு எண்: <strong>{SITE.bank.account}</strong>, சிட்லபாக்கம் கிளை.</p>
-        <p>கட்டணம் செலுத்திய பின் பரிவர்த்தனை எண்ணை (UTR) படிவத்தில் குறிப்பிட வேண்டும்.</p>
-      </div>
+      <p><strong>பதிவு கட்டணம்:</strong> ரூ. {SITE.fee}/-</p>
+      {settings ? <BankDetails settings={settings} lang="ta" /> : <p role="status">ஏற்றுகிறது…</p>}
+      <p className="hint">கட்டணம் செலுத்திய பின் பரிவர்த்தனை எண்ணை (UTR) படிவத்தில் குறிப்பிட வேண்டும்.</p>
 
       <section className="card" aria-labelledby="tt">
         <h2 id="tt">விதிமுறைகள் மற்றும் நிபந்தனைகள்</h2>
@@ -62,6 +62,7 @@ export default function Apply() {
   const [step, setStep] = useState('gate');
   const [reg, setReg] = useState('');
   const head = useRef(null);
+  const { settings } = useSettings();
 
   useEffect(() => {
     if (step === 'form') { window.scrollTo(0, 0); head.current?.focus(); }
@@ -77,7 +78,7 @@ export default function Apply() {
   return (
     <PublicShell showLang={false}>
       <div lang="ta">
-        {step === 'gate' && <Gate onAccept={() => setStep('form')} />}
+        {step === 'gate' && <Gate onAccept={() => setStep('form')} settings={settings} />}
         {step === 'form' && (
           <>
             <p><Link to="/" className="btn secondary small">← முகப்பு</Link></p>
