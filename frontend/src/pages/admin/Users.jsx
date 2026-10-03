@@ -59,7 +59,7 @@ export default function Users() {
     }
   }
 
-  if (me.role !== 'admin') return <Navigate to="/admin" replace />;
+  if (me.role !== 'admin') return <Navigate to="/admin.html" replace />;
 
   const fe = (k) => errs[k] && <p className="err" id={`${k}-err`}>{t('e_' + errs[k])}</p>;
   const ia = (k) => ({ 'aria-invalid': errs[k] ? 'true' : undefined, 'aria-describedby': errs[k] ? `${k}-err` : undefined });

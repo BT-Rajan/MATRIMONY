@@ -28,7 +28,7 @@ export default function Dashboard() {
         <>
           <div className="stats">
             {cards.map(([label, key, q, cls]) => (
-              <Link key={key} to={`/admin/applications${q}`} className={`stat ${cls}`}>
+              <Link key={key} to={`/admin.html/applications${q}`} className={`stat ${cls}`}>
                 <b>{s[key]}</b>
                 <span>{t(label)}</span>
               </Link>

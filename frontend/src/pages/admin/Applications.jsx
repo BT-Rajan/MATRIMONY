@@ -66,7 +66,7 @@ export default function Applications() {
             <tbody>
               {data.items.map((a) => (
                 <tr key={a.id}>
-                  <td data-label={t('a_reg')}><Link to={`/admin/applications/${a.id}`}>{a.reg_no}</Link></td>
+                  <td data-label={t('a_reg')}><Link to={`/admin.html/applications/${a.id}`}>{a.reg_no}</Link></td>
                   <td data-label={t('a_name')}>{a.full_name}</td>
                   <td data-label={t('a_phone')}>{a.phone}</td>
                   <td data-label={t('a_date')}>{fmtDateTime(a.created_at)}</td>

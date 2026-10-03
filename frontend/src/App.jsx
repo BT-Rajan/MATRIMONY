@@ -13,10 +13,10 @@ export default function App() {
   return (
     <Routes>
       <Route path="/" element={<Landing />} />
-      <Route path="/apply" element={<Apply />} />
-      <Route path="/event" element={<EventInfo />} />
-      <Route path="/admin/login" element={<Login />} />
-      <Route path="/admin" element={<AdminLayout />}>
+      <Route path="/apply.html" element={<Apply />} />
+      <Route path="/program.html" element={<EventInfo />} />
+      <Route path="/admin.html/login" element={<Login />} />
+      <Route path="/admin.html" element={<AdminLayout />}>
         <Route index element={<Dashboard />} />
         <Route path="applications" element={<Applications />} />
         <Route path="applications/:id" element={<ApplicationView />} />

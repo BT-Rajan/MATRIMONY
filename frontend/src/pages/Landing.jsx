@@ -11,7 +11,7 @@ export default function Landing() {
         <h1>{t('brand')}</h1>
         <h2>{t('event')}</h2>
         <p>{t('hero_tag')}</p>
-        <p><Link to="/event" className="btn secondary small">{t('event_link')} →</Link></p>
+        <p><Link to="/program.html" className="btn secondary small">{t('event_link')} →</Link></p>
       </section>
 
       <div className="notice" role="note">
@@ -20,7 +20,7 @@ export default function Landing() {
       </div>
 
       <div className="center">
-        <Link to="/apply" className="btn block" style={{ maxWidth: 420, margin: '0 auto' }}>{t('apply_btn')} →</Link>
+        <Link to="/apply.html" className="btn block" style={{ maxWidth: 420, margin: '0 auto' }}>{t('apply_btn')} →</Link>
         <p className="hint">{t('apply_note')}</p>
       </div>
 
@@ -52,7 +52,7 @@ export default function Landing() {
         </ul>
       </section>
 
-      <p className="foot"><Link to="/admin" className="btn secondary small">{t('staff_login')}</Link></p>
+      <p className="foot"><Link to="/admin.html" className="btn secondary small">{t('staff_login')}</Link></p>
     </PublicShell>
   );
 }

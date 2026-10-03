@@ -8,7 +8,7 @@ export default function AdminLayout() {
   const { t } = useI18n();
 
   if (user === undefined) return <p className="wrap" role="status">{t('loading')}</p>;
-  if (!user) return <Navigate to="/admin/login" replace />;
+  if (!user) return <Navigate to="/admin.html/login" replace />;
 
   const link = ({ isActive }) => (isActive ? 'active' : undefined);
   return (
@@ -25,9 +25,9 @@ export default function AdminLayout() {
         </div>
       </header>
       <nav className="admin-nav" aria-label="Admin">
-        <NavLink to="/admin" end className={link}>{t('nav_dashboard')}</NavLink>
-        <NavLink to="/admin/applications" className={link}>{t('nav_apps')}</NavLink>
-        {user.role === 'admin' && <NavLink to="/admin/users" className={link}>{t('nav_users')}</NavLink>}
+        <NavLink to="/admin.html" end className={link}>{t('nav_dashboard')}</NavLink>
+        <NavLink to="/admin.html/applications" className={link}>{t('nav_apps')}</NavLink>
+        {user.role === 'admin' && <NavLink to="/admin.html/users" className={link}>{t('nav_users')}</NavLink>}
       </nav>
       <main id="main" className="wrap"><Outlet /></main>
     </>

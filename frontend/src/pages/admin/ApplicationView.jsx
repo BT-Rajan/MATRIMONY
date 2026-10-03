@@ -74,7 +74,7 @@ export default function ApplicationView() {
 
   return (
     <>
-      <p><Link to="/admin/applications">← {t('nav_apps')}</Link></p>
+      <p><Link to="/admin.html/applications">← {t('nav_apps')}</Link></p>
       <h1>{a.reg_no} <StatusBadge status={a.status} /></h1>
       {msg && <div className="alert good" role="status">{msg}</div>}
 

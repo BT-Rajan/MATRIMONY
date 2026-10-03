@@ -13,7 +13,7 @@ export default function Login() {
   const [err, setErr] = useState('');
   const [busy, setBusy] = useState(false);
 
-  if (user) return <Navigate to="/admin" replace />;
+  if (user) return <Navigate to="/admin.html" replace />;
 
   async function submit(e) {
     e.preventDefault();
@@ -21,7 +21,7 @@ export default function Login() {
     setBusy(true);
     try {
       await login(u.trim(), p);
-      nav('/admin', { replace: true });
+      nav('/admin.html', { replace: true });
     } catch (x) {
       setErr(t('e_' + x.code));
     } finally {
