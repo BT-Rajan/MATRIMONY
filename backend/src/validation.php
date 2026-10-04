@@ -7,7 +7,7 @@ const APP_TEXT = [ // field => [max length, required]
     'father_name' => [120, true], 'father_occupation' => [120, false], 'father_native' => [120, true],
     'mother_name' => [120, true], 'mother_occupation' => [120, false], 'mother_native' => [120, false],
     'siblings' => [255, false], 'address' => [500, true],
-    'payment_time' => [15, true], 'payment_bank' => [60, true],
+    'payment_bank' => [60, true],
 ];
 
 const APP_COLS = [
@@ -109,6 +109,7 @@ function validate_application(array $in, bool $public): array
     elseif (!preg_match('/^\d{1,6}(\.\d{1,2})?$/', $amtRaw) || (float)$amtRaw <= 0) $e['payment_amount'] = 'invalid';
 
     $d['signature'] = $d['full_name'] ?? '';
+    $d['payment_time'] = '';
 
     return [$d, $e];
 }

@@ -60,7 +60,6 @@ export const GROUPS = [
     fields: [
       { k: 'payment_ref', ta: 'பரிவர்த்தனை எண் (UTR / Ref No.)', en: 'Transaction no. (UTR / Ref No.)', max: 40 },
       { k: 'payment_date', ta: 'பணம் செலுத்திய தேதி (DD-MM-YYYY)', en: 'Payment date (DD-MM-YYYY)', dateField: 1, req: 1 },
-      { k: 'payment_time', ta: 'தோராயமான நேரம்', en: 'Approx. time', max: 15, req: 1, ph: 'எ.கா. 10:30 AM' },
       { k: 'payment_amount', ta: 'செலுத்திய தொகை (ரூ.)', en: 'Amount paid (Rs.)', max: 10, req: 1, numeric: 1 },
       { k: 'payment_bank', ta: 'வங்கி பெயர்', en: 'Bank name', max: 60, req: 1, ph: 'எ.கா. இந்தியன் வங்கி' },
     ],
