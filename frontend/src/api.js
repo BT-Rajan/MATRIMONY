@@ -1,4 +1,4 @@
-const BASE = 'api';
+const BASE = '/api';
 let csrf = null;
 let onUnauthorized = null;
 
