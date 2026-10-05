@@ -12,6 +12,7 @@ export default function Landing() {
   return (
     <PublicShell>
       <section className="hero">
+        <img className="logo" src="/logo.png" alt="" width="150" height="150" />
         <h1>{t('brand')}</h1>
         <p className="edition">{t('edition')}</p>
         <h2>{t('event')}</h2>
