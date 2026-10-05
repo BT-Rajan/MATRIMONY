@@ -1,7 +1,6 @@
-import { Route, Routes } from 'react-router-dom';
+import { Navigate, Route, Routes } from 'react-router-dom';
 import Landing from './pages/Landing';
 import Apply from './pages/Apply';
-import EventInfo from './pages/EventInfo';
 import Login from './pages/admin/Login';
 import AdminLayout from './pages/admin/AdminLayout';
 import Dashboard from './pages/admin/Dashboard';
@@ -15,7 +14,7 @@ export default function App() {
     <Routes>
       <Route path="/" element={<Landing />} />
       <Route path="/apply.html" element={<Apply />} />
-      <Route path="/program.html" element={<EventInfo />} />
+      <Route path="/program.html" element={<Navigate to="/" replace />} />
       <Route path="/admin.html/login" element={<Login />} />
       <Route path="/admin.html" element={<AdminLayout />}>
         <Route index element={<Dashboard />} />

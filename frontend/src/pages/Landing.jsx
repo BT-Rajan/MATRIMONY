@@ -3,11 +3,11 @@ import PublicShell from '../components/PublicShell';
 import { useI18n } from '../i18n';
 import { SITE } from '../config';
 import { useSettings } from '../useSettings';
-import BankDetails from '../components/BankDetails';
 
 export default function Landing() {
   const { t, lang } = useI18n();
   const { settings } = useSettings();
+  const s = settings || {};
   return (
     <PublicShell>
       <section className="hero">
@@ -15,37 +15,39 @@ export default function Landing() {
         <p className="edition">{t('edition')}</p>
         <h2>{t('event')}</h2>
         <p>{t('hero_tag')}</p>
-        <p><Link to="/program.html" className="btn secondary small">{t('event_link')} →</Link></p>
       </section>
 
-      <div className="deadline" role="note">
-        <span>{t('last_date_label')}</span>
-        <strong>{t('last_date')}</strong>
-        {settings?.event_date && <small>{t('event_on')}: {settings.event_date}</small>}
-      </div>
+      <section className="key-info" aria-label={t('event')}>
+        <dl>
+          <div><dt>{t('event_on')}</dt><dd>{s.event_date || t('date_tba')}</dd></div>
+          <div><dt>{t('where')}</dt><dd>{(lang === 'en' ? s.venue_en : s.venue_ta) || '—'}</dd></div>
+        </dl>
+        <dl className="accent">
+          <div><dt>{t('last_date_label')}</dt><dd>{t('last_date')}</dd></div>
+          <div><dt>{t('bank_fee')}</dt><dd>₹ {SITE.fee}/-</dd></div>
+        </dl>
+      </section>
 
-      <div className="notice" role="note">
-        <strong>{t('notice_title')}</strong>
-        {t('notice_text')}
-      </div>
-
-      <div className="center">
-        <Link to="/apply.html" className="btn block" style={{ maxWidth: 420, margin: '0 auto' }}>{t('apply_btn')} →</Link>
-        <p className="hint">{t('apply_note')}</p>
-      </div>
+      {settings && (
+        <p className="bank-line">
+          <strong>{t('bank_title')}:</strong>{' '}
+          {[s.bank_name, s.bank_account && `${t('bank_acc')}: ${s.bank_account}`, s.bank_ifsc && `IFSC: ${s.bank_ifsc}`]
+            .filter(Boolean).join(' · ')}
+        </p>
+      )}
 
       <section className="card" aria-labelledby="how">
         <h2 id="how">{t('steps_title')}</h2>
         <ol className="steps">
           {[1, 2, 3, 4].map((n) => <li key={n}>{t(`step${n}`)}</li>)}
         </ol>
+        <p className="hint warn">{t('notice_text')}</p>
       </section>
 
-      <section className="card" aria-labelledby="pay">
-        <h2 id="pay">{t('bank_title')}</h2>
-        <p><strong>{t('bank_fee')}:</strong> Rs. {SITE.fee}/-</p>
-        <BankDetails settings={settings} lang={lang} />
-      </section>
+      <div className="center">
+        <Link to="/apply.html" className="btn block apply-now">{t('apply_btn')} →</Link>
+        <p className="hint">{t('apply_note')}</p>
+      </div>
 
       <section className="card" aria-labelledby="contact">
         <h2 id="contact">{t('contact_title')}</h2>
