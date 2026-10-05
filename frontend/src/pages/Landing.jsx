@@ -3,6 +3,7 @@ import PublicShell from '../components/PublicShell';
 import { useI18n } from '../i18n';
 import { SITE } from '../config';
 import { useSettings } from '../useSettings';
+import { fmtEventDate } from '../date';
 
 export default function Landing() {
   const { t, lang } = useI18n();
@@ -19,7 +20,7 @@ export default function Landing() {
 
       <section className="key-info" aria-label={t('event')}>
         <dl>
-          <div><dt>{t('event_on')}</dt><dd>{s.event_date || t('date_tba')}</dd></div>
+          <div><dt>{t('event_on')}</dt><dd>{fmtEventDate(s.event_date, lang) || t('date_tba')}</dd></div>
           <div><dt>{t('where')}</dt><dd>{(lang === 'en' ? s.venue_en : s.venue_ta) || '—'}</dd></div>
         </dl>
         <dl className="accent">
@@ -31,7 +32,7 @@ export default function Landing() {
       {settings && (
         <p className="bank-line">
           <strong>{t('bank_title')}:</strong>{' '}
-          {[s.bank_name, s.bank_account && `${t('bank_acc')}: ${s.bank_account}`, s.bank_ifsc && `IFSC: ${s.bank_ifsc}`]
+          {[(lang === 'en' && s.bank_name_en) || s.bank_name, s.bank_account && `${t('bank_acc')}: ${s.bank_account}`, s.bank_ifsc && `IFSC: ${s.bank_ifsc}`]
             .filter(Boolean).join(' · ')}
         </p>
       )}

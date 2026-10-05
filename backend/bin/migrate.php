@@ -20,6 +20,7 @@ db()->exec("CREATE TABLE IF NOT EXISTS site_settings (
   venue_ta VARCHAR(255) NOT NULL DEFAULT '',
   venue_en VARCHAR(255) NOT NULL DEFAULT '',
   bank_name VARCHAR(150) NOT NULL DEFAULT '',
+  bank_name_en VARCHAR(150) NOT NULL DEFAULT '',
   bank_account VARCHAR(40) NOT NULL DEFAULT '',
   bank_ifsc VARCHAR(20) NOT NULL DEFAULT '',
   qr_code MEDIUMTEXT NULL,
@@ -31,5 +32,10 @@ db()->exec("CREATE TABLE IF NOT EXISTS site_settings (
 
 db()->exec("INSERT IGNORE INTO site_settings (id, event_date, venue_ta, venue_en, bank_name, bank_account, bank_ifsc) VALUES
   (1, '', 'ஸ்ரீ கணபதி ஹால், Dr. ராஜேந்திரபிரசாத் ரோடு, குரோம்பேட்டை', 'Sri Ganapathi Hall, Dr. Rajendra Prasad Road, Chromepet', 'இந்தியன் வங்கி, சிட்லபாக்கம் கிளை', '935934700', '')");
+
+db()->exec("ALTER TABLE site_settings ADD COLUMN IF NOT EXISTS bank_name_en VARCHAR(150) NOT NULL DEFAULT '' AFTER bank_name");
+// One-time fills for values that were never set; anything an admin already entered is left alone.
+db()->exec("UPDATE site_settings SET bank_name_en = 'Indian Bank, Chitlapakkam Branch' WHERE id = 1 AND bank_name_en = ''");
+db()->exec("UPDATE site_settings SET event_date = '27-12-2026' WHERE id = 1 AND event_date = ''");
 
 echo "Migration applied (or already up to date).\n";
