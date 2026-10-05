@@ -9,28 +9,30 @@ export default function Applications() {
   const { t } = useI18n();
   const [sp, setSp] = useSearchParams();
   const status = sp.get('status') || '';
+  const gender = sp.get('gender') || '';
   const q = sp.get('q') || '';
   const page = Math.max(1, Number(sp.get('page')) || 1);
   const [qi, setQi] = useState(q);
   const [si, setSi] = useState(status);
+  const [gi, setGi] = useState(gender);
   const [data, setData] = useState(null);
   const [err, setErr] = useState('');
 
   useEffect(() => {
     setData(null);
     setErr('');
-    const qs = new URLSearchParams({ status, q, page: String(page) }).toString();
+    const qs = new URLSearchParams({ status, gender, q, page: String(page) }).toString();
     api.get(`applications?${qs}`).then(setData).catch((e) => setErr(e.code));
-  }, [status, q, page]);
+  }, [status, gender, q, page]);
 
-  useEffect(() => { setQi(q); setSi(status); }, [q, status]);
+  useEffect(() => { setQi(q); setSi(status); setGi(gender); }, [q, status, gender]);
 
   const go = (next) => {
     const p = {};
     for (const [k, v] of Object.entries(next)) if (v && v !== '1') p[k] = v;
     setSp(p);
   };
-  const search = (e) => { e.preventDefault(); go({ status: si, q: qi.trim(), page: '1' }); };
+  const search = (e) => { e.preventDefault(); go({ status: si, gender: gi, q: qi.trim(), page: '1' }); };
   const pages = data ? Math.max(1, Math.ceil(data.total / data.per)) : 1;
 
   return (
@@ -48,6 +50,14 @@ export default function Applications() {
             {['pending', 'accepted', 'rejected'].map((s) => <option key={s} value={s}>{t('st_' + s)}</option>)}
           </select>
         </div>
+        <div className="field">
+          <label htmlFor="gd">{t('a_gender')}</label>
+          <select id="gd" value={gi} onChange={(e) => setGi(e.target.value)}>
+            <option value="">{t('all')}</option>
+            <option value="male">{t('d_male')}</option>
+            <option value="female">{t('d_female')}</option>
+          </select>
+        </div>
         <button className="btn" type="submit">{t('search')}</button>
       </form>
 
@@ -59,7 +69,7 @@ export default function Applications() {
           <table className="tbl">
             <thead>
               <tr>
-                <th scope="col">{t('a_reg')}</th><th scope="col">{t('a_name')}</th><th scope="col">{t('a_phone')}</th>
+                <th scope="col">{t('a_reg')}</th><th scope="col">{t('a_name')}</th><th scope="col">{t('a_gender')}</th><th scope="col">{t('a_phone')}</th>
                 <th scope="col">{t('a_date')}</th><th scope="col">{t('a_status')}</th>
               </tr>
             </thead>
@@ -68,6 +78,7 @@ export default function Applications() {
                 <tr key={a.id}>
                   <td data-label={t('a_reg')}><Link to={`/admin.html/applications/${a.id}`}>{a.reg_no}</Link></td>
                   <td data-label={t('a_name')}>{a.full_name}</td>
+                  <td data-label={t('a_gender')}>{a.gender === 'male' ? t('d_male') : t('d_female')}</td>
                   <td data-label={t('a_phone')}>{a.phone}</td>
                   <td data-label={t('a_date')}>{fmtDateTime(a.created_at)}</td>
                   <td data-label={t('a_status')}><StatusBadge status={a.status} /></td>
@@ -76,9 +87,9 @@ export default function Applications() {
             </tbody>
           </table>
           <nav className="pager" aria-label="Pagination">
-            <button type="button" className="btn secondary small" disabled={page <= 1} onClick={() => go({ status, q, page: String(page - 1) })}>{t('prev')}</button>
+            <button type="button" className="btn secondary small" disabled={page <= 1} onClick={() => go({ status, gender, q, page: String(page - 1) })}>{t('prev')}</button>
             <span>{t('page_of', { p: page, n: pages })}</span>
-            <button type="button" className="btn secondary small" disabled={page >= pages} onClick={() => go({ status, q, page: String(page + 1) })}>{t('next')}</button>
+            <button type="button" className="btn secondary small" disabled={page >= pages} onClick={() => go({ status, gender, q, page: String(page + 1) })}>{t('next')}</button>
           </nav>
         </>
       ))}

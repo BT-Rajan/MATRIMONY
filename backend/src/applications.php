@@ -73,6 +73,11 @@ function h_app_list(): void
         $where[] = 'status = ?';
         $args[] = $status;
     }
+    $gender = $_GET['gender'] ?? '';
+    if (in_array($gender, ['male', 'female'], true)) {
+        $where[] = 'gender = ?';
+        $args[] = $gender;
+    }
     $q = clean_str($_GET['q'] ?? '');
     if ($q !== '') {
         $like = '%' . like_escape(mb_substr($q, 0, 60)) . '%';
