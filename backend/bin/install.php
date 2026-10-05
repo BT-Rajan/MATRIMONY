@@ -31,13 +31,11 @@ function ask(string $q, bool $hidden = false): string
     return $v;
 }
 
-$user = strtolower(ask('Admin username: '));
-$full = ask('Admin name: ');
-$pass = ask('Admin password (min 10 chars): ', true);
-if (!preg_match('/^[a-z0-9._-]{3,30}$/', $user) || $full === '' || strlen($pass) < 10) {
-    fwrite(STDERR, "Invalid input.\n");
-    exit(1);
+while (!preg_match('/^[a-z0-9._-]{3,30}$/', $user = strtolower(ask('Admin username (3-30 chars: a-z 0-9 . _ -, no @): ')))) {
+    echo "  Invalid username - use letters, digits, dot, underscore or hyphen only (e.g. admin).\n";
 }
+while (($full = ask('Admin name: ')) === '') echo "  Name is required.\n";
+while (strlen($pass = ask('Admin password (min 10 chars): ', true)) < 10) echo "  Password must be at least 10 characters.\n";
 db()->prepare("INSERT INTO users (name, username, password_hash, role) VALUES (?, ?, ?, 'admin')")
     ->execute([$full, $user, password_hash($pass, PASSWORD_DEFAULT)]);
 echo "Admin created.\n";
