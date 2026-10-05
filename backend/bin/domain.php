@@ -70,6 +70,20 @@ case 'set':
     echo "canonical: $to\nredirecting: " . implode(', ', $from) . "\nbackups: *.htaccess.bak\n";
     break;
 
+case 'clone':
+    $dest = rtrim($args[0] ?? fail('usage: domain.php clone <dest-site-dir>'), '/');
+    $src = realpath(__DIR__ . '/../..');
+    if (!is_dir($dest)) fail("$dest not found - create the site in CloudPanel first");
+    $dest = realpath($dest);
+    if ($dest === $src) fail('source and destination are the same');
+    if (!is_file("$src/backend/.env")) fwrite(STDERR, "warning: backend/.env missing in source\n");
+    $st = stat($dest);
+    passthru('rsync -rltp --exclude=.git --exclude=node_modules ' . escapeshellarg("$src/") . ' ' . escapeshellarg("$dest/"), $rc);
+    if ($rc !== 0) fail('rsync failed');
+    passthru(sprintf('chown -R %d:%d %s', $st['uid'], $st['gid'], escapeshellarg($dest)));
+    echo "copied $src -> $dest (owner {$st['uid']}:{$st['gid']}, .env included, same database)\n";
+    break;
+
 case 'status':
     $st = current_state(read($ht));
     if (!$st) { echo "no canonical host configured\n"; break; }
@@ -103,6 +117,7 @@ CONF . "\n";
     break;
 
 default:
-    echo "php backend/bin/domain.php set <new-host> [old-host...]\n"
+    echo "php backend/bin/domain.php clone <dest-site-dir>\n"
+       . "php backend/bin/domain.php set <new-host> [old-host...]\n"
        . "php backend/bin/domain.php status|check|vhost [host]\n";
 }
