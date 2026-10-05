@@ -108,11 +108,18 @@ step('Database');
 if (isset($opt['skip-db'])) {
     ok('skipped (--skip-db)');
 } elseif (!$dry) {
-    require "$site/backend/src/helpers.php";
+    // Parsed here rather than via helpers.php, whose function names clash with this script's.
+    $cfg = ['DB_HOST' => '127.0.0.1', 'DB_PORT' => '3306', 'DB_USER' => 'root', 'DB_PASS' => ''];
+    foreach (file($envFile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES) as $line) {
+        $line = trim($line);
+        if ($line === '' || $line[0] === '#' || !str_contains($line, '=')) continue;
+        [$k, $v] = explode('=', $line, 2);
+        $cfg[trim($k)] = trim($v, " \t\"'");
+    }
     try {
-        new PDO('mysql:host=' . env('DB_HOST', '127.0.0.1') . ';port=' . env('DB_PORT', '3306') . ';charset=utf8mb4',
-            env('DB_USER', 'root'), env('DB_PASS', ''), [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION, PDO::ATTR_TIMEOUT => 5]);
-        ok('connected as ' . env('DB_USER'));
+        new PDO("mysql:host={$cfg['DB_HOST']};port={$cfg['DB_PORT']};charset=utf8mb4",
+            $cfg['DB_USER'], $cfg['DB_PASS'], [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION, PDO::ATTR_TIMEOUT => 5]);
+        ok('connected as ' . $cfg['DB_USER']);
     } catch (PDOException $e) {
         fail('cannot connect to MySQL: ' . $e->getMessage() . "\n        fix backend/.env (or delete it and re-run), or use --skip-db");
     }
