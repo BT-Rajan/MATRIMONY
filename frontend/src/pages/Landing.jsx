@@ -12,10 +12,17 @@ export default function Landing() {
     <PublicShell>
       <section className="hero">
         <h1>{t('brand')}</h1>
+        <p className="edition">{t('edition')}</p>
         <h2>{t('event')}</h2>
         <p>{t('hero_tag')}</p>
         <p><Link to="/program.html" className="btn secondary small">{t('event_link')} →</Link></p>
       </section>
+
+      <div className="deadline" role="note">
+        <span>{t('last_date_label')}</span>
+        <strong>{t('last_date')}</strong>
+        {settings?.event_date && <small>{t('event_on')}: {settings.event_date}</small>}
+      </div>
 
       <div className="notice" role="note">
         <strong>{t('notice_title')}</strong>

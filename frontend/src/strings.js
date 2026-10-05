@@ -9,6 +9,10 @@ export const STRINGS = {
     prev: 'முந்தையது', next: 'அடுத்தது', home: 'முகப்பு', yes: 'ஆம்', no: 'இல்லை',
 
     hero_tag: 'கார்காத்தார் சமூகத்தினருக்கான திருமணத் தகவல் சந்திப்பு',
+    edition: '19-ம் ஆண்டு',
+    last_date_label: 'பதிவு செய்ய கடைசி நாள்',
+    last_date: '15 டிசம்பர் 2026',
+    event_on: 'நிகழ்ச்சி நாள்',
     notice_title: 'முக்கிய அறிவிப்பு',
     notice_text: 'கட்டணம் செலுத்தி, முழுமையாக நிரப்பி சமர்ப்பிக்கப்பட்ட விண்ணப்பங்கள் மட்டுமே ஏற்றுக்கொள்ளப்படும்.',
     apply_btn: 'விண்ணப்பிக்க',
@@ -97,6 +101,10 @@ export const STRINGS = {
     prev: 'Previous', next: 'Next', home: 'Home', yes: 'Yes', no: 'No',
 
     hero_tag: 'A marriage information meet for the Karkathar community',
+    edition: '19th year',
+    last_date_label: 'Last date to register',
+    last_date: '15 December 2026',
+    event_on: 'Event date',
     notice_title: 'Important notice',
     notice_text: 'Only paid and fully submitted applications will be accepted.',
     apply_btn: 'Apply now',

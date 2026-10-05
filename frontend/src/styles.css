@@ -44,6 +44,11 @@ a { color: var(--maroon); }
 .card { background: var(--paper); border: 1px solid var(--line); border-radius: var(--r); padding: 16px; margin-block: 16px; box-shadow: 0 2px 8px rgba(0, 0, 0, .05); }
 .hero { text-align: center; padding-block: 28px 8px; }
 .hero p { margin: .25rem 0 1rem; color: var(--muted); }
+.hero .edition { margin: 0; color: var(--maroon); font-weight: 700; font-size: 1.05rem; }
+.deadline { text-align: center; background: var(--maroon); color: #fff; border-radius: var(--r); padding: 14px 16px; margin-block: 16px; box-shadow: inset 0 0 0 3px var(--maroon), inset 0 0 0 4px var(--gold); }
+.deadline span { display: block; color: var(--gold); font-weight: 600; }
+.deadline strong { display: block; font-size: 1.6rem; line-height: 1.3; }
+.deadline small { display: block; margin-top: 4px; font-size: .95rem; }
 .notice { border: 2px solid var(--warn); background: #fff7e0; border-radius: var(--r); padding: 14px 16px; margin-block: 16px; }
 .notice strong { display: block; color: var(--warn); margin-bottom: 4px; }
 .notice .sub { display: block; color: #444; font-size: .92rem; margin-top: 4px; }
