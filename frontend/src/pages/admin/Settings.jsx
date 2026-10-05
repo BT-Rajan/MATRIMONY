@@ -5,7 +5,7 @@ import { useAuth } from '../../auth';
 import { useI18n } from '../../i18n';
 
 const QR_MAX_BYTES = 2 * 1024 * 1024;
-const BLANK = { event_date: '', venue_ta: '', venue_en: '', bank_name: '', bank_account: '', bank_ifsc: '', qr_code: '' };
+const BLANK = { event_date: '', venue_ta: '', venue_en: '', bank_name: '', bank_name_en: '', bank_account: '', bank_ifsc: '', qr_code: '' };
 
 function readAsDataUrl(file) {
   return new Promise((resolve, reject) => {
@@ -119,6 +119,12 @@ export default function Settings() {
               <input id="bank_name" type="text" maxLength={150} value={form.bank_name}
                 onChange={(e) => set('bank_name', e.target.value)} {...ia('bank_name')} />
               {fe('bank_name')}
+            </div>
+            <div className="field full">
+              <label htmlFor="bank_name_en">{t('s_bank_name_en')}</label>
+              <input id="bank_name_en" type="text" maxLength={150} value={form.bank_name_en}
+                onChange={(e) => set('bank_name_en', e.target.value)} {...ia('bank_name_en')} />
+              {fe('bank_name_en')}
             </div>
             <div className="field">
               <label htmlFor="bank_account">{t('s_bank_account')}</label>

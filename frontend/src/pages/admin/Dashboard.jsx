@@ -35,8 +35,12 @@ export default function Dashboard() {
             ))}
           </div>
           <div className="stats" style={{ marginTop: 12 }}>
-            <div className="stat plain"><b>{s.male}</b><span>{t('d_male')}</span></div>
-            <div className="stat plain"><b>{s.female}</b><span>{t('d_female')}</span></div>
+            {[['d_male', 'male'], ['d_female', 'female']].map(([label, g]) => (
+              <Link key={g} to={`/admin.html/applications?gender=${g}`} className="stat plain">
+                <b>{s[g]}</b>
+                <span>{t(label)}</span>
+              </Link>
+            ))}
           </div>
         </>
       )}

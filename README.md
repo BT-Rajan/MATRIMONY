@@ -17,3 +17,7 @@ Setup
 Dev: `php -S 127.0.0.1:8000 -t public backend/dev-router.php` and `npm run dev` in `frontend/`.
 
 Editable content: `frontend/src/config.js` (event date/venue, bank, contact), `frontend/src/content/terms.js` (terms; bump `TERMS_VERSION` in `backend/src/helpers.php` on change).
+
+CloudPanel (Nginx) server: from the site dir run `sudo php backend/bin/server-setup.php`
+(add `--dry-run` to preview). It creates `backend/.env`, sets up the DB, builds the frontend,
+points the vhost root at `public/` with API/SPA routing, syncs CloudPanel's site record, fixes ownership and verifies.

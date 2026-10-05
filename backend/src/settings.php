@@ -3,14 +3,14 @@ declare(strict_types=1);
 
 const SETTINGS_TEXT = [ // field => [max length, required]
     'event_date' => [60, false], 'venue_ta' => [255, true], 'venue_en' => [255, true],
-    'bank_name' => [150, true], 'bank_account' => [40, true], 'bank_ifsc' => [20, false],
+    'bank_name' => [150, true], 'bank_name_en' => [150, false], 'bank_account' => [40, true], 'bank_ifsc' => [20, false],
 ];
 const QR_MAX_RAW_BYTES = 2 * 1024 * 1024; // 2MB original image, before base64 overhead
 
 function settings_row(): array
 {
-    $row = db()->query('SELECT event_date, venue_ta, venue_en, bank_name, bank_account, bank_ifsc, qr_code, updated_at FROM site_settings WHERE id = 1')->fetch();
-    return $row ?: array_fill_keys(['event_date', 'venue_ta', 'venue_en', 'bank_name', 'bank_account', 'bank_ifsc', 'qr_code', 'updated_at'], null);
+    $row = db()->query('SELECT event_date, venue_ta, venue_en, bank_name, bank_name_en, bank_account, bank_ifsc, qr_code, updated_at FROM site_settings WHERE id = 1')->fetch();
+    return $row ?: array_fill_keys(['event_date', 'venue_ta', 'venue_en', 'bank_name', 'bank_name_en', 'bank_account', 'bank_ifsc', 'qr_code', 'updated_at'], null);
 }
 
 // Public: the landing page, apply form, and event page all read this without logging in.
@@ -57,11 +57,11 @@ function h_settings_update(): void
     if ($e) fail(422, 'validation', $e);
 
     if ($qrProvided) {
-        db()->prepare('UPDATE site_settings SET event_date=?, venue_ta=?, venue_en=?, bank_name=?, bank_account=?, bank_ifsc=?, qr_code=?, updated_by=? WHERE id = 1')
-            ->execute([$d['event_date'], $d['venue_ta'], $d['venue_en'], $d['bank_name'], $d['bank_account'], $d['bank_ifsc'], $qr, $u['id']]);
+        db()->prepare('UPDATE site_settings SET event_date=?, venue_ta=?, venue_en=?, bank_name=?, bank_name_en=?, bank_account=?, bank_ifsc=?, qr_code=?, updated_by=? WHERE id = 1')
+            ->execute([$d['event_date'], $d['venue_ta'], $d['venue_en'], $d['bank_name'], $d['bank_name_en'], $d['bank_account'], $d['bank_ifsc'], $qr, $u['id']]);
     } else {
-        db()->prepare('UPDATE site_settings SET event_date=?, venue_ta=?, venue_en=?, bank_name=?, bank_account=?, bank_ifsc=?, updated_by=? WHERE id = 1')
-            ->execute([$d['event_date'], $d['venue_ta'], $d['venue_en'], $d['bank_name'], $d['bank_account'], $d['bank_ifsc'], $u['id']]);
+        db()->prepare('UPDATE site_settings SET event_date=?, venue_ta=?, venue_en=?, bank_name=?, bank_name_en=?, bank_account=?, bank_ifsc=?, updated_by=? WHERE id = 1')
+            ->execute([$d['event_date'], $d['venue_ta'], $d['venue_en'], $d['bank_name'], $d['bank_name_en'], $d['bank_account'], $d['bank_ifsc'], $u['id']]);
     }
 
     out(settings_row());

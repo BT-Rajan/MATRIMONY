@@ -16,7 +16,7 @@ export default function AdminLayout() {
       <a className="skip" href="#main">{t('skip')}</a>
       <header className="topbar">
         <div className="wrap">
-          <Link to="/" className="brand">{t('brand')}</Link>
+          <Link to="/" className="brand"><img src="/logo-192.png" alt="" width="34" height="34" />{t('brand')}</Link>
           <div className="topbar-actions">
             <span className="who">{user.name} ({t('role_' + user.role)})</span>
             <LangToggle />
