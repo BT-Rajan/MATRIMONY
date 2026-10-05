@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="ta">
+<head>
+<meta charset="utf-8">
+<title>மங்கல சந்திப்பு — அழைப்பிதழ்</title>
+<!-- Invitation card: 5 x 7 in. Print/Save as PDF with margins "None" and background graphics on. -->
+<style>
+  @font-face { font-family: 'Noto Sans Tamil'; font-weight: 400; src: url(fonts/sans-400.ttf) format('truetype'); }
+  @font-face { font-family: 'Noto Sans Tamil'; font-weight: 600; src: url(fonts/sans-600.ttf) format('truetype'); }
+  @font-face { font-family: 'Noto Sans Tamil'; font-weight: 700; src: url(fonts/sans-700.ttf) format('truetype'); }
+  @font-face { font-family: 'Noto Serif Tamil'; font-weight: 700; src: url(fonts/serif-700.ttf) format('truetype'); }
+  @font-face { font-family: 'Noto Serif Tamil'; font-weight: 800; src: url(fonts/serif-800.ttf) format('truetype'); }
+
+  @page { size: 5in 7in; margin: 0; }
+  :root { --maroon: #800020; --maroon-d: #5c0017; --gold: #d4af37; --gold-l: #f3e3a6; --cream: #fffaf0; --ink: #2a1a12; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { background: #ddd; }
+  body { font-family: 'Noto Sans Tamil', sans-serif; color: var(--ink); -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .card {
+    width: 5in; height: 7in; margin: 0 auto; position: relative; overflow: hidden;
+    background: var(--maroon); padding: 0.14in;
+  }
+  .inner {
+    height: 100%; border: 2px solid var(--gold); padding: 3px;
+  }
+  .paper {
+    height: 100%; border: 1px solid var(--gold); background: var(--cream);
+    background-image: radial-gradient(circle at 50% 0, #fff6dc 0, transparent 60%);
+    padding: 0.16in 0.22in 0.14in; display: flex; flex-direction: column; align-items: center; text-align: center; position: relative;
+  }
+  .corner { position: absolute; width: 34px; height: 34px; border-color: var(--gold); border-style: solid; }
+  .tl { top: 5px; left: 5px; border-width: 2px 0 0 2px; border-top-left-radius: 10px; }
+  .tr { top: 5px; right: 5px; border-width: 2px 2px 0 0; border-top-right-radius: 10px; }
+  .bl { bottom: 5px; left: 5px; border-width: 0 0 2px 2px; border-bottom-left-radius: 10px; }
+  .br { bottom: 5px; right: 5px; border-width: 0 2px 2px 0; border-bottom-right-radius: 10px; }
+
+  .u { font-family: 'Noto Serif Tamil', serif; color: var(--maroon); font-size: 12pt; font-weight: 700; line-height: 1; }
+  .paper > * { flex-shrink: 0; }
+  .rings { margin: 2px 0 1px; }
+  .org { font-family: 'Noto Serif Tamil', serif; font-weight: 800; color: var(--maroon); font-size: 14pt; line-height: 1.35; }
+  .welcome { font-size: 9pt; color: #6b4a2e; margin-top: 2px; letter-spacing: .2px; }
+  .title {
+    font-family: 'Noto Serif Tamil', serif; font-weight: 800; font-size: 27pt; line-height: 1.2;
+    color: var(--maroon-d); margin: 4px 0 0;
+  }
+  .tag { font-size: 9pt; color: #4a3424; margin-top: 1px; }
+  .rule { display: flex; align-items: center; gap: 6px; width: 78%; margin: 7px auto; color: var(--gold); }
+  .rule::before, .rule::after { content: ""; flex: 1; height: 1px; background: linear-gradient(90deg, transparent, var(--gold), transparent); }
+  .rule span { font-size: 8pt; }
+
+  .event { width: 100%; margin-bottom: 4px; display: grid; grid-template-columns: auto 1fr; gap: 3px 8px; text-align: left; font-size: 10pt; line-height: 1.5; }
+  .event dt { font-weight: 700; color: var(--maroon); white-space: nowrap; }
+  .event dd { font-weight: 600; }
+
+  .reg { width: 100%; display: grid; grid-template-columns: 1fr auto; gap: 10px; align-items: center; margin-top: 6px;
+         border: 1px solid var(--gold); border-radius: 8px; background: #fff; padding: 9px 11px; text-align: left; }
+  .reg h3 { font-family: 'Noto Serif Tamil', serif; color: var(--maroon); font-size: 10.5pt; margin-bottom: 3px; }
+  .fee { font-size: 9.4pt; font-weight: 700; margin-bottom: 3px; }
+  .fee b { color: var(--maroon); font-size: 12pt; }
+  .reg ol { font-size: 7.3pt; line-height: 1.6; white-space: nowrap; padding-left: 13px; }
+  .qr { text-align: center; }
+  .qr img { width: 0.98in; height: 0.98in; display: block; border: 3px solid #fff; outline: 1px solid var(--gold); }
+  .qr small { display: block; font-size: 6.8pt; margin-top: 3px; line-height: 1.3; }
+  .qr b { color: var(--maroon); font-size: 8pt; }
+
+  .bank { font-size: 8.3pt; line-height: 1.5; margin-top: 10px; width: 100%; }
+  .bank strong { color: var(--maroon); }
+  .notice { font-size: 8.2pt; line-height: 1.5; margin-top: 6px; color: var(--maroon-d); background: var(--gold-l);
+            border-radius: 6px; padding: 6px 10px; width: 100%; font-weight: 600; }
+
+  .contact { margin-top: auto; width: 100%; }
+  .contact h4 { font-family: 'Noto Serif Tamil', serif; color: var(--maroon); font-size: 10pt; margin-bottom: 4px; }
+  .officers { display: flex; justify-content: space-between; gap: 6px; }
+  .officers div { font-size: 7.6pt; line-height: 1.4; }
+  .officers span { display: block; color: #6b4a2e; font-weight: 600; }
+  .officers strong { display: block; font-size: 7.6pt; white-space: nowrap; }
+  .officers em { font-style: normal; font-weight: 700; font-size: 8.2pt; color: var(--maroon); }
+
+  @media print { html, body { background: none; } .card { margin: 0; } }
+</style>
+</head>
+<body>
+<div class="card"><div class="inner"><div class="paper">
+  <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+
+  <div class="u">உ</div>
+  <svg class="rings" width="44" height="22" viewBox="0 0 44 22" aria-hidden="true">
+    <g fill="none" stroke="#d4af37" stroke-width="2.4"><circle cx="16" cy="11" r="8.5"/><circle cx="28" cy="11" r="8.5"/></g>
+  </svg>
+  <div class="org">குரோம்பேட்டை கார்காத்தார் சங்கம்</div>
+  <div class="welcome">அன்புடன் அழைக்கிறோம்</div>
+
+  <div class="title">மங்கல சந்திப்பு</div>
+  <div class="tag">கார்காத்தார் சமூகத்தினருக்கான திருமணத் தகவல் சந்திப்பு</div>
+
+  <div class="rule"><span>❖</span></div>
+
+  <dl class="event">
+    <dt>நாள்</dt><dd>விரைவில் அறிவிக்கப்படும்</dd>
+    <dt>இடம்</dt><dd>ஸ்ரீ கணபதி ஹால், Dr. ராஜேந்திரபிரசாத் ரோடு, குரோம்பேட்டை</dd>
+  </dl>
+
+  <div class="reg">
+    <div>
+      <h3>முன்பதிவு அவசியம்</h3>
+      <div class="fee">பதிவு கட்டணம்: <b>₹ 800/-</b></div>
+      <ol>
+        <li>விதிமுறைகளைப் படித்து ஏற்கவும்</li>
+        <li>பதிவு கட்டணத்தை வங்கிக் கணக்கில் செலுத்தவும்</li>
+        <li>படிவத்தை முழுமையாக நிரப்பி சமர்ப்பிக்கவும்</li>
+        <li>தனித்துவமான பதிவு எண்ணைப் பெறுங்கள்</li>
+      </ol>
+    </div>
+    <div class="qr">
+      <img src="qr.svg" alt="karkathar.org/apply.html">
+      <small>ஸ்கேன் செய்து<br>விண்ணப்பிக்கவும்<br><b>karkathar.org</b></small>
+    </div>
+  </div>
+
+  <div class="bank">
+    <strong>கட்டண விவரம்:</strong> இந்தியன் வங்கி, சிட்லபாக்கம் கிளை<br>கணக்கு எண்: <strong>935934700</strong>
+  </div>
+
+  <div class="notice">
+    கட்டணம் செலுத்தி, முழுமையாக நிரப்பி சமர்ப்பிக்கப்பட்ட விண்ணப்பங்கள் மட்டுமே ஏற்றுக்கொள்ளப்படும்.
+  </div>
+
+  <div class="contact">
+    <div class="rule" style="margin:5px auto 3px"><span>❖</span></div>
+    <h4>தொடர்புக்கு</h4>
+    <div class="officers">
+      <div><span>தலைவர்</span><strong>திரு பா.தியாகராஜன்</strong><em>99444 63333</em></div>
+      <div><span>செயலாளர்</span><strong>திரு ஜெ.தீபன்</strong><em>96596 32577</em></div>
+      <div><span>பொருளாளர்</span><strong>திரு இரா.சந்திரகுமார்</strong><em>94443 14601</em></div>
+    </div>
+  </div>
+</div></div></div>
+</body>
+</html>
