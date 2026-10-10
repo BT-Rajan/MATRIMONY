@@ -35,15 +35,15 @@ export default function ApplicationView() {
   if (err) return <div className="alert bad" role="alert">{t('e_' + err)}</div>;
   if (!a) return <p role="status">{t('loading')}</p>;
 
-  const show = (f) => {
-    const val = a[f.k];
-    if (val === null || val === '') return '—';
+  const fmt = (f, val) => {
+    if (val === null || val === undefined || val === '') return '—';
     if (f.k === 'gender') return GENDERS.find((g) => g.v === val)?.[lang] ?? val;
     if (f.k === 'marital_status') return MARITAL_STATUS.find((m) => m.v === val)?.[lang] ?? val;
     if (f.k === 'payment_amount') return `Rs. ${Number(val)}`;
     if (f.dateField) return fmtDate(val);
     return val;
   };
+  const show = (f) => fmt(f, a[f.k]);
 
   async function save(values) {
     await api.put(`applications/${id}`, values);
@@ -94,6 +94,7 @@ export default function ApplicationView() {
     ? ['accepted', 'rejected', 'pending'].filter((s) => s !== a.status)
     : a.can_decide && a.status === 'pending' ? ['accepted', 'rejected'] : [];
   const fieldLabel = (k) => ALL_FIELDS.find((f) => f.k === k)?.[lang] ?? k;
+  const fieldByKey = (k) => ALL_FIELDS.find((f) => f.k === k);
   const histText = (h) => {
     if (h.action === 'created') return t('h_created');
     if (h.action === 'edited') return `${t('h_edited')}: ${(h.note || '').split(',').map(fieldLabel).join(', ')}`;
@@ -196,7 +197,29 @@ export default function ApplicationView() {
         <h2 id="hist">{t('v_history')}</h2>
         <ul style={{ margin: 0, paddingLeft: '1.2em' }}>
           {a.history.map((h, i) => (
-            <li key={i}><small>{fmtDateTime(h.created_at)}</small> — <strong>{h.user_name || t('v_system')}</strong>: {histText(h)}</li>
+            <li key={h.id ?? i} style={{ marginBottom: 8 }}>
+              <small>{fmtDateTime(h.created_at)}</small> — <strong>{h.user_name || t('v_system')}</strong>: {histText(h)}
+              {h.changes && (
+                <details style={{ marginTop: 4 }}>
+                  <summary>{t('h_details')}</summary>
+                  <table className="tbl" style={{ marginTop: 6 }}>
+                    <thead><tr><th scope="col">{t('h_field')}</th><th scope="col">{t('h_before')}</th><th scope="col">{t('h_after')}</th></tr></thead>
+                    <tbody>
+                      {Object.entries(h.changes).map(([k, [from, to]]) => {
+                        const f = fieldByKey(k) || { k };
+                        return (
+                          <tr key={k}>
+                            <td data-label={t('h_field')}>{fieldLabel(k)}</td>
+                            <td data-label={t('h_before')}>{fmt(f, from)}</td>
+                            <td data-label={t('h_after')}>{fmt(f, to)}</td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </details>
+              )}
+            </li>
           ))}
         </ul>
       </section>

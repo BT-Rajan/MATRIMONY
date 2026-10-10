@@ -171,10 +171,10 @@ function require_user(?string $role = null): array
     return $u;
 }
 
-function audit(int $appId, ?int $userId, string $action, ?string $from = null, ?string $to = null, ?string $note = null): void
+function audit(int $appId, ?int $userId, string $action, ?string $from = null, ?string $to = null, ?string $note = null, ?array $changes = null): void
 {
-    db()->prepare('INSERT INTO application_history (application_id, user_id, action, from_status, to_status, note) VALUES (?, ?, ?, ?, ?, ?)')
-        ->execute([$appId, $userId, $action, $from, $to, $note]);
+    db()->prepare('INSERT INTO application_history (application_id, user_id, action, from_status, to_status, note, changes) VALUES (?, ?, ?, ?, ?, ?, ?)')
+        ->execute([$appId, $userId, $action, $from, $to, $note, $changes ? json_encode($changes, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) : null]);
 }
 
 function clean_str(mixed $v): string

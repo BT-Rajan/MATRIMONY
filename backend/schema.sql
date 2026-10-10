@@ -73,6 +73,7 @@ CREATE TABLE IF NOT EXISTS application_history (
   from_status VARCHAR(10) NULL,
   to_status VARCHAR(10) NULL,
   note VARCHAR(500) NULL,
+  changes TEXT NULL,
   created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   KEY idx_hist_app (application_id),
   CONSTRAINT fk_hist_app FOREIGN KEY (application_id) REFERENCES applications (id) ON DELETE CASCADE,

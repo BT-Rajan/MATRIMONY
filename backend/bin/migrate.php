@@ -53,4 +53,7 @@ foreach (['fk_app_assigned_to' => 'assigned_to', 'fk_app_assigned_by' => 'assign
     }
 }
 
+// Per-application history: before/after values of each edited field (JSON {field: [old, new]}).
+db()->exec("ALTER TABLE application_history ADD COLUMN IF NOT EXISTS changes TEXT NULL AFTER note");
+
 echo "Migration applied (or already up to date).\n";

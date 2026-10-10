@@ -130,11 +130,14 @@ function h_app_get(int $id): void
 {
     $u = require_user();
     $a = find_app($id);
-    $h = db()->prepare('SELECT h.action, h.from_status, h.to_status, h.note, h.created_at, u.name AS user_name
+    $h = db()->prepare('SELECT h.id, h.action, h.from_status, h.to_status, h.note, h.changes, h.created_at, u.name AS user_name
         FROM application_history h LEFT JOIN users u ON u.id = h.user_id
         WHERE h.application_id = ? ORDER BY h.id DESC');
     $h->execute([$id]);
-    $a['history'] = $h->fetchAll();
+    $a['history'] = array_map(function ($r) {
+        $r['changes'] = $r['changes'] ? json_decode($r['changes'], true) : null;
+        return $r;
+    }, $h->fetchAll());
     $a['can_edit'] = $a['status'] === 'pending' || $u['role'] === 'admin';
     $a['can_reset'] = $u['role'] === 'admin';
     $a['can_assign'] = $u['role'] === 'admin' && $a['status'] === 'pending';
@@ -174,7 +177,11 @@ function h_app_update(int $id): void
         throw $x;
     }
     if ($st->rowCount() === 0) fail(403, 'locked');
-    audit($id, $u['id'], 'edited', null, null, implode(',', $changed));
+    $diff = [];
+    foreach ($changed as $c) {
+        $diff[$c] = [$a[$c] === null ? null : (string)$a[$c], $d[$c] === null ? null : (string)$d[$c]];
+    }
+    audit($id, $u['id'], 'edited', null, null, implode(',', $changed), $diff);
     out(['ok' => true]);
 }
 

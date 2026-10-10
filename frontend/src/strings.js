@@ -83,6 +83,7 @@ export const STRINGS = {
     e_not_pending: 'நிலுவையில் உள்ள விண்ணப்பங்களை மட்டுமே ஒதுக்க முடியும்.',
     e_none_available: 'ஒதுக்கப்படாத நிலுவை விண்ணப்பங்கள் இல்லை.',
 
+    h_details: 'மாற்றங்களைக் காட்டு', h_field: 'புலம்', h_before: 'முன்', h_after: 'பின்',
     f_summary: 'படிவத்தில் பிழைகள் உள்ளன. குறிக்கப்பட்ட இடங்களைச் சரிசெய்யவும்.',
     e_invalid_credentials: 'பயனர் பெயர் அல்லது கடவுச்சொல் தவறு.',
     e_throttled: 'பல முறை முயற்சிக்கப்பட்டது. சிறிது நேரம் கழித்து மீண்டும் முயற்சிக்கவும்.',
@@ -192,6 +193,7 @@ export const STRINGS = {
     e_not_pending: 'Only pending applications can be assigned.',
     e_none_available: 'There are no unassigned pending applications.',
 
+    h_details: 'Show changes', h_field: 'Field', h_before: 'Before', h_after: 'After',
     f_summary: 'The form has errors. Please fix the marked fields.',
     e_invalid_credentials: 'Incorrect username or password.',
     e_throttled: 'Too many attempts. Please try again later.',
