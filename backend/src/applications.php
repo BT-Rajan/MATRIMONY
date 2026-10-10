@@ -46,15 +46,18 @@ function h_apply(): void
 
 function h_stats(): void
 {
-    require_user();
-    $r = db()->query("SELECT COUNT(*) total,
+    $u = require_user();
+    $st = db()->prepare("SELECT COUNT(*) total,
         COALESCE(SUM(status = 'accepted'), 0) accepted,
         COALESCE(SUM(status = 'rejected'), 0) rejected,
         COALESCE(SUM(status = 'pending'), 0) pending,
         COALESCE(SUM(gender = 'male'), 0) male,
-        COALESCE(SUM(gender = 'female'), 0) female
-        FROM applications")->fetch();
-    out(array_map('intval', $r));
+        COALESCE(SUM(gender = 'female'), 0) female,
+        COALESCE(SUM(status = 'pending' AND assigned_to IS NULL), 0) unassigned,
+        COALESCE(SUM(status = 'pending' AND assigned_to = ?), 0) mine
+        FROM applications");
+    $st->execute([$u['id']]);
+    out(array_map('intval', $st->fetch()));
 }
 
 function like_escape(string $s): string
@@ -64,24 +67,34 @@ function like_escape(string $s): string
 
 function h_app_list(): void
 {
-    require_user();
+    $u = require_user();
     $where = [];
     $args = [];
 
     $status = $_GET['status'] ?? '';
     if (in_array($status, ['pending', 'accepted', 'rejected'], true)) {
-        $where[] = 'status = ?';
+        $where[] = 'a.status = ?';
         $args[] = $status;
     }
     $gender = $_GET['gender'] ?? '';
     if (in_array($gender, ['male', 'female'], true)) {
-        $where[] = 'gender = ?';
+        $where[] = 'a.gender = ?';
         $args[] = $gender;
+    }
+    $asg = (string)($_GET['assigned'] ?? '');
+    if ($asg === 'me') {
+        $where[] = 'a.assigned_to = ?';
+        $args[] = $u['id'];
+    } elseif ($asg === 'unassigned') {
+        $where[] = 'a.assigned_to IS NULL';
+    } elseif ($asg !== '' && ctype_digit($asg)) {
+        $where[] = 'a.assigned_to = ?';
+        $args[] = (int)$asg;
     }
     $q = clean_str($_GET['q'] ?? '');
     if ($q !== '') {
         $like = '%' . like_escape(mb_substr($q, 0, 60)) . '%';
-        $where[] = '(reg_no LIKE ? OR full_name LIKE ? OR phone LIKE ? OR payment_ref LIKE ?)';
+        $where[] = '(a.reg_no LIKE ? OR a.full_name LIKE ? OR a.phone LIKE ? OR a.payment_ref LIKE ?)';
         array_push($args, $like, $like, $like, $like);
     }
     $w = $where ? ' WHERE ' . implode(' AND ', $where) : '';
@@ -90,20 +103,25 @@ function h_app_list(): void
     $page = max(1, (int)($_GET['page'] ?? 1));
     $off = ($page - 1) * $per;
 
-    $c = db()->prepare("SELECT COUNT(*) FROM applications$w");
+    $c = db()->prepare("SELECT COUNT(*) FROM applications a$w");
     $c->execute($args);
     $total = (int)$c->fetchColumn();
 
-    $st = db()->prepare("SELECT id, reg_no, status, gender, full_name, dob, phone, created_at FROM applications$w
-        ORDER BY created_at DESC, id DESC LIMIT $per OFFSET $off");
+    $st = db()->prepare("SELECT a.id, a.reg_no, a.status, a.gender, a.full_name, a.dob, a.phone, a.created_at,
+        a.assigned_to, au.name AS assigned_to_name
+        FROM applications a LEFT JOIN users au ON au.id = a.assigned_to$w
+        ORDER BY a.created_at DESC, a.id DESC LIMIT $per OFFSET $off");
     $st->execute($args);
     out(['items' => $st->fetchAll(), 'total' => $total, 'page' => $page, 'per' => $per]);
 }
 
 function find_app(int $id): array
 {
-    $st = db()->prepare('SELECT a.*, du.name AS decided_by_name FROM applications a
-        LEFT JOIN users du ON du.id = a.decided_by WHERE a.id = ?');
+    $st = db()->prepare('SELECT a.*, du.name AS decided_by_name, au.name AS assigned_to_name, bu.name AS assigned_by_name
+        FROM applications a
+        LEFT JOIN users du ON du.id = a.decided_by
+        LEFT JOIN users au ON au.id = a.assigned_to
+        LEFT JOIN users bu ON bu.id = a.assigned_by WHERE a.id = ?');
     $st->execute([$id]);
     return $st->fetch() ?: fail(404, 'not_found');
 }
@@ -119,6 +137,8 @@ function h_app_get(int $id): void
     $a['history'] = $h->fetchAll();
     $a['can_edit'] = $a['status'] === 'pending' || $u['role'] === 'admin';
     $a['can_reset'] = $u['role'] === 'admin';
+    $a['can_assign'] = $u['role'] === 'admin' && $a['status'] === 'pending';
+    $a['can_decide'] = $u['role'] === 'admin' || ($a['status'] === 'pending' && (int)$a['assigned_to'] === $u['id']);
     out($a);
 }
 
@@ -172,14 +192,110 @@ function h_app_decide(int $id): void
     if ($to === $a['status']) fail(409, 'no_change');
     $admin = $u['role'] === 'admin';
     if (!$admin && ($a['status'] !== 'pending' || $to === 'pending')) fail(403, 'locked');
+    if (!$admin && (int)$a['assigned_to'] !== $u['id']) fail(403, 'not_assigned');
     if ($to === 'rejected' && mb_strlen($note) < 3) fail(422, 'validation', ['note' => 'required']);
 
     $pending = $to === 'pending';
     $st = db()->prepare('UPDATE applications SET status = ?, decided_by = ?, decided_at = ?, decision_note = ?, updated_by = ?
-        WHERE id = ? AND status = ?');
-    $st->execute([$to, $pending ? null : $u['id'], $pending ? null : now(), ($pending || $note === '') ? null : $note, $u['id'], $id, $a['status']]);
+        WHERE id = ? AND status = ? AND (? = 1 OR assigned_to = ?)');
+    $st->execute([$to, $pending ? null : $u['id'], $pending ? null : now(), ($pending || $note === '') ? null : $note, $u['id'], $id, $a['status'], $admin ? 1 : 0, $u['id']]);
     if ($st->rowCount() === 0) fail(409, 'conflict');
 
     audit($id, $u['id'], 'decision', $a['status'], $to, $note === '' ? null : $note);
     out(['ok' => true]);
+}
+
+/* ---------- assignment (admin) ---------- */
+
+function active_manager(int $id): array
+{
+    $st = db()->prepare("SELECT id, name FROM users WHERE id = ? AND role = 'manager' AND is_active = 1");
+    $st->execute([$id]);
+    return $st->fetch() ?: fail(422, 'validation', ['manager_id' => 'invalid']);
+}
+
+// Assign (or reassign / unassign with manager_id = null) one pending application.
+function h_app_assign(int $id): void
+{
+    $me = require_user('admin');
+    $mid = body()['manager_id'] ?? null;
+    $mgr = ($mid === null || $mid === '') ? null : active_manager((int)$mid);
+    $a = find_app($id);
+    if ($a['status'] !== 'pending') fail(409, 'not_pending');
+
+    $prev = $a['assigned_to'] !== null ? (int)$a['assigned_to'] : null;
+    $new = $mgr ? (int)$mgr['id'] : null;
+    if ($prev === $new) fail(409, 'no_change');
+
+    $st = db()->prepare("UPDATE applications SET assigned_to = ?, assigned_by = ?, assigned_at = ?
+        WHERE id = ? AND status = 'pending' AND assigned_to <=> ?");
+    $st->execute([$new, $new === null ? null : $me['id'], $new === null ? null : now(), $id, $prev]);
+    if ($st->rowCount() === 0) fail(409, 'conflict');
+
+    audit($id, $me['id'], $new === null ? 'unassigned' : 'assigned', null, null, $new === null ? $a['assigned_to_name'] : $mgr['name']);
+    out(['ok' => true]);
+}
+
+// Assign the N oldest unassigned pending applications to one manager.
+function h_app_assign_bulk(): void
+{
+    $me = require_user('admin');
+    $in = body();
+    $mgr = active_manager((int)($in['manager_id'] ?? 0));
+    $n = $in['count'] ?? null;
+    if (!is_int($n) && !(is_string($n) && ctype_digit($n))) fail(422, 'validation', ['count' => 'invalid']);
+    $n = (int)$n;
+    if ($n < 1 || $n > 1000) fail(422, 'validation', ['count' => 'invalid']);
+
+    $pdo = db();
+    $pdo->beginTransaction();
+    try {
+        $ids = $pdo->query("SELECT id FROM applications WHERE status = 'pending' AND assigned_to IS NULL
+            ORDER BY created_at, id LIMIT $n FOR UPDATE")->fetchAll(PDO::FETCH_COLUMN);
+        if (!$ids) fail(409, 'none_available');
+        $ph = implode(',', array_fill(0, count($ids), '?'));
+        $pdo->prepare("UPDATE applications SET assigned_to = ?, assigned_by = ?, assigned_at = ? WHERE id IN ($ph)")
+            ->execute(array_merge([$mgr['id'], $me['id'], now()], $ids));
+        foreach ($ids as $aid) audit((int)$aid, $me['id'], 'assigned', null, null, $mgr['name']);
+        $pdo->commit();
+    } catch (Throwable $x) {
+        if ($pdo->inTransaction()) $pdo->rollBack();
+        throw $x;
+    }
+    out(['assigned' => count($ids), 'requested' => $n]);
+}
+
+function h_assign_summary(): void
+{
+    require_user('admin');
+    $un = (int)db()->query("SELECT COUNT(*) FROM applications WHERE status = 'pending' AND assigned_to IS NULL")->fetchColumn();
+    $rows = db()->query("SELECT u.id, u.name, COUNT(a.id) AS pending FROM users u
+        LEFT JOIN applications a ON a.assigned_to = u.id AND a.status = 'pending'
+        WHERE u.role = 'manager' AND u.is_active = 1 GROUP BY u.id, u.name ORDER BY u.name")->fetchAll();
+    out(['unassigned' => $un, 'managers' => array_map(
+        fn($r) => ['id' => (int)$r['id'], 'name' => $r['name'], 'pending' => (int)$r['pending']], $rows)]);
+}
+
+// A disabled / demoted manager can no longer act, so their still-pending applications go back to the pool.
+function release_assignments(int $userId, int $byId): void
+{
+    $pdo = db();
+    $pdo->beginTransaction();
+    try {
+        $ids = $pdo->prepare("SELECT id FROM applications WHERE assigned_to = ? AND status = 'pending' FOR UPDATE");
+        $ids->execute([$userId]);
+        $ids = $ids->fetchAll(PDO::FETCH_COLUMN);
+        if ($ids) {
+            $nm = $pdo->prepare('SELECT name FROM users WHERE id = ?');
+            $nm->execute([$userId]);
+            $name = (string)$nm->fetchColumn();
+            $pdo->prepare("UPDATE applications SET assigned_to = NULL, assigned_by = NULL, assigned_at = NULL
+                WHERE assigned_to = ? AND status = 'pending'")->execute([$userId]);
+            foreach ($ids as $aid) audit((int)$aid, $byId, 'unassigned', null, null, $name);
+        }
+        $pdo->commit();
+    } catch (Throwable $x) {
+        if ($pdo->inTransaction()) $pdo->rollBack();
+        throw $x;
+    }
 }

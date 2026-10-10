@@ -38,4 +38,19 @@ db()->exec("ALTER TABLE site_settings ADD COLUMN IF NOT EXISTS bank_name_en VARC
 db()->exec("UPDATE site_settings SET bank_name_en = 'Indian Bank, Chitlapakkam Branch' WHERE id = 1 AND bank_name_en = ''");
 db()->exec("UPDATE site_settings SET event_date = '27-12-2026' WHERE id = 1 AND event_date = ''");
 
+// Manager assignment: admin assigns pending applications to a manager, who alone may approve/reject them.
+db()->exec("ALTER TABLE applications
+    ADD COLUMN IF NOT EXISTS assigned_to INT UNSIGNED NULL AFTER decision_note,
+    ADD COLUMN IF NOT EXISTS assigned_by INT UNSIGNED NULL AFTER assigned_to,
+    ADD COLUMN IF NOT EXISTS assigned_at DATETIME NULL AFTER assigned_by,
+    ADD KEY IF NOT EXISTS idx_app_assigned (assigned_to)");
+foreach (['fk_app_assigned_to' => 'assigned_to', 'fk_app_assigned_by' => 'assigned_by'] as $fk => $col) {
+    $has = db()->prepare("SELECT COUNT(*) FROM information_schema.TABLE_CONSTRAINTS
+        WHERE CONSTRAINT_SCHEMA = DATABASE() AND TABLE_NAME = 'applications' AND CONSTRAINT_NAME = ?");
+    $has->execute([$fk]);
+    if (!(int)$has->fetchColumn()) {
+        db()->exec("ALTER TABLE applications ADD CONSTRAINT $fk FOREIGN KEY ($col) REFERENCES users (id) ON DELETE SET NULL");
+    }
+}
+
 echo "Migration applied (or already up to date).\n";

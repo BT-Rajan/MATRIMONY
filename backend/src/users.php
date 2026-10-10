@@ -64,6 +64,7 @@ function h_user_update(int $id): void
     $st = db()->prepare($sql . ' WHERE id = ?');
     $st->execute($args);
     if ($st->rowCount() === 0) fail(404, 'not_found');
+    if ($d['role'] !== 'manager' || !$d['active']) release_assignments($id, $me['id']);
     out(['ok' => true]);
 }
 

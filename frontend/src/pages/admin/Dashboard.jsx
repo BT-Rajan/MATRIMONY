@@ -2,9 +2,11 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { api } from '../../api';
 import { useI18n } from '../../i18n';
+import { useAuth } from '../../auth';
 
 export default function Dashboard() {
   const { t } = useI18n();
+  const { user } = useAuth();
   const [s, setS] = useState(null);
   const [err, setErr] = useState('');
 
@@ -18,6 +20,9 @@ export default function Dashboard() {
     ['d_rejected', 'rejected', '?status=rejected', 'bad'],
     ['d_pending', 'pending', '?status=pending', 'warn'],
   ];
+  const workQueue = user?.role === 'admin'
+    ? ['d_unassigned', 'unassigned', '?status=pending&assigned=unassigned', 'warn']
+    : ['d_mine', 'mine', '?status=pending&assigned=me', 'warn'];
 
   return (
     <>
@@ -41,6 +46,10 @@ export default function Dashboard() {
                 <span>{t(label)}</span>
               </Link>
             ))}
+            <Link to={`/admin.html/applications${workQueue[2]}`} className={`stat ${workQueue[3]}`}>
+              <b>{s[workQueue[1]]}</b>
+              <span>{t(workQueue[0])}</span>
+            </Link>
           </div>
         </>
       )}

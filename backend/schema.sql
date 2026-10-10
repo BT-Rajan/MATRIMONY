@@ -48,6 +48,9 @@ CREATE TABLE IF NOT EXISTS applications (
   decided_by INT UNSIGNED NULL,
   decided_at DATETIME NULL,
   decision_note VARCHAR(500) NULL,
+  assigned_to INT UNSIGNED NULL,
+  assigned_by INT UNSIGNED NULL,
+  assigned_at DATETIME NULL,
   updated_by INT UNSIGNED NULL,
   created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -55,8 +58,11 @@ CREATE TABLE IF NOT EXISTS applications (
   UNIQUE KEY uq_app_payment_ref (payment_ref),
   KEY idx_app_status (status),
   KEY idx_app_created (created_at),
+  KEY idx_app_assigned (assigned_to),
   CONSTRAINT fk_app_decided FOREIGN KEY (decided_by) REFERENCES users (id) ON DELETE SET NULL,
-  CONSTRAINT fk_app_updated FOREIGN KEY (updated_by) REFERENCES users (id) ON DELETE SET NULL
+  CONSTRAINT fk_app_updated FOREIGN KEY (updated_by) REFERENCES users (id) ON DELETE SET NULL,
+  CONSTRAINT fk_app_assigned_to FOREIGN KEY (assigned_to) REFERENCES users (id) ON DELETE SET NULL,
+  CONSTRAINT fk_app_assigned_by FOREIGN KEY (assigned_by) REFERENCES users (id) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS application_history (

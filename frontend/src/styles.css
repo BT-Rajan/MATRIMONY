@@ -138,6 +138,7 @@ input:focus, select:focus, textarea:focus { outline: 3px solid #1a5fb4; outline-
   .grid { grid-template-columns: repeat(2, 1fr); }
   .field.full { grid-column: 1 / -1; }
   .toolbar { grid-template-columns: 1fr 200px auto; align-items: end; }
+  .toolbar.wide { grid-template-columns: 1fr 150px 150px 190px auto; }
   .dl { grid-template-columns: repeat(2, 1fr); column-gap: 24px; }
   .dl .full { grid-column: 1 / -1; }
 }
