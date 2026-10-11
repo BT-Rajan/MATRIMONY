@@ -1,0 +1,75 @@
+// Editable public-site content. Every text is { ta, en }.
+export const tx = (o, lang) => (o && (o[lang] ?? o.en ?? o.ta)) || '';
+
+export const NAV = [
+  { to: '/', end: true, ta: 'முகப்பு', en: 'Home' },
+  { to: '/about', ta: 'எங்களைப் பற்றி', en: 'About Us' },
+  { to: '/events', ta: 'நிகழ்வுகள்', en: 'Events & Activities' },
+  { to: '/mangala-santhippu', ta: 'மங்கல சந்திப்பு', en: 'Mangala Santhippu' },
+  { to: '/welfare', ta: 'சமூக நலன்', en: 'Community Welfare' },
+  { to: '/news-gallery', ta: 'செய்திகள் & படங்கள்', en: 'News & Gallery' },
+  { to: '/contact', ta: 'தொடர்புக்கு', en: 'Contact Us' },
+];
+
+export const UI = {
+  tagline: { ta: 'பாரம்பரியம் • ஒற்றுமை • நலன் • முன்னேற்றம்', en: 'Tradition • Unity • Welfare • Progress' },
+  member_login: { ta: 'உறுப்பினர் உள்நுழைவு', en: 'Member Login' },
+  menu: { ta: 'பட்டி', en: 'Menu' },
+  welcome: { ta: 'குரோம்பேட்டை கார்காத்தார் சமூகத்திற்கு வரவேற்கிறோம்', en: 'Welcome to the Chromepet Karkathar community' },
+  welcome_sub: {
+    ta: 'சமூகத்தின் அடையாளத்தைக் காத்து, குடும்பங்களிடையே உறவை வலுப்படுத்தி, சங்கப் பணிகளை ஒருங்கிணைக்கிறோம்.',
+    en: 'Preserving our identity, strengthening bonds between families and running the work of the Sangam together.',
+  },
+  apply_ms: { ta: 'மங்கல சந்திப்பு – விண்ணப்பம்', en: 'Mangala Santhippu – Apply' },
+  see_events: { ta: 'நிகழ்வுகளைக் காண்க', en: 'See events' },
+  prev: { ta: 'முந்தைய படம்', en: 'Previous image' },
+  next: { ta: 'அடுத்த படம்', en: 'Next image' },
+  go_slide: { ta: 'படம் {n}', en: 'Image {n}' },
+  pause: { ta: 'நிறுத்து', en: 'Pause' },
+  play: { ta: 'இயக்கு', en: 'Play' },
+  upcoming: { ta: 'வரவிருக்கும் நிகழ்வு', en: 'Upcoming event' },
+  more: { ta: 'மேலும் அறிக', en: 'Learn more' },
+  details: { ta: 'விவரங்கள்', en: 'Details' },
+  service_title: { ta: 'சமூக சேவை', en: 'Community service' },
+  service_sub: { ta: 'கல்வி, மருத்துவம் மற்றும் தேவையுள்ள குடும்பங்களுக்கான உதவி.', en: 'Education, medical support and help for families in need.' },
+  our_community: { ta: 'நம் சமூகம்', en: 'Our community' },
+  our_community_text: {
+    ta: 'உறுப்பினர்களின் சாதனைகள், மூத்தோர் மற்றும் கடந்த கூடுகைகளின் படங்கள் – உரிய ஒப்புதலுடன் மட்டுமே இங்கு பகிரப்படும்.',
+    en: 'Member achievements, senior citizens and photographs from past gatherings – shared here only with consent.',
+  },
+  view_gallery: { ta: 'படங்களைக் காண்க', en: 'View gallery' },
+  footer_privacy: {
+    ta: 'திருமண விவரங்கள், தொலைபேசி எண்கள் மற்றும் குடும்ப விவரங்கள் பொதுவில் வெளியிடப்படுவதில்லை.',
+    en: 'Matrimonial records, phone numbers and family details are never published openly.',
+  },
+};
+
+export const MS_FEATURE = {
+  title: { ta: 'மங்கல சந்திப்பு', en: 'Mangala Santhippu' },
+  text: {
+    ta: 'கார்காத்தார் சமூகத்தினருக்கான திருமணத் தகவல் சந்திப்பு. இணையத்தில் விண்ணப்பித்து, தனிப்பட்ட தகவல் பாதுகாப்புடன் பதிவு எண் பெறலாம்.',
+    en: 'The marriage information meet for the Karkathar community. Apply online and receive a unique registration number – your details stay private.',
+  },
+};
+
+export const OBJECTIVES = [
+  { ta: 'கார்காத்தார் சமூகத்தின் அடையாளத்தையும் பாரம்பரியத்தையும் பாதுகாத்தல்.', en: 'Preserve the identity and heritage of the Karkathar community.' },
+  { ta: 'குடும்பங்களிடையே உறவுகளை வலுப்படுத்துதல்.', en: 'Strengthen relationships among families.' },
+  { ta: 'உறுப்பினர் சேர்க்கை, மங்கல சந்திப்பு, நிகழ்வுகள், நலத்திட்டங்கள் போன்ற சங்கப் பணிகளை நிர்வகித்தல்.', en: 'Manage Sangam activities – membership, matrimonial introductions, events and welfare.' },
+];
+
+// Add the Sangam's own history text here; the About page shows it when filled in.
+export const HISTORY = { ta: '', en: '' };
+
+export const WELFARE = [
+  { icon: '🎓', title: { ta: 'கல்வி உதவி', en: 'Education assistance' }, text: { ta: 'மாணவர்களின் கல்விக்கான ஆதரவு மற்றும் வழிகாட்டுதல்.', en: 'Support and guidance for students’ education.' } },
+  { icon: '🩺', title: { ta: 'மருத்துவ உதவி', en: 'Medical support' }, text: { ta: 'மருத்துவத் தேவையுள்ள குடும்பங்களுக்கு உதவி.', en: 'Help for families with medical needs.' } },
+  { icon: '🤝', title: { ta: 'தேவையுள்ள குடும்பங்களுக்கு உதவி', en: 'Families in need' }, text: { ta: 'இக்கட்டான நேரங்களில் சமூகத்தின் துணை.', en: 'The community standing by in difficult times.' } },
+  { icon: '🌱', title: { ta: 'சமூக முயற்சிகள்', en: 'Community initiatives' }, text: { ta: 'தன்னார்வலர்களுடன் இணைந்த சமூகப் பணிகள்.', en: 'Community projects together with volunteers.' } },
+];
+
+// Extra events/announcements. The Mangala Santhippu event is added automatically from Admin > Settings.
+// Event: { title:{ta,en}, date:{ta,en}, venue:{ta,en}, text:{ta,en} }
+export const EVENTS = [];
+// News: { title:{ta,en}, date:'DD-MM-YYYY', text:{ta,en} }
+export const NEWS = [];
