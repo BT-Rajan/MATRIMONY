@@ -1,5 +1,11 @@
 import { Navigate, Route, Routes } from 'react-router-dom';
-import Landing from './pages/Landing';
+import Home from './pages/site/Home';
+import About from './pages/site/About';
+import Events from './pages/site/Events';
+import Welfare from './pages/site/Welfare';
+import NewsGallery from './pages/site/NewsGallery';
+import Contact from './pages/site/Contact';
+import MangalaSanthippu from './pages/MangalaSanthippu';
 import Apply from './pages/Apply';
 import Login from './pages/admin/Login';
 import AdminLayout from './pages/admin/AdminLayout';
@@ -12,9 +18,15 @@ import Settings from './pages/admin/Settings';
 export default function App() {
   return (
     <Routes>
-      <Route path="/" element={<Landing />} />
+      <Route path="/" element={<Home />} />
+      <Route path="/about" element={<About />} />
+      <Route path="/events" element={<Events />} />
+      <Route path="/mangala-santhippu" element={<MangalaSanthippu />} />
+      <Route path="/welfare" element={<Welfare />} />
+      <Route path="/news-gallery" element={<NewsGallery />} />
+      <Route path="/contact" element={<Contact />} />
       <Route path="/apply.html" element={<Apply />} />
-      <Route path="/program.html" element={<Navigate to="/" replace />} />
+      <Route path="/program.html" element={<Navigate to="/mangala-santhippu" replace />} />
       <Route path="/admin.html/login" element={<Login />} />
       <Route path="/admin.html" element={<AdminLayout />}>
         <Route index element={<Dashboard />} />
@@ -23,7 +35,7 @@ export default function App() {
         <Route path="users" element={<Users />} />
         <Route path="settings" element={<Settings />} />
       </Route>
-      <Route path="*" element={<Landing />} />
+      <Route path="*" element={<Home />} />
     </Routes>
   );
 }

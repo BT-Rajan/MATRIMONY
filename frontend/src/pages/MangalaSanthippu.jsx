@@ -1,16 +1,17 @@
 import { Link } from 'react-router-dom';
-import PublicShell from '../components/PublicShell';
+import SiteShell from '../components/SiteShell';
 import { useI18n } from '../i18n';
 import { SITE } from '../config';
 import { useSettings } from '../useSettings';
 import { fmtEventDate } from '../date';
 
-export default function Landing() {
+export default function MangalaSanthippu() {
   const { t, lang } = useI18n();
   const { settings } = useSettings();
   const s = settings || {};
   return (
-    <PublicShell>
+    <SiteShell>
+      <div className="wrap">
       <section className="hero">
         <img className="logo" src="/logo.png" alt="" width="150" height="150" />
         <h1>{t('brand')}</h1>
@@ -65,6 +66,7 @@ export default function Landing() {
       </section>
 
       <p className="foot"><Link to="/admin.html" className="btn secondary small">{t('staff_login')}</Link></p>
-    </PublicShell>
+      </div>
+    </SiteShell>
   );
 }
