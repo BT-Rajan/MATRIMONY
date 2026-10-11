@@ -2,13 +2,26 @@
 export const tx = (o, lang) => (o && (o[lang] ?? o.en ?? o.ta)) || '';
 
 export const NAV = [
-  { to: '/', end: true, ta: 'முகப்பு', en: 'Home' },
-  { to: '/about', ta: 'எங்களைப் பற்றி', en: 'About Us' },
+  { to: '/', end: true, icon: 'home', ta: 'முகப்பு', en: 'Home' },
+  { to: '/about', ta: 'சங்கம்', en: 'Sangam' },
   { to: '/events', ta: 'நிகழ்வுகள்', en: 'Events & Activities' },
-  { to: '/mangala-santhippu', ta: 'மங்கல சந்திப்பு', en: 'Mangala Santhippu' },
+  { to: '/mangala-santhippu', hl: true, ta: 'மங்கல சந்திப்பு', en: 'Mangala Santhippu' },
   { to: '/welfare', ta: 'சமூக நலன்', en: 'Community Welfare' },
-  { to: '/news-gallery', ta: 'செய்திகள் & படங்கள்', en: 'News & Gallery' },
+  { to: '/community', ta: 'சமூகம்', en: 'Community' },
   { to: '/contact', ta: 'தொடர்புக்கு', en: 'Contact Us' },
+];
+
+export const FOOTER_NAV = [
+  ...NAV,
+  { to: '/apply.html', ta: 'மங்கல சந்திப்பு விண்ணப்பம்', en: 'Apply – Mangala Santhippu' },
+  { to: '/admin.html', ta: 'உறுப்பினர் உள்நுழைவு', en: 'Member Login' },
+];
+
+export const COMMUNITY_SECTIONS = [
+  { icon: '🏅', title: { ta: 'உறுப்பினர் சாதனைகள்', en: 'Member achievements' }, text: { ta: 'கல்வி, தொழில், கலை மற்றும் சமூகப் பணிகளில் சாதித்த உறுப்பினர்கள்.', en: 'Members who have excelled in education, profession, arts and service.' } },
+  { icon: '👴', title: { ta: 'மூத்தோர்', en: 'Senior citizens' }, text: { ta: 'மூத்த குடிமக்களுக்கான உதவி, சந்திப்புகள் மற்றும் ஆதரவு.', en: 'Assistance, gatherings and support for senior citizens.' } },
+  { icon: '🎓', title: { ta: 'இளைஞர் & மாணவர்', en: 'Youth & students' }, text: { ta: 'வழிகாட்டுதல், கல்வி உதவித்தொகை மற்றும் தொடர்பு வலையமைப்பு.', en: 'Career guidance, scholarships, mentoring and networking.' } },
+  { icon: '💼', title: { ta: 'தொழில் & வல்லுநர்', en: 'Business & professionals' }, text: { ta: 'சமூகத் தொழில்முனைவோர் மற்றும் வல்லுநர்களின் விருப்பப் பட்டியல்.', en: 'A voluntary listing of community entrepreneurs and professionals.' } },
 ];
 
 export const UI = {
@@ -37,7 +50,11 @@ export const UI = {
     ta: 'உறுப்பினர்களின் சாதனைகள், மூத்தோர் மற்றும் கடந்த கூடுகைகளின் படங்கள் – உரிய ஒப்புதலுடன் மட்டுமே இங்கு பகிரப்படும்.',
     en: 'Member achievements, senior citizens and photographs from past gatherings – shared here only with consent.',
   },
-  view_gallery: { ta: 'படங்களைக் காண்க', en: 'View gallery' },
+  view_gallery: { ta: 'மேலும் அறிக', en: 'Learn more' },
+  copyright: { ta: 'குரோம்பேட்டை கார்காத்தார் சங்கம். அனைத்து உரிமைகளும் பாதுகாக்கப்பட்டவை.', en: 'Chromepet Karkathar Sangam. All rights reserved.' },
+  home: { ta: 'முகப்பு', en: 'Home' },
+  footer_menu: { ta: 'அடிக்குறிப்பு பட்டி', en: 'Footer' },
+  community_consent: { ta: 'உறுப்பினர்களின் விவரங்கள் மற்றும் படங்கள் அவர்களின் ஒப்புதலுடன் மட்டுமே பகிரப்படும்.', en: 'Member details and photographs are shared only with their consent.' },
   footer_privacy: {
     ta: 'திருமண விவரங்கள், தொலைபேசி எண்கள் மற்றும் குடும்ப விவரங்கள் பொதுவில் வெளியிடப்படுவதில்லை.',
     en: 'Matrimonial records, phone numbers and family details are never published openly.',

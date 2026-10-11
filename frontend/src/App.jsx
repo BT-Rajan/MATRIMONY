@@ -4,6 +4,7 @@ import About from './pages/site/About';
 import Events from './pages/site/Events';
 import Welfare from './pages/site/Welfare';
 import NewsGallery from './pages/site/NewsGallery';
+import Community from './pages/site/Community';
 import Contact from './pages/site/Contact';
 import MangalaSanthippu from './pages/MangalaSanthippu';
 import Apply from './pages/Apply';
@@ -24,6 +25,7 @@ export default function App() {
       <Route path="/mangala-santhippu" element={<MangalaSanthippu />} />
       <Route path="/welfare" element={<Welfare />} />
       <Route path="/news-gallery" element={<NewsGallery />} />
+      <Route path="/community" element={<Community />} />
       <Route path="/contact" element={<Contact />} />
       <Route path="/apply.html" element={<Apply />} />
       <Route path="/program.html" element={<Navigate to="/mangala-santhippu" replace />} />

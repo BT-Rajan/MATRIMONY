@@ -4,7 +4,7 @@ import { SITE } from '../../config';
 import { HISTORY, OBJECTIVES, tx } from '../../content/site';
 
 const L = {
-  title: { ta: 'எங்களைப் பற்றி', en: 'About Us' },
+  title: { ta: 'சங்கம்', en: 'The Sangam' },
   obj: { ta: 'நோக்கங்கள்', en: 'Objectives' },
   hist: { ta: 'சங்க வரலாறு', en: 'History of the Sangam' },
   hist_none: { ta: 'சங்கத்தின் வரலாறு மற்றும் சமூகப் பாரம்பரியம் விரைவில் இங்கு சேர்க்கப்படும்.', en: 'The Sangam’s history and community heritage will be added here soon.' },

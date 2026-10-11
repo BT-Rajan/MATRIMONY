@@ -64,7 +64,7 @@ export default function Home() {
         <section className="home-sec" aria-labelledby="oc">
           <h2 id="oc">{tx(UI.our_community, lang)}</h2>
           <p>{tx(UI.our_community_text, lang)}</p>
-          <Link to="/news-gallery" className="btn secondary small">{tx(UI.view_gallery, lang)}</Link>
+          <Link to="/community" className="btn secondary small">{tx(UI.view_gallery, lang)}</Link>
         </section>
       </div>
     </SiteShell>
