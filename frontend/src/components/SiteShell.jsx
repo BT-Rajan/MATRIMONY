@@ -1,8 +1,9 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link, NavLink, useLocation } from 'react-router-dom';
 import { useI18n } from '../i18n';
 import { FOOTER_CONTACT, FOOTER_LINKS, NAV, UI, tx } from '../content/site';
 import { SITE } from '../config';
+import { useDevice } from '../useDevice';
 import LangToggle from './LangToggle';
 import '../site.css';
 
@@ -18,12 +19,24 @@ export default function SiteShell({ children }) {
   const { t, lang } = useI18n();
   const [open, setOpen] = useState(false);
   const { pathname } = useLocation();
+  useDevice();
+  const head = useRef(null);
+  useEffect(() => {
+    const el = head.current;
+    if (!el) return undefined;
+    const set = () => document.documentElement.style.setProperty('--head-h', `${el.offsetHeight}px`);
+    set();
+    if (!window.ResizeObserver) return undefined;
+    const ro = new ResizeObserver(set);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
   useEffect(() => { setOpen(false); window.scrollTo(0, 0); }, [pathname]);
 
   return (
     <>
       <a className="skip" href="#main">{t('skip')}</a>
-      <header className="site-head">
+      <header className="site-head" ref={head}>
         <div className="site-head-in">
           <Link to="/" className="site-brand">
             <img src="/logo-192.png" alt="" width="40" height="40" />

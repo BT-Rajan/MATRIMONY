@@ -3,12 +3,14 @@ import SiteShell from '../../components/SiteShell';
 import HeroSlider from '../../components/HeroSlider';
 import { useI18n } from '../../i18n';
 import { useSettings } from '../../useSettings';
+import { useDevice } from '../../useDevice';
 import { fmtEventDate } from '../../date';
 import { MS_FEATURE, UI, WELFARE, tx } from '../../content/site';
 
 export default function Home() {
   const { t, lang } = useI18n();
   const { settings } = useSettings();
+  const device = useDevice();
   const s = settings || {};
   const venue = (lang === 'en' ? s.venue_en : s.venue_ta) || '';
 
@@ -17,10 +19,10 @@ export default function Home() {
       <HeroSlider>
         <h1>{tx(UI.welcome, lang)}</h1>
         <p className="tag">{tx(UI.tagline, lang)}</p>
-        <p>{tx(UI.welcome_sub, lang)}</p>
+        {device !== 'mobile' && <p className="sub">{tx(UI.welcome_sub, lang)}</p>}
         <div className="row hs-cta">
           <Link to="/apply.html" className="btn accent">{tx(UI.apply_ms, lang)} →</Link>
-          <Link to="/events" className="btn secondary">{tx(UI.see_events, lang)}</Link>
+          {device !== 'mobile' && <Link to="/events" className="btn secondary">{tx(UI.see_events, lang)}</Link>}
         </div>
       </HeroSlider>
 
@@ -53,7 +55,7 @@ export default function Home() {
 
         <section className="home-sec" aria-labelledby="svc">
           <h2 id="svc">{tx(UI.service_title, lang)}</h2>
-          <p className="hint">{tx(UI.service_sub, lang)}</p>
+          {device !== 'mobile' && <p className="hint">{tx(UI.service_sub, lang)}</p>}
           <ul className="tiles">
             {WELFARE.map((w) => (
               <li key={w.title.en}><Link to="/welfare"><span aria-hidden="true">{w.icon}</span><strong>{tx(w.title, lang)}</strong></Link></li>

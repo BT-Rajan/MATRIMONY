@@ -23,5 +23,5 @@ CloudPanel (Nginx) server: from the site dir run `sudo php backend/bin/server-se
 points the vhost root at `public/` with API/SPA routing, syncs CloudPanel's site record, fixes ownership and verifies.
 
 Site pages: `/` (home + hero slider), `/about`, `/events`, `/mangala-santhippu` (the original landing page), `/welfare`, `/news-gallery`, `/contact`; `/apply.html` and `/admin.html` are unchanged.
-Hero slider: drop images (jpg/png/webp/avif/gif) into `public/hero/` - they show automatically in file-name order (no rebuild). Gallery photos go in `public/gallery/`.
+Hero slider (full screen): drop images (jpg/png/webp/avif/gif) into `public/hero/` - they show automatically in file-name order (no rebuild). The site detects phone/tablet/desktop and uses `public/hero/mobile/`, `tablet/` or `desktop/` when they have images, otherwise `public/hero/`. Gallery photos go in `public/gallery/`.
 Editable public text (history, welfare, extra events, news): `frontend/src/content/site.js` (rebuild after editing).
