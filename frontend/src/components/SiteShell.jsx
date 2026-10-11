@@ -46,7 +46,7 @@ export default function SiteShell({ children }) {
           </div>
         </div>
       </header>
-      <main id="main">{children}</main>
+      <main id="main" className="site-main">{children}</main>
       <footer className="site-foot">
         <div className="wrap">
           <div className="foot-cols">
