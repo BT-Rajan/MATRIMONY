@@ -1,21 +1,18 @@
 // Editable public-site content. Every text is { ta, en }.
 export const tx = (o, lang) => (o && (o[lang] ?? o.en ?? o.ta)) || '';
 
-export const NAV = [
-  { to: '/', end: true, icon: 'home', ta: 'முகப்பு', en: 'Home' },
-  { to: '/about', ta: 'சங்கம்', en: 'Sangam' },
-  { to: '/events', ta: 'நிகழ்வுகள்', en: 'Events & Activities' },
-  { to: '/mangala-santhippu', hl: true, ta: 'மங்கல சந்திப்பு', en: 'Mangala Santhippu' },
-  { to: '/welfare', ta: 'சமூக நலன்', en: 'Community Welfare' },
-  { to: '/community', ta: 'சமூகம்', en: 'Community' },
-  { to: '/contact', ta: 'தொடர்புக்கு', en: 'Contact Us' },
-];
+const HOME = { to: '/', end: true, icon: 'home', ta: 'முகப்பு', en: 'Home' };
+const COMMUNITY = { to: '/community', ta: 'சமூகம்', en: 'Community' };
+const SANGAM = { to: '/about', ta: 'சங்கம்', en: 'Sangam' };
+const EVENTS_NAV = { to: '/events', ta: 'நிகழ்வுகள்', en: 'Events & Activities' };
+const MS_NAV = { to: '/mangala-santhippu', hl: true, ta: 'மங்கல சந்திப்பு', en: 'Mangala Santhippu' };
+const CONTACT = { to: '/contact', ta: 'தொடர்புக்கு', en: 'Contact Us' };
 
-export const FOOTER_NAV = [
-  ...NAV,
-  { to: '/apply.html', ta: 'மங்கல சந்திப்பு விண்ணப்பம்', en: 'Apply – Mangala Santhippu' },
-  { to: '/admin.html', ta: 'உறுப்பினர் உள்நுழைவு', en: 'Member Login' },
-];
+export const NAV = [HOME, COMMUNITY, SANGAM, EVENTS_NAV, MS_NAV, CONTACT];
+
+// Footer: column 2 links, column 3 contact (column 1 is the logo)
+export const FOOTER_LINKS = [COMMUNITY, SANGAM, EVENTS_NAV, MS_NAV];
+export const FOOTER_CONTACT = CONTACT;
 
 export const COMMUNITY_SECTIONS = [
   { icon: '🏅', title: { ta: 'உறுப்பினர் சாதனைகள்', en: 'Member achievements' }, text: { ta: 'கல்வி, தொழில், கலை மற்றும் சமூகப் பணிகளில் சாதித்த உறுப்பினர்கள்.', en: 'Members who have excelled in education, profession, arts and service.' } },
