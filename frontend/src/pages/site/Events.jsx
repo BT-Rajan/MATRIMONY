@@ -12,7 +12,6 @@ const L = {
   upcoming: { ta: 'வரவிருக்கும் நிகழ்வுகள்', en: 'Upcoming events' },
   past: { ta: 'கடந்த நிகழ்வுகள்', en: 'Past events' },
   more: { ta: 'மேலும் நிகழ்வுகள் இங்கு அறிவிக்கப்படும்.', en: 'More events will be announced here.' },
-  past_more: { ta: 'கடந்த நிகழ்வுகளின் பட்டியல் விரைவில் இங்கு சேர்க்கப்படும்.', en: 'More past events will be listed here soon.' },
   details: { ta: 'விவரங்கள்', en: 'Details' },
   venue: { ta: 'இடம்', en: 'Venue' },
 };
@@ -65,12 +64,6 @@ export default function Events() {
                 </div>
               </article>
             ))}
-            <article className="event-card placeholder-card" aria-label={l('past_more')}>
-              <div className="ev-body">
-                <h3>+</h3>
-                <p className="hint">{l('past_more')}</p>
-              </div>
-            </article>
           </div>
         </section>
       </div>
