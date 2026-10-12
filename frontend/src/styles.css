@@ -153,3 +153,24 @@ input:focus, select:focus, textarea:focus { outline: 3px solid #1a5fb4; outline-
 .officers a { font-weight: 700; font-size: 1.1rem; }
 .terms-list { margin: 0 0 8px; padding-left: 1.3em; display: grid; gap: 12px; font-size: 1.1rem; }
 @media (min-width: 640px) { .officers { grid-template-columns: repeat(3, 1fr); gap: 16px; } .officers li { border-bottom: 0; } }
+
+/* ---------- shared UI primitives (admin + apply) ---------- */
+/* page header: title on the left, actions on the right, same spacing on every admin page */
+.page-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin: 4px 0 16px; }
+.page-head h1 { margin: 0; }
+.row.between { justify-content: space-between; align-items: center; }
+.row.end { justify-content: flex-end; align-items: end; }
+.row.center { justify-content: center; }
+.form-actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 16px; }
+.table-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+.field-err { display: block; color: var(--bad); font-size: .88rem; font-weight: 600; margin-top: 4px; }
+.btn.danger { background: var(--bad); border-color: var(--bad); }
+.btn.danger:hover { background: #8f1d17; border-color: #8f1d17; }
+.alert.ok { background: #e8f5e9; color: var(--ok); border-color: var(--ok); }
+.plain-list { margin: 0; padding-left: 1.2em; }
+.plain-list > li { margin-bottom: 8px; }
+.qr-preview { display: block; max-width: 160px; border-radius: 8px; border: 1px solid var(--line); }
+.login-card { margin: 24px auto; }
+.field.mb-14 { margin-bottom: 14px; }
+.mt-6 { margin-top: 6px; } .mt-10 { margin-top: 10px; } .mt-12 { margin-top: 12px; }
+.mb-8 { margin-bottom: 8px; } .mb-12 { margin-bottom: 12px; }

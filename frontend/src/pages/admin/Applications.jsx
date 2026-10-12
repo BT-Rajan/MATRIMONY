@@ -43,7 +43,7 @@ export default function Applications() {
 
   return (
     <>
-      <h1>{t('nav_apps')}</h1>
+      <div className="page-head"><h1>{t('nav_apps')}</h1></div>
       {user?.role === 'admin' && <BulkAssign onDone={() => setTick((n) => n + 1)} />}
       <form className="toolbar wide" onSubmit={search} role="search">
         <div className="field">

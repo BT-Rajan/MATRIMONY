@@ -56,8 +56,6 @@ foreach (['fk_app_assigned_to' => 'assigned_to', 'fk_app_assigned_by' => 'assign
 // Per-application history: before/after values of each edited field (JSON {field: [old, new]}).
 db()->exec("ALTER TABLE application_history ADD COLUMN IF NOT EXISTS changes TEXT NULL AFTER note");
 
-echo "Migration applied (or already up to date).\n";
-
 db()->exec("CREATE TABLE IF NOT EXISTS leads (
   id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   lead_no VARCHAR(20) NULL,
@@ -82,3 +80,5 @@ db()->exec("CREATE TABLE IF NOT EXISTS leads (
   CONSTRAINT fk_lead_updated FOREIGN KEY (updated_by) REFERENCES users (id) ON DELETE SET NULL,
   CONSTRAINT fk_lead_deleted FOREIGN KEY (deleted_by) REFERENCES users (id) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+
+echo "Migration applied (or already up to date).\n";

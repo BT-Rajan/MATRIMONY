@@ -80,7 +80,7 @@ export default function Settings() {
 
   return (
     <>
-      <h1>{t('settings_title')}</h1>
+      <div className="page-head"><h1>{t('settings_title')}</h1></div>
       <div role="alert">
         {top && <div className="alert bad">{t('e_' + top)}</div>}
         {msg && <div className="alert good">{msg}</div>}
@@ -142,7 +142,7 @@ export default function Settings() {
               <label htmlFor="qr_file">{t('s_qr')}</label>
               {form.qr_code && (
                 <p>
-                  <img src={form.qr_code} alt={t('s_qr_current')} style={{ maxWidth: 160, borderRadius: 8, border: '1px solid var(--line)' }} />
+                  <img src={form.qr_code} alt={t('s_qr_current')}  />
                 </p>
               )}
               <input id="qr_file" ref={fileRef} type="file" accept="image/png,image/jpeg,image/webp" onChange={onFile} {...ia('qr_code')} />

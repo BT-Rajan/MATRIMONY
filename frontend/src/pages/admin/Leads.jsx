@@ -100,7 +100,7 @@ export default function Leads() {
 
       {form && (
         <form className="card lead-form" onSubmit={submit} noValidate>
-          <div className="grid-2">
+          <div className="grid">
             <div className="field">
               <label htmlFor="l-sal">{t('l_salutation')}</label>
               <select id="l-sal" value={form.salutation} onChange={(e) => set('salutation', e.target.value)} ref={firstRef}>

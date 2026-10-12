@@ -225,3 +225,5 @@ html { scroll-padding-top: calc(var(--head-h, 110px) + 8px); scroll-behavior: sm
   .site-head .member-btn { display: inline-flex; }
   .site-nav a.nav-login { display: none; }
 }
+
+.site-foot .copy { opacity: .85; font-size: .85rem; }
