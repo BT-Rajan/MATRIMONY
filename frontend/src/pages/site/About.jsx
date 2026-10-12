@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import SiteShell from '../../components/SiteShell';
 import PageHero from '../../components/PageHero';
 import { useI18n } from '../../i18n';
@@ -20,7 +21,7 @@ const L = {
   council: { ta: 'செயற்குழு உறுப்பினர்கள்', en: 'Executive council' },
   soon: { ta: 'பெயர்கள் விரைவில் இங்கு வெளியிடப்படும்.', en: 'Names will be published here soon.' },
   tenure: { ta: 'பதவிக்காலம்', en: 'Tenure' },
-  call: { ta: 'அழைக்க', en: 'Call' },
+  contact: { ta: 'தொடர்புக்கு', en: 'Contact us' },
 };
 
 const SECTIONS = [
@@ -66,15 +67,17 @@ export default function About() {
           {sec('hist', l('hist'), <p>{tx(HISTORY, lang) || l('hist_none')}</p>)}
 
           {sec('office', l('office'),
-            <ul className="people-grid officers-grid">
-              {SITE.officers.map((o) => (
-                <li className="person" key={o.role.en}>
-                  <span>{tx(o.role, lang)}</span>
-                  <strong>{tx(o.name, lang)}</strong>
-                  <a href={`tel:${o.tel}`}>{l('call')}: {o.phone}</a>
-                </li>
-              ))}
-            </ul>,
+            <>
+              <ul className="people-grid officers-grid">
+                {SITE.officers.map((o) => (
+                  <li className="person" key={o.role.en}>
+                    <span>{tx(o.role, lang)}</span>
+                    <strong>{tx(o.name, lang)}</strong>
+                  </li>
+                ))}
+              </ul>
+              <p className="mt-12"><Link to="/contact" className="btn small">{l('contact')}</Link></p>
+            </>,
             'span-2')}
 
           {sec('founders', l('founders'), <People items={FOUNDERS} lang={lang} t={l} />, 'span-2')}
