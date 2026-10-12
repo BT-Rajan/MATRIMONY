@@ -48,7 +48,7 @@ function Done({ reg }) {
       <p>உங்கள் பதிவு எண்:</p>
       <div className="regno">{reg}</div>
       <p>இந்த எண்ணைக் குறித்து வைத்துக்கொள்ளவும் அல்லது ஸ்கிரீன்ஷாட் எடுத்துக்கொள்ளவும். சங்கத்தைத் தொடர்பு கொள்ளும்போது இந்த எண் அவசியம்.</p>
-      <div className="row no-print" style={{ justifyContent: 'center' }}>
+      <div className="row no-print center">
         <button type="button" className="btn secondary" onClick={copy}>{copied ? 'நகலெடுக்கப்பட்டது ✓' : 'எண்ணை நகலெடு'}</button>
         <button type="button" className="btn secondary" onClick={() => window.print()}>அச்சிடு</button>
         <Link to="/" className="btn">முகப்புக்குச் செல்</Link>

@@ -42,7 +42,7 @@ export default function BulkAssign({ onDone }) {
     <section className="card no-print" aria-labelledby="asg">
       <h2 id="asg">{t('asg_title')}</h2>
       <p className="hint">{t('asg_available', { n: String(sum.unassigned) })} — {t('asg_hint')}</p>
-      <form className="toolbar" style={{ gridTemplateColumns: undefined }} onSubmit={submit}>
+      <form className="toolbar" onSubmit={submit}>
         <div className="field">
           <label htmlFor="asg-m">{t('asg_manager')}</label>
           <select id="asg-m" value={mid} onChange={(e) => setMid(e.target.value)}>

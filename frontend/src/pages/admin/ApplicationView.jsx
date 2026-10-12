@@ -118,7 +118,7 @@ export default function ApplicationView() {
         </p>
         {a.can_assign && (
           <>
-            <div className="row" style={{ alignItems: 'end' }}>
+            <div className="row end">
               <div className="field">
                 <label htmlFor="mgr">{t('asg_manager')}</label>
                 <select id="mgr" value={pick} onChange={(e) => setPick(e.target.value)}>
@@ -149,7 +149,7 @@ export default function ApplicationView() {
           </p>
         ) : (
           <>
-            <div className="field" style={{ marginBottom: 12 }}>
+            <div className="field mb-12">
               <label htmlFor="note">{t('v_note')}</label>
               <textarea id="note" ref={noteRef} value={note} maxLength={500} onChange={(e) => setNote(e.target.value)} aria-invalid={dErr ? 'true' : undefined} aria-describedby="nh" />
               <p className="hint" id="nh">{t('v_note_hint')}</p>
@@ -168,11 +168,11 @@ export default function ApplicationView() {
         <section className="card" aria-labelledby="ed">
           <h2 id="ed">{t('v_edit')}</h2>
           <ApplicationForm initial={fromRecord(a)} lang={lang} onSubmit={save} submitLabel={t('save')} busyLabel={t('loading')} />
-          <button type="button" className="btn secondary block" style={{ marginTop: 10 }} onClick={() => setEditing(false)}>{t('cancel')}</button>
+          <button type="button" className="btn secondary block mt-10" onClick={() => setEditing(false)}>{t('cancel')}</button>
         </section>
       ) : (
         <>
-          {a.can_edit && <div className="no-print" style={{ marginBottom: 8 }}><button type="button" className="btn secondary" onClick={() => { setMsg(''); setEditing(true); }}>{t('v_edit')}</button></div>}
+          {a.can_edit && <div className="no-print mb-8"><button type="button" className="btn secondary" onClick={() => { setMsg(''); setEditing(true); }}>{t('v_edit')}</button></div>}
           {GROUPS.map((g) => (
             <section className="card" key={g.id}>
               <h2>{g[lang]}</h2>
@@ -195,14 +195,14 @@ export default function ApplicationView() {
 
       <section className="card" aria-labelledby="hist">
         <h2 id="hist">{t('v_history')}</h2>
-        <ul style={{ margin: 0, paddingLeft: '1.2em' }}>
+        <ul className="plain-list">
           {a.history.map((h, i) => (
-            <li key={h.id ?? i} style={{ marginBottom: 8 }}>
+            <li key={h.id ?? i}>
               <small>{fmtDateTime(h.created_at)}</small> — <strong>{h.user_name || t('v_system')}</strong>: {histText(h)}
               {h.changes && (
-                <details style={{ marginTop: 4 }}>
+                <details className="mt-6">
                   <summary>{t('h_details')}</summary>
-                  <table className="tbl" style={{ marginTop: 6 }}>
+                  <table className="tbl mt-6">
                     <thead><tr><th scope="col">{t('h_field')}</th><th scope="col">{t('h_before')}</th><th scope="col">{t('h_after')}</th></tr></thead>
                     <tbody>
                       {Object.entries(h.changes).map(([k, [from, to]]) => {

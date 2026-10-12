@@ -66,7 +66,7 @@ export default function Users() {
 
   return (
     <>
-      <div className="row" style={{ justifyContent: 'space-between', alignItems: 'center' }}>
+      <div className="page-head">
         <h1>{t('users_title')}</h1>
         {!form && <button type="button" className="btn" onClick={() => open(null)}>+ {t('u_new')}</button>}
       </div>
@@ -133,7 +133,7 @@ export default function Users() {
                 <td data-label={t('u_status')}>{Number(u.is_active) ? t('u_active') : t('u_inactive')}</td>
                 <td data-label={t('u_last')}>{u.last_login_at ? fmtDateTime(u.last_login_at) : t('u_never')}</td>
                 <td>
-                  <div className="row" style={{ justifyContent: 'flex-end' }}>
+                  <div className="row end">
                     <button type="button" className="btn secondary small" onClick={() => open(u)}>{t('edit')}</button>
                     {u.id !== me.id && <button type="button" className="btn bad small" onClick={() => remove(u)}>{t('delete')}</button>}
                   </div>

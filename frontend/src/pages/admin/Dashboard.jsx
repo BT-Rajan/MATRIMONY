@@ -26,7 +26,7 @@ export default function Dashboard() {
 
   return (
     <>
-      <h1>{t('nav_dashboard')}</h1>
+      <div className="page-head"><h1>{t('nav_dashboard')}</h1></div>
       {err && <div className="alert bad" role="alert">{err}</div>}
       {!s && !err && <p role="status">{t('loading')}</p>}
       {s && (
@@ -39,7 +39,7 @@ export default function Dashboard() {
               </Link>
             ))}
           </div>
-          <div className="stats" style={{ marginTop: 12 }}>
+          <div className="stats mt-12">
             {[['d_male', 'male'], ['d_female', 'female']].map(([label, g]) => (
               <Link key={g} to={`/admin.html/applications?gender=${g}`} className="stat plain">
                 <b>{s[g]}</b>
