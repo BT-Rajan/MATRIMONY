@@ -9,10 +9,10 @@ export const MS_NAV = { to: '/ms2026', hl: true, ta: 'மங்கல சந்�
 const MEMBERSHIP_NAV = { to: '/membership', ta: 'உறுப்பினர்', en: 'Membership' };
 const CONTACT = { to: '/contact', ta: 'தொடர்புக்கு', en: 'Contact Us' };
 
-export const NAV = [HOME, COMMUNITY, SANGAM, EVENTS_NAV, MS_NAV, MEMBERSHIP_NAV, CONTACT];
+export const NAV = [HOME, COMMUNITY, SANGAM, MEMBERSHIP_NAV, EVENTS_NAV, MS_NAV, CONTACT];
 
 // Menu of the application page (apply.html)
-export const APPLY_NAV = [HOME, SANGAM, COMMUNITY, EVENTS_NAV, MS_NAV, MEMBERSHIP_NAV, CONTACT];
+export const APPLY_NAV = [HOME, SANGAM, COMMUNITY, MEMBERSHIP_NAV, EVENTS_NAV, MS_NAV, CONTACT];
 
 // Footer: column 2 links, column 3 contact (column 1 is the logo)
 export const FOOTER_LINKS = [COMMUNITY, SANGAM, EVENTS_NAV, MS_NAV];
