@@ -82,3 +82,24 @@ db()->exec("CREATE TABLE IF NOT EXISTS leads (
   CONSTRAINT fk_lead_updated FOREIGN KEY (updated_by) REFERENCES users (id) ON DELETE SET NULL,
   CONSTRAINT fk_lead_deleted FOREIGN KEY (deleted_by) REFERENCES users (id) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+
+// Assignment columns: schema.sql has them, but databases created before the
+// assignment feature do not, and /api/stats and the applications list query them.
+db()->exec("ALTER TABLE applications
+    ADD COLUMN IF NOT EXISTS assigned_to INT UNSIGNED NULL AFTER decision_note,
+    ADD COLUMN IF NOT EXISTS assigned_by INT UNSIGNED NULL AFTER assigned_to,
+    ADD COLUMN IF NOT EXISTS assigned_at DATETIME NULL AFTER assigned_by,
+    ADD INDEX IF NOT EXISTS idx_app_assigned (assigned_to)");
+
+// Foreign keys have no IF NOT EXISTS form, so add each one only when it is missing.
+foreach ([
+    'fk_app_assigned_to' => 'FOREIGN KEY (assigned_to) REFERENCES users (id) ON DELETE SET NULL',
+    'fk_app_assigned_by' => 'FOREIGN KEY (assigned_by) REFERENCES users (id) ON DELETE SET NULL',
+] as $name => $def) {
+    $st = db()->prepare("SELECT COUNT(*) FROM information_schema.TABLE_CONSTRAINTS
+        WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'applications' AND CONSTRAINT_NAME = ?");
+    $st->execute([$name]);
+    if ((int)$st->fetchColumn() === 0) {
+        db()->exec("ALTER TABLE applications ADD CONSTRAINT $name $def");
+    }
+}
