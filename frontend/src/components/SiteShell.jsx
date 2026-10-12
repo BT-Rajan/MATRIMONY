@@ -15,7 +15,7 @@ function HomeIcon() {
   );
 }
 
-export default function SiteShell({ children }) {
+export default function SiteShell({ children, nav = NAV, showLang = true }) {
   const { t, lang } = useI18n();
   const [open, setOpen] = useState(false);
   const { pathname, hash } = useLocation();
@@ -47,14 +47,14 @@ export default function SiteShell({ children }) {
             <span>{t('brand')}</span>
           </Link>
           <nav id="site-nav" className={`site-nav${open ? ' open' : ''}`} aria-label="Main">
-            {NAV.map((n) => (
+            {nav.map((n) => (
               <NavLink key={n.to} to={n.to} end={n.end} className={n.hl ? 'hl' : undefined} aria-label={n.icon ? tx(n, lang) : undefined}>
                 {n.icon === 'home' ? <><HomeIcon /><span className="home-txt">{tx(n, lang)}</span></> : tx(n, lang)}
               </NavLink>
             ))}
           </nav>
           <div className="site-head-actions">
-            <LangToggle />
+            {showLang && <LangToggle />}
             <Link to="/admin.html" className="btn small login-btn">{tx(UI.member_login, lang)}</Link>
             <button type="button" className="menu-btn" aria-expanded={open} aria-controls="site-nav" onClick={() => setOpen((o) => !o)}>
               <span aria-hidden="true">{open ? '✕' : '☰'}</span>

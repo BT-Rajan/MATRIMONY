@@ -1,4 +1,5 @@
 import SiteShell from '../../components/SiteShell';
+import PageHero from '../../components/PageHero';
 import ImageGrid from '../../components/ImageGrid';
 import { useI18n } from '../../i18n';
 import { NEWS, tx } from '../../content/site';
@@ -15,8 +16,8 @@ export default function NewsGallery() {
   const { lang } = useI18n();
   return (
     <SiteShell>
+      <PageHero title={tx(L.title, lang)} />
       <div className="wrap">
-        <h1>{tx(L.title, lang)}</h1>
         <section aria-labelledby="nw">
           <h2 id="nw">{tx(L.news, lang)}</h2>
           {NEWS.length === 0 && <p className="hint">{tx(L.none, lang)}</p>}

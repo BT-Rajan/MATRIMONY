@@ -5,10 +5,13 @@ const HOME = { to: '/', end: true, icon: 'home', ta: 'முகப்பு', en
 const COMMUNITY = { to: '/community', ta: 'சமூகம்', en: 'Community' };
 const SANGAM = { to: '/about', ta: 'சங்கம்', en: 'Sangam' };
 const EVENTS_NAV = { to: '/events', ta: 'நிகழ்வுகள்', en: 'Events & Activities' };
-const MS_NAV = { to: '/mangala-santhippu', hl: true, ta: 'மங்கல சந்திப்பு', en: 'Mangala Santhippu' };
+const MS_NAV = { to: '/ms2026', hl: true, ta: 'மங்கல சந்திப்பு', en: 'Mangala Santhippu' };
 const CONTACT = { to: '/contact', ta: 'தொடர்புக்கு', en: 'Contact Us' };
 
 export const NAV = [HOME, COMMUNITY, SANGAM, EVENTS_NAV, MS_NAV, CONTACT];
+
+// Menu of the application page (apply.html)
+export const APPLY_NAV = [HOME, SANGAM, COMMUNITY, EVENTS_NAV, CONTACT];
 
 // Footer: column 2 links, column 3 contact (column 1 is the logo)
 export const FOOTER_LINKS = [COMMUNITY, SANGAM, EVENTS_NAV, MS_NAV];

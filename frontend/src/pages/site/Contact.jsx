@@ -1,4 +1,5 @@
 import SiteShell from '../../components/SiteShell';
+import PageHero from '../../components/PageHero';
 import { useI18n } from '../../i18n';
 import { SITE } from '../../config';
 import { tx } from '../../content/site';
@@ -12,9 +13,8 @@ export default function Contact() {
   const { t, lang } = useI18n();
   return (
     <SiteShell>
-      <div className="wrap narrow">
-        <h1>{tx(L.title, lang)}</h1>
-        <p className="lead">{t('brand')} – {tx(L.sub, lang)}</p>
+      <PageHero title={tx(L.title, lang)} sub={`${t('brand')} – ${tx(L.sub, lang)}`} />
+      <div className="wrap">
         <section className="card">
           <ul className="officers">
             {SITE.officers.map((o) => (

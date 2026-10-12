@@ -6,7 +6,8 @@ import Welfare from './pages/site/Welfare';
 import NewsGallery from './pages/site/NewsGallery';
 import Community from './pages/site/Community';
 import Contact from './pages/site/Contact';
-import MangalaSanthippu from './pages/MangalaSanthippu';
+import Ms2026 from './pages/Ms2026';
+import Apply from './pages/Apply';
 import Login from './pages/admin/Login';
 import AdminLayout from './pages/admin/AdminLayout';
 import Dashboard from './pages/admin/Dashboard';
@@ -21,13 +22,14 @@ export default function App() {
       <Route path="/" element={<Home />} />
       <Route path="/about" element={<About />} />
       <Route path="/events" element={<Events />} />
-      <Route path="/mangala-santhippu" element={<MangalaSanthippu />} />
+      <Route path="/ms2026" element={<Ms2026 />} />
+      <Route path="/mangala-santhippu" element={<Navigate to="/ms2026" replace />} />
       <Route path="/welfare" element={<Welfare />} />
       <Route path="/news-gallery" element={<NewsGallery />} />
       <Route path="/community" element={<Community />} />
       <Route path="/contact" element={<Contact />} />
-      <Route path="/apply.html" element={<Navigate to={{ pathname: '/mangala-santhippu', hash: '#apply' }} replace />} />
-      <Route path="/program.html" element={<Navigate to="/mangala-santhippu" replace />} />
+      <Route path="/apply.html" element={<Apply />} />
+      <Route path="/program.html" element={<Navigate to="/ms2026" replace />} />
       <Route path="/admin.html/login" element={<Login />} />
       <Route path="/admin.html" element={<AdminLayout />}>
         <Route index element={<Dashboard />} />

@@ -1,0 +1,102 @@
+import { useEffect, useRef, useState } from 'react';
+import { Link } from 'react-router-dom';
+import SiteShell from '../components/SiteShell';
+import PageHero from '../components/PageHero';
+import ApplicationForm from '../components/ApplicationForm';
+import { TERMS_TA } from '../content/terms';
+import { EMPTY } from '../fields';
+import { SITE } from '../config';
+import { APPLY_NAV } from '../content/site';
+import { api } from '../api';
+import { useSettings } from '../useSettings';
+import BankDetails from '../components/BankDetails';
+
+const DRAFT = 'kks_draft';
+
+function Gate({ onAccept, settings }) {
+  return (
+    <>
+      <div className="notice" role="note">
+        <strong>முக்கிய அறிவிப்பு</strong>
+        கட்டணம் செலுத்தி, முழுமையாக நிரப்பி சமர்ப்பிக்கப்பட்ட விண்ணப்பங்கள் மட்டுமே ஏற்றுக்கொள்ளப்படும்.
+        <span className="sub" lang="en">Only paid and fully submitted applications will be accepted.</span>
+      </div>
+
+      <p><strong>பதிவு கட்டணம்:</strong> ரூ. {SITE.fee}/-</p>
+      {settings ? <BankDetails settings={settings} lang="ta" /> : <p role="status">ஏற்றுகிறது…</p>}
+      <p className="hint">கட்டணம் செலுத்திய பின் பரிவர்த்தனை எண்ணை (UTR) படிவத்தில் குறிப்பிட வேண்டும்.</p>
+
+      <section className="card" aria-labelledby="tt">
+        <h2 id="tt">விதிமுறைகள் மற்றும் நிபந்தனைகள்</h2>
+        <ol className="terms-list">{TERMS_TA.map((x, i) => <li key={i}>{x}</li>)}</ol>
+        <button type="button" className="btn block" onClick={onAccept}>படித்தேன், தொடரவும்</button>
+      </section>
+    </>
+  );
+}
+
+function Done({ reg }) {
+  const [copied, setCopied] = useState(false);
+  const h = useRef(null);
+  useEffect(() => { h.current?.scrollIntoView(); h.current?.focus({ preventScroll: true }); }, []);
+  const copy = async () => {
+    try { await navigator.clipboard.writeText(reg); setCopied(true); } catch { /* ignore */ }
+  };
+  return (
+    <section className="card center" role="status">
+      <h2 ref={h} tabIndex={-1}>விண்ணப்பம் வெற்றிகரமாக சமர்ப்பிக்கப்பட்டது</h2>
+      <p>உங்கள் பதிவு எண்:</p>
+      <div className="regno">{reg}</div>
+      <p>இந்த எண்ணைக் குறித்து வைத்துக்கொள்ளவும் அல்லது ஸ்கிரீன்ஷாட் எடுத்துக்கொள்ளவும். சங்கத்தைத் தொடர்பு கொள்ளும்போது இந்த எண் அவசியம்.</p>
+      <div className="row no-print" style={{ justifyContent: 'center' }}>
+        <button type="button" className="btn secondary" onClick={copy}>{copied ? 'நகலெடுக்கப்பட்டது ✓' : 'எண்ணை நகலெடு'}</button>
+        <button type="button" className="btn secondary" onClick={() => window.print()}>அச்சிடு</button>
+        <Link to="/" className="btn">முகப்புக்குச் செல்</Link>
+      </div>
+    </section>
+  );
+}
+
+export default function Apply() {
+  const [step, setStep] = useState('gate');
+  const [reg, setReg] = useState('');
+  const head = useRef(null);
+  const { settings } = useSettings();
+
+  useEffect(() => {
+    if (step === 'form') { head.current?.scrollIntoView(); head.current?.focus({ preventScroll: true }); }
+  }, [step]);
+
+  async function submit(values) {
+    const r = await api.post('applications', { ...values, terms_accepted: true });
+    try { sessionStorage.removeItem(DRAFT); } catch { /* ignore */ }
+    setReg(r.reg_no);
+    setStep('done');
+  }
+
+  return (
+    <SiteShell nav={APPLY_NAV} showLang={false}>
+      <PageHero title="மங்கல சந்திப்பு விண்ணப்பம்">
+        <p><Link to="/ms2026" className="btn secondary small">← மங்கல சந்திப்பு விவரங்கள்</Link></p>
+      </PageHero>
+      <div className="wrap apply-wrap" lang="ta">
+        {step === 'gate' && <Gate onAccept={() => setStep('form')} settings={settings} />}
+        {step === 'form' && (
+          <>
+            <h2 ref={head} tabIndex={-1}>விண்ணப்பப் படிவம்</h2>
+            <p className="hint">* குறியிட்ட விவரங்கள் அவசியம். கட்டணம் செலுத்திய பின் மட்டுமே சமர்ப்பிக்கவும்.</p>
+            <ApplicationForm
+              initial={EMPTY}
+              lang="ta"
+              draftKey={DRAFT}
+              onSubmit={submit}
+              submitLabel="விண்ணப்பத்தை சமர்ப்பிக்கவும்"
+              busyLabel="சமர்ப்பிக்கிறது…"
+            />
+          </>
+        )}
+        {step === 'done' && <Done reg={reg} />}
+      </div>
+    </SiteShell>
+  );
+}

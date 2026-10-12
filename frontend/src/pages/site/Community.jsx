@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import SiteShell from '../../components/SiteShell';
+import PageHero from '../../components/PageHero';
 import { useI18n } from '../../i18n';
 import { COMMUNITY_SECTIONS, UI, tx } from '../../content/site';
 
@@ -14,11 +15,10 @@ export default function Community() {
   const { lang } = useI18n();
   return (
     <SiteShell>
-      <div className="wrap narrow">
-        <h1>{tx(L.title, lang)}</h1>
-        <p className="lead">{tx(L.sub, lang)}</p>
+      <PageHero title={tx(L.title, lang)} sub={tx(L.sub, lang)} />
+      <div className="wrap">
         <p>{tx(UI.our_community_text, lang)}</p>
-        <ul className="welfare-list">
+        <ul className="cards-grid welfare-list">
           {COMMUNITY_SECTIONS.map((c) => (
             <li className="card" key={c.title.en}>
               <span className="w-ico" aria-hidden="true">{c.icon}</span>

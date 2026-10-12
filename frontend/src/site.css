@@ -97,7 +97,7 @@
 
 /* consistent container widths across header, content and footer */
 .site-main .wrap, .site-foot .wrap { max-width: 1400px; }
-.site-main .wrap.narrow { max-width: 900px; }
+.site-main .wrap.narrow { max-width: 1400px; }
 .site-main { min-height: 50vh; }
 .foot-head { padding-left: 0; }
 .foot-nav a { padding-left: 0; }
@@ -191,3 +191,27 @@ html { scroll-padding-top: calc(var(--head-h, 110px) + 8px); scroll-behavior: sm
 .ms-hero .apply-now { margin-top: 10px; }
 .apply-sec { margin-block: 20px; }
 .apply-sec > h2 { margin-bottom: 10px; }
+
+/* inner pages: full-width banner + responsive grids */
+.page-hero { background: linear-gradient(135deg, var(--brand-d), var(--brand) 70%, var(--brand-logo)); color: #fff; border-bottom: 4px solid var(--accent); }
+.page-hero-in { max-width: 1400px; margin: 0 auto; padding: clamp(28px, 7vh, 72px) clamp(14px, 4vw, 48px); display: grid; gap: 8px; justify-items: start; }
+.page-hero h1 { color: #fff; margin: 0; font-size: clamp(1.6rem, 1rem + 3vw, 3rem); line-height: 1.15; }
+.page-hero p { margin: 0; max-width: 820px; font-size: clamp(1rem, .9rem + .4vw, 1.2rem); opacity: .95; }
+.page-hero .row { margin-top: 6px; }
+.page-hero .hint.on-dark, .page-hero .hint { color: rgba(255, 255, 255, .85); font-size: .9rem; }
+.page-hero .btn.secondary { background: rgba(255, 255, 255, .1); border-color: #fff; color: #fff; }
+.page-hero .btn.secondary:hover { background: rgba(255, 255, 255, .25); }
+.site-main .wrap { padding-top: clamp(18px, 3vw, 36px); }
+.cards-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr)); gap: clamp(12px, 2vw, 24px); align-items: start; margin: 0 0 20px; padding: 0; list-style: none; }
+.cards-grid > .card { margin: 0; height: 100%; }
+.events-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 460px), 1fr)); gap: clamp(12px, 2vw, 24px); }
+.events-grid .event-card { margin: 0; }
+.ms-cols { display: grid; gap: clamp(12px, 2vw, 28px); align-items: start; }
+@media (min-width: 900px) { .ms-cols { grid-template-columns: 1fr 1fr; } }
+.ms-cols .key-info { margin: 0; }
+.ms-cols .card { margin: 0; }
+.apply-wrap { max-width: 1100px !important; }
+.apply-wrap .card, .apply-wrap .notice { max-width: none; }
+
+/* align header with page content edges */
+.site-head-in { padding-inline: clamp(14px, 4vw, 48px); }
