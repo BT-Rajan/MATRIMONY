@@ -5,14 +5,26 @@ import { useI18n } from '../i18n';
 import { useDevice } from '../useDevice';
 import { HERO_SLIDES, UI, tx } from '../content/site';
 
+// Fisher–Yates shuffle, used for the random slide order.
+const shuffled = (arr) => {
+  const a = [...arr];
+  for (let k = a.length - 1; k > 0; k--) {
+    const j = Math.floor(Math.random() * (k + 1));
+    [a[k], a[j]] = [a[j], a[k]];
+  }
+  return a;
+};
+
 const INTERVAL = 7000;
 const norm = (n) => n.toLowerCase().replace(/^\d+[-_.\s]+/, '');
 
-// Full-screen hero with the 5 themed slides (HERO_SLIDES). Each slide's picture is the file
-// public/hero/<image>.jpg|png|webp (phones/tablets: public/hero/<device>/<image>.*); no file = colour background.
-export default function HeroSlider() {
+// Slider used on the home page (HERO_SLIDES, folder 'hero', full screen) and on the Events page
+// (EVENT_SLIDES, folder 'events', compact, random order). Each slide's picture is the file
+// public/<folder>/<image>.jpg|png|webp (phones/tablets: public/<folder>/<device>/<image>.*); no file = colour background.
+export default function HeroSlider({ slides = HERO_SLIDES, folder = 'hero', shuffle = false, compact = false }) {
   const { t, lang } = useI18n();
   const device = useDevice();
+  const [list] = useState(() => (shuffle ? shuffled(slides) : slides));
   const [files, setFiles] = useState({});
   const [i, setI] = useState(0);
   const [hold, setHold] = useState(false);
@@ -22,15 +34,15 @@ export default function HeroSlider() {
   const stage = useRef(null);
   const touchX = useRef(null);
   const reduce = useMemo(() => !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches), []);
-  const n = HERO_SLIDES.length;
+  const n = list.length;
 
   useEffect(() => {
     let off = false;
-    api.get(`images/hero/${device}`)
+    api.get(`images/${folder}/${device}`)
       .then((r) => { if (!off) setFiles(Object.fromEntries((r.images || []).map((im) => [norm(im.name), im.src]))); })
       .catch(() => !off && setFiles({}));
     return () => { off = true; };
-  }, [device]);
+  }, [device, folder]);
 
   useEffect(() => {
     if (!stage.current || !window.ResizeObserver) return undefined;
@@ -60,7 +72,7 @@ export default function HeroSlider() {
   };
 
   return (
-    <section className="hero-slider" data-device={device} aria-roledescription="carousel" aria-label={t('brand')}>
+    <section className={`hero-slider${compact ? ' compact' : ''}`} data-device={device} aria-roledescription="carousel" aria-label={t('brand')}>
       <div
         ref={stage}
         className="hs-stage"
@@ -73,7 +85,7 @@ export default function HeroSlider() {
         onTouchStart={(e) => { touchX.current = e.touches[0].clientX; }}
         onTouchEnd={onTouchEnd}
       >
-        {HERO_SLIDES.map((sl, k) => {
+        {list.map((sl, k) => {
           const src = files[sl.image];
           const on = k === i;
           return (
@@ -116,7 +128,7 @@ export default function HeroSlider() {
           </>
         )}
         <div className="hs-dots">
-          {HERO_SLIDES.map((sl, k) => (
+          {list.map((sl, k) => (
             <button key={sl.image} type="button" className={k === i ? 'on' : ''} aria-label={tx(sl.title, lang)} aria-current={k === i} onClick={() => setI(k)} />
           ))}
           {!reduce && (
@@ -125,7 +137,7 @@ export default function HeroSlider() {
             </button>
           )}
         </div>
-        <p className="sr-only" aria-live="polite">{tx(HERO_SLIDES[i].title, lang)} ({i + 1} / {n})</p>
+        <p className="sr-only" aria-live="polite">{tx(list[i].title, lang)} ({i + 1} / {n})</p>
       </div>
     </section>
   );
