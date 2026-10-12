@@ -14,6 +14,7 @@ import Dashboard from './pages/admin/Dashboard';
 import Applications from './pages/admin/Applications';
 import ApplicationView from './pages/admin/ApplicationView';
 import Users from './pages/admin/Users';
+import Leads from './pages/admin/Leads';
 import Settings from './pages/admin/Settings';
 
 export default function App() {
@@ -35,6 +36,7 @@ export default function App() {
         <Route index element={<Dashboard />} />
         <Route path="applications" element={<Applications />} />
         <Route path="applications/:id" element={<ApplicationView />} />
+        <Route path="leads" element={<Leads />} />
         <Route path="users" element={<Users />} />
         <Route path="settings" element={<Settings />} />
       </Route>

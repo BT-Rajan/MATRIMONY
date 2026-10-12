@@ -4,7 +4,7 @@ declare(strict_types=1);
 $backend = getenv('BACKEND_PATH') ?: __DIR__ . '/../../backend';
 define('PUBLIC_DIR', realpath(__DIR__ . '/..') ?: __DIR__ . '/..');
 require $backend . '/src/helpers.php';
-foreach (['validation', 'auth', 'applications', 'users', 'settings', 'media'] as $f) {
+foreach (['validation', 'auth', 'applications', 'leads', 'users', 'settings', 'media'] as $f) {
     if (is_file("$backend/src/$f.php")) require "$backend/src/$f.php";
 }
 
@@ -39,6 +39,11 @@ $routes = [
     ['POST',   '#^/users$#',                      'h_user_create'],
     ['PUT',    '#^/users/(\d+)$#',                'h_user_update'],
     ['DELETE', '#^/users/(\d+)$#',                'h_user_delete'],
+    ['GET',    '#^/leads$#',                      'h_lead_list'],
+    ['POST',   '#^/leads$#',                      'h_lead_create'],
+    ['GET',    '#^/leads/(\d+)$#',               'h_lead_get'],
+    ['PUT',    '#^/leads/(\d+)$#',               'h_lead_update'],
+    ['DELETE', '#^/leads/(\d+)$#',               'h_lead_delete'],
 ];
 
 try {
