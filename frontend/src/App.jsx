@@ -6,6 +6,7 @@ import Welfare from './pages/site/Welfare';
 import NewsGallery from './pages/site/NewsGallery';
 import Community from './pages/site/Community';
 import Contact from './pages/site/Contact';
+import Membership from './pages/site/Membership';
 import Ms2026 from './pages/Ms2026';
 import Apply from './pages/Apply';
 import Login from './pages/admin/Login';
@@ -28,6 +29,7 @@ export default function App() {
       <Route path="/welfare" element={<Welfare />} />
       <Route path="/news-gallery" element={<NewsGallery />} />
       <Route path="/community" element={<Community />} />
+      <Route path="/membership" element={<Membership />} />
       <Route path="/contact" element={<Contact />} />
       <Route path="/apply.html" element={<Apply />} />
       <Route path="/program.html" element={<Navigate to="/ms2026" replace />} />
