@@ -16,8 +16,10 @@ function HomeIcon() {
   );
 }
 
-export default function SiteShell({ children, nav = NAV, showLang = true }) {
-  const { t, lang } = useI18n();
+export default function SiteShell({ children, nav = NAV, showLang = true, forceLang }) {
+  const { t, lang: uiLang } = useI18n();
+  // Pages whose body is fixed to one language (e.g. the Tamil application form) pass forceLang so the menu and footer match.
+  const lang = forceLang || uiLang;
   const [open, setOpen] = useState(false);
   const { pathname, hash } = useLocation();
   useDevice();

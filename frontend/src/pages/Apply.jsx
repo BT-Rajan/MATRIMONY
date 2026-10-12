@@ -75,10 +75,8 @@ export default function Apply() {
   }
 
   return (
-    <SiteShell nav={APPLY_NAV} showLang={false}>
-      <PageHero title="மங்கல சந்திப்பு விண்ணப்பம்">
-        <p><Link to="/ms2026" className="btn secondary small">← மங்கல சந்திப்பு விவரங்கள்</Link></p>
-      </PageHero>
+    <SiteShell nav={APPLY_NAV} showLang={false} forceLang="ta">
+      <PageHero title="மங்கல சந்திப்பு விண்ணப்பம்" />
       <div className="wrap apply-wrap" lang="ta">
         {step === 'gate' && <Gate onAccept={() => setStep('form')} settings={settings} />}
         {step === 'form' && (
