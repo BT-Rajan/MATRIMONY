@@ -39,6 +39,7 @@ export const UI = {
   play: { ta: 'இயக்கு', en: 'Play' },
   upcoming: { ta: 'வரவிருக்கும் நிகழ்வு', en: 'Upcoming event' },
   more: { ta: 'மேலும் அறிக', en: 'Learn more' },
+  more_short: { ta: 'மேலும்', en: 'More' },
   details: { ta: 'விவரங்கள்', en: 'Details' },
   service_title: { ta: 'சமூக சேவை', en: 'Community service' },
   service_sub: { ta: 'கல்வி, மருத்துவம் மற்றும் தேவையுள்ள குடும்பங்களுக்கான உதவி.', en: 'Education, medical support and help for families in need.' },
@@ -87,3 +88,23 @@ export const WELFARE = [
 export const EVENTS = [];
 // News: { title:{ta,en}, date:'DD-MM-YYYY', text:{ta,en} }
 export const NEWS = [];
+
+// Home hero: 5 slides. `image` = file name (without extension) to drop into public/hero/
+// e.g. public/hero/spiritual.jpg  (phones: public/hero/mobile/spiritual.jpg). Without a file the slide shows a colour background.
+export const HERO_SLIDES = [
+  { image: 'spiritual', icon: '🛕', to: '/events', tint: ['#4a2a00', '#8a4b08'],
+    title: { ta: 'ஆன்மீகம்', en: 'Spirituality' },
+    text: { ta: 'நம் பாரம்பரிய வழிபாடு, விழாக்கள் மற்றும் அறநெறி மரபுகளைப் போற்றி, அடுத்த தலைமுறைக்குக் கொண்டு செல்கிறோம்.', en: 'Cherishing our traditions of worship, festivals and values, and passing them on to the next generation.' } },
+  { image: 'leadership', icon: '🌟', to: '/about', tint: ['#08294a', '#14538c'],
+    title: { ta: 'தலைமைத்துவம்', en: 'Leadership' },
+    text: { ta: 'சமூகத்தை வழிநடத்தும் பொறுப்புள்ள தலைவர்களை உருவாக்கி, இளைஞர்களுக்கு வாய்ப்பளிக்கிறோம்.', en: 'Nurturing responsible leaders and giving our youth the opportunity to guide the community.' } },
+  { image: 'welfare', icon: '🤝', to: '/welfare', tint: ['#0b4a1f', '#1b7a37'],
+    title: { ta: 'சமூக நலன்', en: 'Community Welfare' },
+    text: { ta: 'தேவையுள்ள குடும்பங்களுக்குத் துணை நின்று, ஒற்றுமையுடன் நலப்பணிகளை முன்னெடுக்கிறோம்.', en: 'Standing by families in need and carrying out welfare work together.' } },
+  { image: 'education', icon: '🎓', to: '/community', tint: ['#3b0a4a', '#74148c'],
+    title: { ta: 'கல்வி', en: 'Education' },
+    text: { ta: 'மாணவர்களுக்கு வழிகாட்டுதலும் ஊக்கமும் அளித்து, கல்வியில் முன்னேற உதவுகிறோம்.', en: 'Guiding and encouraging students to progress in their education.' } },
+  { image: 'employment', icon: '💼', to: '/community', tint: ['#4a0a14', '#8c1428'],
+    title: { ta: 'வேலைவாய்ப்பு', en: 'Employment' },
+    text: { ta: 'திறன் வளர்ப்பு, வழிகாட்டுதல் மற்றும் தொடர்புகள் மூலம் வேலைவாய்ப்பிற்கு உறுதுணையாக இருக்கிறோம்.', en: 'Supporting employment through skill-building, guidance and networking.' } },
+];

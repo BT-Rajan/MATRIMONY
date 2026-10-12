@@ -16,17 +16,19 @@ export default function Home() {
 
   return (
     <SiteShell>
-      <HeroSlider>
-        <h1>{tx(UI.welcome, lang)}</h1>
-        <p className="tag">{tx(UI.tagline, lang)}</p>
-        {device !== 'mobile' && <p className="sub">{tx(UI.welcome_sub, lang)}</p>}
-        <div className="row hs-cta">
-          <Link to="/apply.html" className="btn accent">{tx(UI.apply_ms, lang)} →</Link>
-          {device !== 'mobile' && <Link to="/events" className="btn secondary">{tx(UI.see_events, lang)}</Link>}
-        </div>
-      </HeroSlider>
+      <HeroSlider />
 
       <div className="wrap">
+        <section className="home-intro">
+          <h1>{tx(UI.welcome, lang)}</h1>
+          <p className="tag">{tx(UI.tagline, lang)}</p>
+          {device !== 'mobile' && <p className="sub">{tx(UI.welcome_sub, lang)}</p>}
+          <div className="row">
+            <Link to="/apply.html" className="btn accent">{tx(UI.apply_ms, lang)} →</Link>
+            {device !== 'mobile' && <Link to="/events" className="btn secondary">{tx(UI.see_events, lang)}</Link>}
+          </div>
+        </section>
+
         <section className="home-sec" aria-labelledby="up">
           <h2 id="up">{tx(UI.upcoming, lang)}</h2>
           <article className="event-card">

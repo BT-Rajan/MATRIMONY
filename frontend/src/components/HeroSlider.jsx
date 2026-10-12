@@ -1,18 +1,19 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { api } from '../api';
 import { useI18n } from '../i18n';
 import { useDevice } from '../useDevice';
-import { UI, tx } from '../content/site';
+import { HERO_SLIDES, UI, tx } from '../content/site';
 
-const INTERVAL = 5500;
-const pretty = (n) => n.replace(/^\d+[-_.\s]+/, '').replace(/[-_]+/g, ' ').trim();
+const INTERVAL = 7000;
+const norm = (n) => n.toLowerCase().replace(/^\d+[-_.\s]+/, '');
 
-// Full-screen hero. Shows every image in /public/hero (device folders first, see public/hero/README.txt).
-// Images that match the screen shape fill it; very different shapes (posters etc.) are shown whole on a blurred backdrop.
-export default function HeroSlider({ children }) {
+// Full-screen hero with the 5 themed slides (HERO_SLIDES). Each slide's picture is the file
+// public/hero/<image>.jpg|png|webp (phones/tablets: public/hero/<device>/<image>.*); no file = colour background.
+export default function HeroSlider() {
   const { t, lang } = useI18n();
   const device = useDevice();
-  const [imgs, setImgs] = useState(null);
+  const [files, setFiles] = useState({});
   const [i, setI] = useState(0);
   const [hold, setHold] = useState(false);
   const [paused, setPaused] = useState(false);
@@ -21,10 +22,13 @@ export default function HeroSlider({ children }) {
   const stage = useRef(null);
   const touchX = useRef(null);
   const reduce = useMemo(() => !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches), []);
+  const n = HERO_SLIDES.length;
 
   useEffect(() => {
     let off = false;
-    api.get(`images/hero/${device}`).then((r) => { if (!off) { setImgs(r.images || []); setI(0); } }).catch(() => !off && setImgs([]));
+    api.get(`images/hero/${device}`)
+      .then((r) => { if (!off) setFiles(Object.fromEntries((r.images || []).map((im) => [norm(im.name), im.src]))); })
+      .catch(() => !off && setFiles({}));
     return () => { off = true; };
   }, [device]);
 
@@ -35,8 +39,7 @@ export default function HeroSlider({ children }) {
     return () => ro.disconnect();
   }, []);
 
-  const n = imgs ? imgs.length : 0;
-  const auto = n > 1 && !hold && !paused && !reduce;
+  const auto = !hold && !paused && !reduce;
   useEffect(() => {
     if (!auto) return undefined;
     const id = setInterval(() => setI((x) => (x + 1) % n), INTERVAL);
@@ -70,47 +73,59 @@ export default function HeroSlider({ children }) {
         onTouchStart={(e) => { touchX.current = e.touches[0].clientX; }}
         onTouchEnd={onTouchEnd}
       >
-        {n === 0 && (
-          <div className="hs-empty">
-            <img src="/logo.png" alt="" width="150" height="150" />
-          </div>
-        )}
-        {imgs && imgs.map((im, k) => (
-          <figure key={im.src} className={`hs-slide fit-${fit(im.src)}${k === i ? ' on' : ''}`} aria-hidden={k !== i} aria-roledescription="slide" aria-label={`${k + 1} / ${n}`}>
-            <img className="hs-bg" src={im.src} alt="" loading={k === 0 ? 'eager' : 'lazy'} />
-            <img
-              className="hs-fg"
-              src={im.src}
-              alt={pretty(im.name)}
-              loading={k === 0 ? 'eager' : 'lazy'}
-              fetchpriority={k === 0 ? 'high' : undefined}
-              onLoad={(e) => setRatios((r) => ({ ...r, [im.src]: e.target.naturalWidth / e.target.naturalHeight }))}
-            />
-          </figure>
-        ))}
-        <div className="hs-shade" aria-hidden="true" />
-        {n > 1 && (
-          <>
-            {device !== 'mobile' && (
-              <>
-                <button type="button" className="hs-arrow prev" onClick={() => go(-1)} aria-label={tx(UI.prev, lang)}>‹</button>
-                <button type="button" className="hs-arrow next" onClick={() => go(1)} aria-label={tx(UI.next, lang)}>›</button>
-              </>
-            )}
-            <div className="hs-dots">
-              {imgs.map((im, k) => (
-                <button key={im.src} type="button" className={k === i ? 'on' : ''} aria-label={tx(UI.go_slide, lang).replace('{n}', k + 1)} aria-current={k === i} onClick={() => setI(k)} />
-              ))}
-              {!reduce && (
-                <button type="button" className="hs-pp" onClick={() => setPaused((p) => !p)} aria-label={tx(paused ? UI.play : UI.pause, lang)}>
-                  {paused ? '▶' : '❚❚'}
-                </button>
+        {HERO_SLIDES.map((sl, k) => {
+          const src = files[sl.image];
+          const on = k === i;
+          return (
+            <figure
+              key={sl.image}
+              className={`hs-slide ${src ? `fit-${fit(src)}` : 'no-img'}${on ? ' on' : ''}`}
+              style={{ '--tint-a': sl.tint[0], '--tint-b': sl.tint[1] }}
+              aria-hidden={!on}
+              aria-roledescription="slide"
+              aria-label={`${k + 1} / ${n}`}
+            >
+              {src ? (
+                <>
+                  <img className="hs-bg" src={src} alt="" loading={k === 0 ? 'eager' : 'lazy'} />
+                  <img
+                    className="hs-fg"
+                    src={src}
+                    alt=""
+                    loading={k === 0 ? 'eager' : 'lazy'}
+                    fetchpriority={k === 0 ? 'high' : undefined}
+                    onLoad={(e) => setRatios((r) => ({ ...r, [src]: e.target.naturalWidth / e.target.naturalHeight }))}
+                  />
+                </>
+              ) : (
+                <span className="hs-icon" aria-hidden="true">{sl.icon}</span>
               )}
-            </div>
+              <div className="hs-shade" aria-hidden="true" />
+              <div className="hs-caption">
+                <h2>{tx(sl.title, lang)}</h2>
+                <p>{tx(sl.text, lang)}</p>
+                <Link to={sl.to} className="hs-more" tabIndex={on ? 0 : -1}>{tx(UI.more_short, lang)} <span aria-hidden="true">→</span></Link>
+              </div>
+            </figure>
+          );
+        })}
+        {device !== 'mobile' && (
+          <>
+            <button type="button" className="hs-arrow prev" onClick={() => go(-1)} aria-label={tx(UI.prev, lang)}>‹</button>
+            <button type="button" className="hs-arrow next" onClick={() => go(1)} aria-label={tx(UI.next, lang)}>›</button>
           </>
         )}
-        <p className="sr-only" aria-live="polite">{n > 0 ? `${i + 1} / ${n}` : ''}</p>
-        <div className="hs-band">{children}</div>
+        <div className="hs-dots">
+          {HERO_SLIDES.map((sl, k) => (
+            <button key={sl.image} type="button" className={k === i ? 'on' : ''} aria-label={tx(sl.title, lang)} aria-current={k === i} onClick={() => setI(k)} />
+          ))}
+          {!reduce && (
+            <button type="button" className="hs-pp" onClick={() => setPaused((p) => !p)} aria-label={tx(paused ? UI.play : UI.pause, lang)}>
+              {paused ? '▶' : '❚❚'}
+            </button>
+          )}
+        </div>
+        <p className="sr-only" aria-live="polite">{tx(HERO_SLIDES[i].title, lang)} ({i + 1} / {n})</p>
       </div>
     </section>
   );

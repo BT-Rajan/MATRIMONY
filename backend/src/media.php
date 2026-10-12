@@ -19,16 +19,20 @@ function media_scan(string $dir, string $url): array
     return $out;
 }
 
-// $device: '' | mobile | tablet | desktop. Images in public/hero/<device>/ are used for that device;
-// if that folder is empty the images directly in public/hero/ are used for every device.
+// $device: '' | mobile | tablet | desktop.
+// Images in public/<folder>/ are shared by all devices; a file with the same name inside
+// public/<folder>/<device>/ replaces it for that device (e.g. hero/spiritual.jpg + hero/mobile/spiritual.jpg).
 function media_list(string $folder, string $device = ''): void
 {
     $root = rtrim((string)(defined('PUBLIC_DIR') ? PUBLIC_DIR : __DIR__ . '/../../public'), '/');
-    $out = [];
-    if ($device !== '') $out = media_scan("$root/$folder/$device", "/$folder/$device");
-    if (!$out) $out = media_scan("$root/$folder", "/$folder");
+    $byName = [];
+    foreach (media_scan("$root/$folder", "/$folder") as $im) $byName[strtolower($im['name'])] = $im;
+    if ($device !== '') {
+        foreach (media_scan("$root/$folder/$device", "/$folder/$device") as $im) $byName[strtolower($im['name'])] = $im;
+    }
+    ksort($byName, SORT_NATURAL);
     header('Cache-Control: public, max-age=60');
-    out(['images' => $out, 'device' => $device]);
+    out(['images' => array_values($byName), 'device' => $device]);
 }
 
 function h_images_hero(): void { media_list('hero'); }
