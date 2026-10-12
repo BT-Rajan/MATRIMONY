@@ -115,6 +115,19 @@ export const PAST_EVENTS = [
 // News: { title:{ta,en}, date:'DD-MM-YYYY', text:{ta,en} }
 export const NEWS = [];
 
+// Events page slider (random order each visit). Pictures: public/events/<image>.jpg|png|webp (see public/events/README.txt).
+export const EVENT_SLIDES = [
+  { image: 'mangala-santhippu', icon: '🙏', to: '/ms2026', tint: ['#0b4a1f', '#1b7a37'],
+    title: { ta: 'மங்கல சந்திப்பு', en: 'Mangala Santhippu' },
+    text: { ta: 'ஆண்டுதோறும் நடைபெறும் சங்கத்தின் முக்கிய சந்திப்பு மற்றும் விழா.', en: 'The Sangam’s annual gathering and celebration.' } },
+  { image: 'nellaiyappar-memorial', icon: '🕯️', to: '/events', tint: ['#4a2a00', '#8a4b08'],
+    title: { ta: 'நெல்லையப்பர் நினைவு நாள்', en: 'Nellaiyappar Memorial Day' },
+    text: { ta: 'சுதந்திரப் போராட்ட வீரர் பரலி சு. நெல்லையப்பர் நினைவாக ஆண்டுதோறும் அனுசரிக்கப்படுகிறது.', en: 'Celebrated every year in memory of freedom fighter Parali Su. Nellaiyappar.' } },
+  { image: 'community-outing', icon: '🌄', to: '/community', tint: ['#08294a', '#14538c'],
+    title: { ta: 'சமூக நிகழ்வுகள்', en: 'Community gatherings' },
+    text: { ta: 'இன்ப சுற்றுலா, ஆலய தரிசனம் மற்றும் மருத்துவ முகாம்கள்.', en: 'Joyful outings, temple visits and medical camps.' } },
+];
+
 // Home hero: 5 slides. `image` = file name (without extension) to drop into public/hero/
 // e.g. public/hero/spiritual.jpg  (phones: public/hero/mobile/spiritual.jpg). Without a file the slide shows a colour background.
 export const HERO_SLIDES = [

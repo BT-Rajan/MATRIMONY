@@ -25,6 +25,8 @@
   .site-nav a { padding: 8px 12px; font-size: .95rem; }
 }
 
+/* compact slider (Events page): a band instead of the full screen */
+.hero-slider.compact { height: clamp(260px, 42vh, 460px); min-height: 0; border-bottom: 3px solid var(--accent); }
 /* hero slider: fills the whole screen below the header */
 .hero-slider { position: relative; background: #0d2a0a; height: calc(100vh - var(--head-h, 110px)); height: calc(100svh - var(--head-h, 110px)); min-height: 420px; }
 .hs-stage { position: absolute; inset: 0; overflow: hidden; }

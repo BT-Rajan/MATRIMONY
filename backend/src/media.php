@@ -40,3 +40,7 @@ function h_images_hero_mobile(): void { media_list('hero', 'mobile'); }
 function h_images_hero_tablet(): void { media_list('hero', 'tablet'); }
 function h_images_hero_desktop(): void { media_list('hero', 'desktop'); }
 function h_images_gallery(): void { media_list('gallery'); }
+function h_images_events(): void { media_list('events'); }
+function h_images_events_mobile(): void { media_list('events', 'mobile'); }
+function h_images_events_tablet(): void { media_list('events', 'tablet'); }
+function h_images_events_desktop(): void { media_list('events', 'desktop'); }

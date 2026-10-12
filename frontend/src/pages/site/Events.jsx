@@ -4,7 +4,8 @@ import PageHero from '../../components/PageHero';
 import { useI18n } from '../../i18n';
 import { useSettings } from '../../useSettings';
 import { fmtEventDate } from '../../date';
-import { EVENTS, PAST_EVENTS, tx } from '../../content/site';
+import { EVENTS, EVENT_SLIDES, PAST_EVENTS, tx } from '../../content/site';
+import HeroSlider from '../../components/HeroSlider';
 
 const L = {
   title: { ta: 'நிகழ்வுகள் & செயல்பாடுகள்', en: 'Events & Activities' },
@@ -25,6 +26,7 @@ export default function Events() {
   return (
     <SiteShell>
       <PageHero title={l('title')} sub={l('sub')} />
+      <HeroSlider slides={EVENT_SLIDES} folder="events" shuffle compact />
       <div className="wrap">
         <section className="events-section" aria-labelledby="ev-upcoming">
           <h2 id="ev-upcoming" className="sec-title"><span className="sec-ico" aria-hidden="true">📅</span>{l('upcoming')}</h2>
