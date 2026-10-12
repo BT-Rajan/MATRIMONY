@@ -95,6 +95,22 @@ export const WELFARE = [
 // Extra events/announcements. The Mangala Santhippu event is added automatically from Admin > Settings.
 // Event: { title:{ta,en}, date:{ta,en}, venue:{ta,en}, text:{ta,en} }
 export const EVENTS = [];
+
+// Past events (newest first). Each entry: { date, title, venue, text } with { ta, en } text.
+export const PAST_EVENTS = [
+  {
+    date: { ta: '28 மார்ச் 2026', en: '28 March 2026' },
+    title: { ta: 'நெல்லையப்பர் நினைவு நாள்', en: 'Nellaiyappar Memorial Day' },
+    venue: {
+      ta: 'நெல்லையப்பர் சிலை, தபால் நிலையம் அருகில், குரோம்பேட்டை, சென்னை',
+      en: 'Nelliappar Statue, Near Post Office, Chromepet, Chennai',
+    },
+    text: {
+      ta: 'ஒவ்வோர் ஆண்டும் கொண்டாடப்படும் இந்த நாள், கார்காத்தார் சுதந்திரப் போராட்ட வீரரும் குரோம்பேட்டைக்காக தன் அனைத்தையும் அர்ப்பணித்தவருமான பரலி சு. நெல்லையப்பர் அவர்களின் நினைவாக அனுசரிக்கப்படுகிறது.',
+      en: 'Celebrated every year in fond memory of Parali Su. Nellaiyappar, a Karkathar freedom fighter who lived and gave his everything to Chromepet.',
+    },
+  },
+];
 // News: { title:{ta,en}, date:'DD-MM-YYYY', text:{ta,en} }
 export const NEWS = [];
 
