@@ -80,8 +80,10 @@ export default function SiteShell({ children }) {
               </ul>
             </div>
           </div>
-          <small>{tx(UI.footer_privacy, lang)}</small>
-          <small className="copy">© {new Date().getFullYear()} {tx(UI.copyright, lang)}</small>
+          <div className="foot-bottom">
+            <small>{tx(UI.footer_privacy, lang)}</small>
+            <small className="copy">© {new Date().getFullYear()} {tx(UI.copyright, lang)}</small>
+          </div>
         </div>
       </footer>
           </>
