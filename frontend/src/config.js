@@ -8,8 +8,8 @@ export const SITE = {
 };
 
 // Single source for the public address and social links (footer and Contact page).
-// Set `facebook` to the page URL; the Follow us link stays hidden until it is set.
+// Set `facebook` to the page URL (currently a '#' placeholder).
 export const CONTACT_INFO = {
   address: { ta: '#6, காந்தி தெரு, சிட்லபாக்கம், சென்னை - 600064', en: '#6, Gandhi Street, Chitlapakkam, Chennai - 600064' },
-  facebook: '',
+  facebook: '#', // placeholder: replace with the Facebook page URL
 };

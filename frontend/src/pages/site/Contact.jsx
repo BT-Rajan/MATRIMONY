@@ -39,7 +39,8 @@ export default function Contact() {
           </ul>
         </section>
 
-        {CONTACT_INFO.facebook && (
+        {(
+
           <section className="card contact-section" aria-labelledby="c-follow">
             <h2 id="c-follow" className="sec-title"><span className="sec-ico"><FacebookIcon /></span>{tx(UI.footer_follow, lang)}</h2>
             <a className="btn" href={CONTACT_INFO.facebook} target="_blank" rel="noopener noreferrer"><FacebookIcon /> Facebook</a>
