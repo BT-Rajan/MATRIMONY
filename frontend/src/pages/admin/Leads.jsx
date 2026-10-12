@@ -27,6 +27,12 @@ export default function Leads() {
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState('');
   const firstRef = useRef(null);
+  const [showImport, setShowImport] = useState(false);
+  const [file, setFile] = useState(null);
+  const [fileKey, setFileKey] = useState(0);
+  const [importing, setImporting] = useState(false);
+  const [importErr, setImportErr] = useState('');
+  const [importErrs, setImportErrs] = useState({});
 
   const load = useCallback(() => {
     setErr('');
@@ -88,17 +94,83 @@ export default function Leads() {
     }
   }
 
+  const downloadTemplate = () => {
+    const csv = 'salutation,source,source_id,name,phone1,phone2,comment\r\nMr,porur,REF-001,Ravi Kumar,9876543210,,Called once\r\n';
+    const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv' }));
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'leads-template.csv';
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  async function importCsv(e) {
+    e.preventDefault();
+    if (!file) return;
+    setImportErr(''); setImportErrs({}); setNotice('');
+    if (file.size > 1024 * 1024) { setImportErr('too_large'); return; }
+    setImporting(true);
+    try {
+      const csv = await file.text();
+      const r = await api.post('leads/import', { csv });
+      setNotice(t('l_import_done', { n: String(r.inserted) }));
+      setFile(null);
+      setFileKey((n) => n + 1);
+      setShowImport(false);
+      setTick((n) => n + 1);
+    } catch (x) {
+      setImportErr(x.code);
+      setImportErrs(x.errors || {});
+    } finally {
+      setImporting(false);
+    }
+  }
+
   const fieldErr = (k) => (errs[k] ? <span className="field-err" role="alert">{t('e_' + errs[k])}</span> : null);
 
   return (
     <>
       <div className="page-head">
         <h1>{t('l_title')}</h1>
-        {!form && <button type="button" className="btn" onClick={openNew}>{t('l_add')}</button>}
+        {!form && (
+          <div className="row">
+            <button type="button" className="btn secondary" aria-expanded={showImport} onClick={() => { setShowImport((v) => !v); setImportErr(''); setImportErrs({}); }}>{t('l_import')}</button>
+            <button type="button" className="btn" onClick={openNew}>{t('l_add')}</button>
+          </div>
+        )}
       </div>
 
       {notice && <div className="alert ok" role="status">{notice}</div>}
       {err && <div className="alert bad" role="alert">{t('e_' + err)}</div>}
+
+      {showImport && !form && (
+        <section className="card" aria-labelledby="imp">
+          <h2 id="imp">{t('l_import')}</h2>
+          <p className="hint">{t('l_import_help')}</p>
+          <form onSubmit={importCsv} noValidate>
+            <div className="field">
+              <label htmlFor="l-csv">{t('l_import_pick')}</label>
+              <input key={fileKey} id="l-csv" type="file" accept=".csv,text/csv" onChange={(e) => setFile(e.target.files?.[0] ?? null)} />
+            </div>
+            {importErr && (
+              <div className="alert bad" role="alert">
+                {t('e_' + importErr)}
+                {Object.keys(importErrs).length > 0 && (
+                  <ul className="plain-list mt-6">
+                    {Object.entries(importErrs).slice(0, 20).map(([k, v]) => <li key={k}>{k}: {t('e_' + v)}</li>)}
+                    {Object.keys(importErrs).length > 20 && <li>…</li>}
+                  </ul>
+                )}
+              </div>
+            )}
+            <div className="form-actions">
+              <button type="submit" className="btn" disabled={!file || importing}>{importing ? t('loading') : t('l_import_go')}</button>
+              <button type="button" className="btn secondary" onClick={downloadTemplate}>{t('l_import_template')}</button>
+              <button type="button" className="btn secondary" onClick={() => setShowImport(false)}>{t('l_cancel')}</button>
+            </div>
+          </form>
+        </section>
+      )}
 
       {form && (
         <form className="card lead-form" onSubmit={submit} noValidate>
