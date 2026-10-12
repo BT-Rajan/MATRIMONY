@@ -29,7 +29,7 @@ function Gate({ onAccept, settings }) {
       <section className="card" aria-labelledby="tt">
         <h2 id="tt">விதிமுறைகள் மற்றும் நிபந்தனைகள்</h2>
         <ol className="terms-list">{TERMS_TA.map((x, i) => <li key={i}>{x}</li>)}</ol>
-        <button type="button" className="btn block" onClick={onAccept}>படித்தேன், தொடரவும்</button>
+        <button type="button" className="btn block" onClick={onAccept}>ஏற்கிறேன், தொடரவும்</button>
       </section>
     </>
   );
