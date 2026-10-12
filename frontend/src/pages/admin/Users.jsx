@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Navigate } from 'react-router-dom';
 import { api } from '../../api';
 import { useAuth } from '../../auth';
@@ -6,6 +6,14 @@ import { useI18n } from '../../i18n';
 import { fmtDateTime } from '../../date';
 
 const BLANK = { name: '', username: '', role: 'manager', is_active: true, password: '' };
+
+function Chip({ active, label, count, onClick }) {
+  return (
+    <button type="button" className={`chip${active ? ' on' : ''}`} aria-pressed={active} onClick={onClick}>
+      {label} <span className="chip-n">{count ?? '–'}</span>
+    </button>
+  );
+}
 
 export default function Users() {
   const { t } = useI18n();
@@ -15,12 +23,46 @@ export default function Users() {
   const [errs, setErrs] = useState({});
   const [top, setTop] = useState('');
   const [busy, setBusy] = useState(false);
+  const [q, setQ] = useState('');
+  const [role, setRole] = useState('');   // '' | 'admin' | 'manager'
+  const [status, setStatus] = useState(''); // '' | 'active' | 'inactive'
   const nameRef = useRef(null);
 
   const load = useCallback(() => api.get('users').then((r) => setItems(r.items)).catch((e) => setTop(e.code)), []);
   useEffect(() => { load(); }, [load]);
   const isOpen = !!form;
   useEffect(() => { if (isOpen) nameRef.current?.focus(); }, [isOpen]);
+
+  // Admins first, then managers, each alphabetical. The list is small, so filtering runs here.
+  const sorted = useMemo(() => {
+    if (!items) return null;
+    const rank = (u) => (u.role === 'admin' ? 0 : 1);
+    return [...items].sort((a, b) => rank(a) - rank(b) || a.name.localeCompare(b.name));
+  }, [items]);
+
+  const counts = useMemo(() => {
+    const c = { all: 0, admin: 0, manager: 0, active: 0, inactive: 0 };
+    for (const u of sorted ?? []) {
+      c.all++;
+      c[u.role]++;
+      c[Number(u.is_active) ? 'active' : 'inactive']++;
+    }
+    return c;
+  }, [sorted]);
+
+  const visible = useMemo(() => {
+    if (!sorted) return null;
+    const needle = q.trim().toLowerCase();
+    return sorted.filter((u) => {
+      if (role && u.role !== role) return false;
+      if (status && (status === 'active') !== !!Number(u.is_active)) return false;
+      if (needle && !u.name.toLowerCase().includes(needle) && !u.username.toLowerCase().includes(needle)) return false;
+      return true;
+    });
+  }, [sorted, q, role, status]);
+
+  const hasFilters = !!(q.trim() || role || status);
+  const clearFilters = () => { setQ(''); setRole(''); setStatus(''); };
 
   const open = (u) => {
     setErrs({});
@@ -116,32 +158,67 @@ export default function Users() {
         </section>
       )}
 
-      {!items ? <p role="status">{t('loading')}</p> : (
-        <table className="tbl">
-          <thead>
-            <tr>
-              <th scope="col">{t('u_name')}</th><th scope="col">{t('username')}</th><th scope="col">{t('u_role')}</th>
-              <th scope="col">{t('u_status')}</th><th scope="col">{t('u_last')}</th><th scope="col"><span className="sr-only">Actions</span></th>
-            </tr>
-          </thead>
-          <tbody>
-            {items.map((u) => (
-              <tr key={u.id}>
-                <td data-label={t('u_name')}>{u.name}</td>
-                <td data-label={t('username')}>{u.username}</td>
-                <td data-label={t('u_role')}>{t('role_' + u.role)}</td>
-                <td data-label={t('u_status')}>{Number(u.is_active) ? t('u_active') : t('u_inactive')}</td>
-                <td data-label={t('u_last')}>{u.last_login_at ? fmtDateTime(u.last_login_at) : t('u_never')}</td>
-                <td>
-                  <div className="row end">
-                    <button type="button" className="btn secondary small" onClick={() => open(u)}>{t('edit')}</button>
-                    {u.id !== me.id && <button type="button" className="btn bad small" onClick={() => remove(u)}>{t('delete')}</button>}
-                  </div>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+      {!visible ? <p role="status">{t('loading')}</p> : (
+        <>
+          <div className="chips" role="group" aria-label={t('u_role')}>
+            <Chip active={!role} label={t('all')} count={counts.all} onClick={() => setRole('')} />
+            <Chip active={role === 'admin'} label={t('role_admin')} count={counts.admin} onClick={() => setRole(role === 'admin' ? '' : 'admin')} />
+            <Chip active={role === 'manager'} label={t('role_manager')} count={counts.manager} onClick={() => setRole(role === 'manager' ? '' : 'manager')} />
+          </div>
+
+          <form className="toolbar" role="search" onSubmit={(e) => e.preventDefault()}>
+            <div className="field">
+              <label htmlFor="uq">{t('search')}</label>
+              <input id="uq" type="text" value={q} onChange={(e) => setQ(e.target.value)} placeholder={t('u_search_ph')} maxLength={60} />
+            </div>
+            <div className="field">
+              <label htmlFor="ustatus">{t('u_status')}</label>
+              <select id="ustatus" value={status} onChange={(e) => setStatus(e.target.value)}>
+                <option value="">{t('u_all_status')}</option>
+                <option value="active">{t('u_active')} ({counts.active})</option>
+                <option value="inactive">{t('u_inactive')} ({counts.inactive})</option>
+              </select>
+            </div>
+            {hasFilters && <button type="button" className="btn secondary" onClick={clearFilters}>{t('a_clear')}</button>}
+          </form>
+
+          {visible.length === 0 ? <p>{t('l_none')}</p> : (
+            <>
+              <p className="hint" role="status">{t('u_shown', { n: String(visible.length) })}</p>
+              <div className="table-scroll">
+                <table className="tbl">
+                  <thead>
+                    <tr>
+                      <th scope="col">{t('u_name')}</th><th scope="col">{t('username')}</th><th scope="col">{t('u_role')}</th>
+                      <th scope="col">{t('u_status')}</th><th scope="col">{t('u_last')}</th><th scope="col"><span className="sr-only">{t('l_actions')}</span></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {visible.map((u) => {
+                      const isMe = u.id === me.id;
+                      const active = !!Number(u.is_active);
+                      return (
+                        <tr key={u.id}>
+                          <td data-label={t('u_name')}>{u.name}{isMe && <span className="you-tag">({t('u_you')})</span>}</td>
+                          <td data-label={t('username')}>{u.username}</td>
+                          <td data-label={t('u_role')}><span className={`badge ${u.role}`}>{t('role_' + u.role)}</span></td>
+                          <td data-label={t('u_status')}><span className={`badge ${active ? 'active' : 'inactive'}`}>{active ? t('u_active') : t('u_inactive')}</span></td>
+                          <td data-label={t('u_last')}>{u.last_login_at ? fmtDateTime(u.last_login_at) : <span className="muted">{t('u_never')}</span>}</td>
+                          <td>
+                            <div className="row end">
+                              <button type="button" className="btn secondary small" onClick={() => open(u)}>{t('edit')}</button>
+                              {!isMe && <button type="button" className="btn danger small" onClick={() => remove(u)}>{t('delete')}</button>}
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </>
+          )}
+        </>
       )}
     </>
   );

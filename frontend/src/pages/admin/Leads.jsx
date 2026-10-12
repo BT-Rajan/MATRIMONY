@@ -45,6 +45,8 @@ export default function Leads() {
     setSp(p);
   };
   const search = (e) => { e.preventDefault(); go({ q: qi.trim(), page: '1' }); };
+  const hasFilters = !!(source || q);
+  const clearFilters = () => { setQi(''); setSp({}); };
   const pages = data ? Math.max(1, Math.ceil(data.total / data.per)) : 1;
 
   const openNew = () => { setErrs({}); setErr(''); setNotice(''); setForm({ ...BLANK }); };
@@ -175,6 +177,7 @@ export default function Leads() {
         </div>
         <button className="btn" type="submit">{t('search')}</button>
       </form>
+      {hasFilters && <p className="mt-6"><button type="button" className="btn secondary small" onClick={clearFilters}>{t('a_clear')}</button></p>}
 
       {!data && !err && <p role="status">{t('loading')}</p>}
       {data && (data.items.length === 0 ? <p>{t('l_none')}</p> : (
@@ -203,8 +206,8 @@ export default function Leads() {
                     <td data-label={t('l_name')}>{l.name}</td>
                     <td data-label={t('l_source')}>{t('src_' + l.source)}</td>
                     <td data-label={t('l_source_id')}>{l.source_id || '—'}</td>
-                    <td data-label={t('l_phone1')}>{l.phone1}</td>
-                    <td data-label={t('l_phone2')}>{l.phone2 || '—'}</td>
+                    <td data-label={t('l_phone1')}><a href={`tel:${l.phone1}`}>{l.phone1}</a></td>
+                    <td data-label={t('l_phone2')}>{l.phone2 ? <a href={`tel:${l.phone2}`}>{l.phone2}</a> : '—'}</td>
                     <td data-label={t('l_created')}>{fmtDateTime(l.created_at)}{l.created_by_name ? ` · ${l.created_by_name}` : ''}</td>
                     <td data-label={t('l_actions')}>
                       <button type="button" className="btn secondary small" onClick={() => openEdit(l)}>{t('l_edit')}</button>{' '}

@@ -107,10 +107,15 @@ function h_app_list(): void
     $c->execute($args);
     $total = (int)$c->fetchColumn();
 
+    // Whitelisted sort columns only: the value is interpolated into SQL.
+    $sortMap = ['created_at' => 'a.created_at', 'reg_no' => 'a.reg_no', 'name' => 'a.full_name', 'status' => 'a.status'];
+    $sort = $sortMap[(string)($_GET['sort'] ?? 'created_at')] ?? $sortMap['created_at'];
+    $dir = strtolower((string)($_GET['dir'] ?? 'desc')) === 'asc' ? 'ASC' : 'DESC';
+
     $st = db()->prepare("SELECT a.id, a.reg_no, a.status, a.gender, a.full_name, a.dob, a.phone, a.created_at,
         a.assigned_to, au.name AS assigned_to_name
         FROM applications a LEFT JOIN users au ON au.id = a.assigned_to$w
-        ORDER BY a.created_at DESC, a.id DESC LIMIT $per OFFSET $off");
+        ORDER BY $sort $dir, a.id $dir LIMIT $per OFFSET $off");
     $st->execute($args);
     out(['items' => $st->fetchAll(), 'total' => $total, 'page' => $page, 'per' => $per]);
 }
