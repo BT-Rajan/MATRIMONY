@@ -56,7 +56,7 @@ export const UI = {
   home: { ta: 'முகப்பு', en: 'Home' },
   footer_menu: { ta: 'அடிக்குறிப்பு பட்டி', en: 'Footer' },
   community_consent: { ta: 'உறுப்பினர்களின் விவரங்கள் மற்றும் படங்கள் அவர்களின் ஒப்புதலுடன் மட்டுமே பகிரப்படும்.', en: 'Member details and photographs are shared only with their consent.' },
-  footer_message: { en: 'Chromepet Karkathar Association is an independent, not-for-profit organisation working towards the upliftment of the community.' },
+  footer_message: { ta: 'குரோம்பேட்டை கார்காத்தார் சங்கம் சமூக மேம்பாட்டிற்காகப் பாடுபடும் சுயாதீனமான, இலாப நோக்கற்ற அமைப்பாகும்.', en: 'Chromepet Karkathar Association is an independent, not-for-profit organisation working towards the upliftment of the community.' },
   footer_meet: { ta: 'நாங்கள் சந்திக்குமிடம்', en: 'We meet at' },
   footer_location: { ta: 'இடம்', en: 'Location' },
   footer_follow: { ta: 'எங்களைப் பின்தொடருங்கள்', en: 'Follow us' },
