@@ -39,6 +39,7 @@ $routes = [
     ['POST',   '#^/users$#',                      'h_user_create'],
     ['PUT',    '#^/users/(\d+)$#',                'h_user_update'],
     ['DELETE', '#^/users/(\d+)$#',                'h_user_delete'],
+    ['POST',   '#^/leads/import$#',               'h_lead_import'],
     ['GET',    '#^/leads$#',                      'h_lead_list'],
     ['POST',   '#^/leads$#',                      'h_lead_create'],
     ['GET',    '#^/leads/(\d+)$#',               'h_lead_get'],

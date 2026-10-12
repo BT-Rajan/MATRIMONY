@@ -160,3 +160,79 @@ function h_lead_delete(int $id): void
     if ($st->rowCount() === 0) fail(404, 'not_found');
     out(['ok' => true]);
 }
+
+/* ---------- CSV import ---------- */
+
+const LEAD_IMPORT_MAX_ROWS = 1000;
+const LEAD_IMPORT_REQUIRED = ['salutation', 'source', 'name', 'phone1'];
+
+// Accept "Mr", "mr", "Ms", "Ms." etc. and return the stored form.
+function lead_norm_salutation(string $v): string
+{
+    $k = strtolower(rtrim(trim($v), '.'));
+    return $k === 'mr' ? 'Mr' : ($k === 'ms' ? 'Ms.' : trim($v));
+}
+
+/**
+ * Import leads from CSV text (sent as JSON {csv}). All rows are validated first;
+ * if any row fails, nothing is written and every error is returned keyed by row.
+ */
+function h_lead_import(): void
+{
+    $me = require_user();
+    $csv = (string)(body()['csv'] ?? '');
+    $csv = preg_replace('/^\xEF\xBB\xBF/', '', $csv) ?? $csv; // strip UTF-8 BOM from Excel exports
+    if (trim($csv) === '') fail(422, 'import_empty');
+
+    $fh = fopen('php://memory', 'r+');
+    fwrite($fh, $csv);
+    rewind($fh);
+
+    $header = fgetcsv($fh);
+    if ($header === false || $header === [null]) fail(422, 'bad_header');
+    $cols = array_map(fn($h) => strtolower(trim((string)$h)), $header);
+    $missing = array_values(array_diff(LEAD_IMPORT_REQUIRED, $cols));
+    if ($missing) fail(422, 'bad_header', ['columns' => 'missing: ' . implode(', ', $missing)]);
+
+    $rows = [];
+    $errors = [];
+    $line = 1;
+    while (($r = fgetcsv($fh)) !== false) {
+        $line++;
+        if ($r === [null] || trim(implode('', array_map('strval', $r))) === '') continue; // blank line
+        if (count($rows) >= LEAD_IMPORT_MAX_ROWS) fail(422, 'too_many_rows');
+
+        $in = [];
+        foreach ($cols as $i => $c) {
+            if ($c !== '') $in[$c] = (string)($r[$i] ?? '');
+        }
+        $in['salutation'] = lead_norm_salutation($in['salutation'] ?? '');
+        $in['source'] = strtolower(trim($in['source'] ?? ''));
+
+        [$d, $e] = lead_input($in);
+        foreach ($e as $field => $code) $errors["Row $line · $field"] = $code;
+        if (!$e) $rows[] = $d;
+    }
+    fclose($fh);
+
+    if ($errors) fail(422, 'validation', $errors);
+    if (!$rows) fail(422, 'import_empty');
+
+    $pdo = db();
+    $pdo->beginTransaction();
+    try {
+        $ins = $pdo->prepare('INSERT INTO leads (salutation, source, source_id, name, phone1, phone2, comment, created_by, updated_by)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)');
+        $num = $pdo->prepare('UPDATE leads SET lead_no = ? WHERE id = ?');
+        foreach ($rows as $d) {
+            $ins->execute([$d['salutation'], $d['source'], $d['source_id'], $d['name'], $d['phone1'], $d['phone2'], $d['comment'], $me['id'], $me['id']]);
+            $id = (int)$pdo->lastInsertId();
+            $num->execute([sprintf('LD%06d', $id), $id]);
+        }
+        $pdo->commit();
+    } catch (Throwable $x) {
+        if ($pdo->inTransaction()) $pdo->rollBack();
+        throw $x;
+    }
+    out(['inserted' => count($rows)], 201);
+}
