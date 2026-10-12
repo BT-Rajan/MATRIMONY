@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link, NavLink, useLocation } from 'react-router-dom';
 import { useI18n } from '../i18n';
-import { FOOTER_CONTACT, FOOTER_LINKS, NAV, UI, tx } from '../content/site';
+import { FOOTER_CONTACT, FOOTER_LINKS, MS_NAV, NAV, UI, tx } from '../content/site';
 import { SITE } from '../config';
 import { useDevice } from '../useDevice';
 import LangToggle from './LangToggle';
@@ -52,10 +52,12 @@ export default function SiteShell({ children, nav = NAV, showLang = true }) {
                 {n.icon === 'home' ? <><HomeIcon /><span className="home-txt">{tx(n, lang)}</span></> : tx(n, lang)}
               </NavLink>
             ))}
+            <Link to="/admin.html" className="nav-login">{tx(UI.member_login, lang)}</Link>
           </nav>
           <div className="site-head-actions">
             {showLang && <LangToggle />}
-            <Link to="/admin.html" className="btn small login-btn">{tx(UI.member_login, lang)}</Link>
+            <Link to={MS_NAV.to} className="btn small login-btn ms-btn">{tx(MS_NAV, lang)}</Link>
+            <Link to="/admin.html" className="btn small login-btn member-btn">{tx(UI.member_login, lang)}</Link>
             <button type="button" className="menu-btn" aria-expanded={open} aria-controls="site-nav" onClick={() => setOpen((o) => !o)}>
               <span aria-hidden="true">{open ? '✕' : '☰'}</span>
               <span className="sr-only">{tx(UI.menu, lang)}</span>

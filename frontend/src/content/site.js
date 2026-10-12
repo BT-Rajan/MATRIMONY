@@ -5,7 +5,7 @@ const HOME = { to: '/', end: true, icon: 'home', ta: 'முகப்பு', en
 const COMMUNITY = { to: '/community', ta: 'சமூகம்', en: 'Community' };
 const SANGAM = { to: '/about', ta: 'சங்கம்', en: 'Sangam' };
 const EVENTS_NAV = { to: '/events', ta: 'நிகழ்வுகள்', en: 'Events & Activities' };
-const MS_NAV = { to: '/ms2026', hl: true, ta: 'மங்கல சந்திப்பு', en: 'Mangala Santhippu' };
+export const MS_NAV = { to: '/ms2026', hl: true, ta: 'மங்கல சந்திப்பு', en: 'Mangala Santhippu' };
 const CONTACT = { to: '/contact', ta: 'தொடர்புக்கு', en: 'Contact Us' };
 
 export const NAV = [HOME, COMMUNITY, SANGAM, EVENTS_NAV, MS_NAV, CONTACT];
