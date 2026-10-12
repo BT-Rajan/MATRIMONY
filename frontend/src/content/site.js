@@ -11,7 +11,7 @@ const CONTACT = { to: '/contact', ta: 'தொடர்புக்கு', en: '
 export const NAV = [HOME, COMMUNITY, SANGAM, EVENTS_NAV, MS_NAV, CONTACT];
 
 // Menu of the application page (apply.html)
-export const APPLY_NAV = [HOME, SANGAM, COMMUNITY, EVENTS_NAV, CONTACT];
+export const APPLY_NAV = [HOME, SANGAM, COMMUNITY, EVENTS_NAV, MS_NAV, CONTACT];
 
 // Footer: column 2 links, column 3 contact (column 1 is the logo)
 export const FOOTER_LINKS = [COMMUNITY, SANGAM, EVENTS_NAV, MS_NAV];
