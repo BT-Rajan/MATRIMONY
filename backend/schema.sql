@@ -104,3 +104,28 @@ CREATE TABLE IF NOT EXISTS site_settings (
 
 INSERT IGNORE INTO site_settings (id, event_date, venue_ta, venue_en, bank_name, bank_name_en, bank_account, bank_ifsc) VALUES
   (1, '27-12-2026', 'ஸ்ரீ கணபதி ஹால், Dr. ராஜேந்திரபிரசாத் ரோடு, குரோம்பேட்டை', 'Sri Ganapathi Hall, Dr. Rajendra Prasad Road, Chromepet', 'இந்தியன் வங்கி, சிட்லபாக்கம் கிளை', 'Indian Bank, Chitlapakkam Branch', '935934700', '');
+
+CREATE TABLE IF NOT EXISTS leads (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  lead_no VARCHAR(20) NULL,
+  source ENUM('porur','trichy','mayiladuthurai','others') NOT NULL,
+  source_id VARCHAR(60) NULL,
+  salutation ENUM('Mr','Ms.') NOT NULL,
+  name VARCHAR(120) NOT NULL,
+  phone1 VARCHAR(20) NOT NULL,
+  phone2 VARCHAR(20) NULL,
+  comment TEXT NULL,
+  created_by INT UNSIGNED NULL,
+  updated_by INT UNSIGNED NULL,
+  deleted_at DATETIME NULL,
+  deleted_by INT UNSIGNED NULL,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  UNIQUE KEY uq_lead_no (lead_no),
+  KEY idx_lead_deleted (deleted_at),
+  KEY idx_lead_source (source),
+  KEY idx_lead_created (created_at),
+  CONSTRAINT fk_lead_created FOREIGN KEY (created_by) REFERENCES users (id) ON DELETE SET NULL,
+  CONSTRAINT fk_lead_updated FOREIGN KEY (updated_by) REFERENCES users (id) ON DELETE SET NULL,
+  CONSTRAINT fk_lead_deleted FOREIGN KEY (deleted_by) REFERENCES users (id) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

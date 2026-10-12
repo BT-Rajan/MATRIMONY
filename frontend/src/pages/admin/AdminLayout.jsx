@@ -27,6 +27,7 @@ export default function AdminLayout() {
       <nav className="admin-nav" aria-label="Admin">
         <NavLink to="/admin.html" end className={link}>{t('nav_dashboard')}</NavLink>
         <NavLink to="/admin.html/applications" className={link}>{t('nav_apps')}</NavLink>
+        <NavLink to="/admin.html/leads" className={link}>{t('nav_leads')}</NavLink>
         {user.role === 'admin' && <NavLink to="/admin.html/users" className={link}>{t('nav_users')}</NavLink>}
         {user.role === 'admin' && <NavLink to="/admin.html/settings" className={link}>{t('nav_settings')}</NavLink>}
       </nav>
