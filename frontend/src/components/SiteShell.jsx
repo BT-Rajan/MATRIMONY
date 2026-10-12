@@ -2,7 +2,8 @@ import { useEffect, useRef, useState } from 'react';
 import { Link, NavLink, useLocation } from 'react-router-dom';
 import { useI18n } from '../i18n';
 import { FOOTER_CONTACT, FOOTER_LINKS, MS_NAV, NAV, UI, tx } from '../content/site';
-import { SITE } from '../config';
+import { CONTACT_INFO } from '../config';
+import { PinIcon, FacebookIcon } from './Icons';
 import { useDevice } from '../useDevice';
 import LangToggle from './LangToggle';
 import '../site.css';
@@ -72,18 +73,26 @@ export default function SiteShell({ children, nav = NAV, showLang = true }) {
             <div className="foot-col foot-logo">
               <img src="/logo.png" alt="" width="96" height="96" />
               <strong>{t('brand')}</strong>
-              <span>{tx(UI.tagline, lang)}</span>
+              <p className="foot-msg">{tx(UI.footer_message, lang)}</p>
             </div>
             <nav className="foot-col foot-nav" aria-label={tx(UI.footer_menu, lang)}>
               {FOOTER_LINKS.map((n) => <Link key={n.to} to={n.to}>{tx(n, lang)}</Link>)}
             </nav>
             <div className="foot-col foot-contact">
               <Link to={FOOTER_CONTACT.to} className="foot-head">{tx(FOOTER_CONTACT, lang)}</Link>
-              <ul>
-                {SITE.officers.map((o) => (
-                  <li key={o.role.en}><span>{o.role[lang]}</span><a href={`tel:${o.tel}`}>{o.phone}</a></li>
-                ))}
-              </ul>
+              <div className="foot-item">
+                <PinIcon />
+                <div>
+                  <span>{tx(UI.footer_location, lang)}</span>
+                  <p>{tx(UI.footer_meet, lang)}: {tx(CONTACT_INFO.address, lang)}</p>
+                </div>
+              </div>
+              {CONTACT_INFO.facebook && (
+                <a className="foot-item foot-follow" href={CONTACT_INFO.facebook} target="_blank" rel="noopener noreferrer">
+                  <FacebookIcon />
+                  <span>{tx(UI.footer_follow, lang)}</span>
+                </a>
+              )}
             </div>
           </div>
           <div className="foot-bottom">

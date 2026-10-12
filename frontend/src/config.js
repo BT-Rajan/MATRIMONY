@@ -6,3 +6,10 @@ export const SITE = {
     { role: { ta: 'பொருளாளர்', en: 'Treasurer' }, name: { ta: 'திரு இரா.சந்திரகுமார்', en: 'Thiru R. Chandrakumar' }, tel: '+919444314601', phone: '+91 9444314601' },
   ],
 };
+
+// Single source for the public address and social links (footer and Contact page).
+// Set `facebook` to the page URL; the Follow us link stays hidden until it is set.
+export const CONTACT_INFO = {
+  address: { ta: '#6, Gandhi Street, Chitlapakkam, Chennai - 600064', en: '#6, Gandhi Street, Chitlapakkam, Chennai - 600064' },
+  facebook: '',
+};

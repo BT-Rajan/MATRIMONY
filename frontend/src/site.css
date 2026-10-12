@@ -249,3 +249,24 @@ html { scroll-padding-top: calc(var(--head-h, 110px) + 8px); scroll-behavior: sm
 .tenure-list li { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; padding: 10px 14px; border: 1px solid var(--line); border-radius: 8px; background: #fbfcf7; }
 .tenure-list time { color: var(--brand); font-weight: 700; white-space: nowrap; }
 @media (min-width: 700px) { .tenure-list { grid-template-columns: 1fr 1fr; } }
+
+/* ---------- footer: message, location, follow; contact details live on /contact ---------- */
+.foot-msg { margin: 6px 0 0; max-width: 34ch; font-size: .92rem; line-height: 1.5; opacity: .92; color: #fff; }
+.foot-item { display: flex; gap: 10px; align-items: flex-start; text-align: left; color: #fff; }
+.foot-item p { margin: 0; color: #fff; }
+.foot-item > div > span { display: block; font-size: .85rem; color: var(--accent); font-weight: 700; }
+.foot-ico { flex: none; margin-top: 2px; color: var(--accent); }
+.foot-follow { text-decoration: none; font-weight: 700; padding: 6px 0; }
+.foot-follow:hover { text-decoration: underline; }
+html[data-device="desktop"] .foot-contact { justify-items: start; text-align: left; }
+html[data-device="desktop"] .foot-logo { justify-items: start; text-align: left; }
+html[data-device="desktop"] .foot-msg { max-width: none; }
+html[data-device="tablet"] .foot-msg { max-width: none; }
+.foot-col.foot-contact { justify-items: start; text-align: left; }
+.foot-contact .foot-item { width: 100%; }
+
+/* contact page */
+.contact-grid { display: grid; grid-template-columns: 1fr; gap: clamp(14px, 2vw, 24px); align-items: start; }
+@media (min-width: 900px) { .contact-grid { grid-template-columns: 2fr 1fr; } }
+.contact-grid .card { margin: 0; }
+.h-ico { display: inline-flex; vertical-align: middle; color: var(--brand); }
