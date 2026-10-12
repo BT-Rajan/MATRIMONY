@@ -180,3 +180,14 @@ html[data-device="mobile"] .foot-logo span { font-size: .9rem; }
 .home-intro .btn.secondary { border-color: var(--brand); color: var(--brand); }
 @media (max-width: 420px) { .home-intro .btn { width: 100%; } .home-intro .row { width: 100%; } }
 @media (max-height: 480px) and (orientation: landscape) { .hs-caption { padding-bottom: 36px; } .hs-caption p { display: none; } .hs-caption h2 { font-size: 1.5rem; } }
+
+/* single Mangala Santhippu page */
+html { scroll-padding-top: calc(var(--head-h, 110px) + 8px); scroll-behavior: smooth; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+.ms-hero { text-align: center; display: grid; justify-items: center; gap: 6px; padding: clamp(16px, 4vw, 40px) 0 8px; }
+.ms-hero .edition { margin: 0; color: var(--brand); font-weight: 700; }
+.ms-hero h1 { margin: 0; color: var(--brand); }
+.ms-hero p { margin: 0; }
+.ms-hero .apply-now { margin-top: 10px; }
+.apply-sec { margin-block: 20px; }
+.apply-sec > h2 { margin-bottom: 10px; }

@@ -7,7 +7,6 @@ import NewsGallery from './pages/site/NewsGallery';
 import Community from './pages/site/Community';
 import Contact from './pages/site/Contact';
 import MangalaSanthippu from './pages/MangalaSanthippu';
-import Apply from './pages/Apply';
 import Login from './pages/admin/Login';
 import AdminLayout from './pages/admin/AdminLayout';
 import Dashboard from './pages/admin/Dashboard';
@@ -27,7 +26,7 @@ export default function App() {
       <Route path="/news-gallery" element={<NewsGallery />} />
       <Route path="/community" element={<Community />} />
       <Route path="/contact" element={<Contact />} />
-      <Route path="/apply.html" element={<Apply />} />
+      <Route path="/apply.html" element={<Navigate to={{ pathname: '/mangala-santhippu', hash: '#apply' }} replace />} />
       <Route path="/program.html" element={<Navigate to="/mangala-santhippu" replace />} />
       <Route path="/admin.html/login" element={<Login />} />
       <Route path="/admin.html" element={<AdminLayout />}>

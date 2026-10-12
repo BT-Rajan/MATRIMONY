@@ -18,7 +18,7 @@ function HomeIcon() {
 export default function SiteShell({ children }) {
   const { t, lang } = useI18n();
   const [open, setOpen] = useState(false);
-  const { pathname } = useLocation();
+  const { pathname, hash } = useLocation();
   useDevice();
   const head = useRef(null);
   useEffect(() => {
@@ -31,7 +31,11 @@ export default function SiteShell({ children }) {
     ro.observe(el);
     return () => ro.disconnect();
   }, []);
-  useEffect(() => { setOpen(false); window.scrollTo(0, 0); }, [pathname]);
+  useEffect(() => {
+    setOpen(false);
+    const el = hash ? document.getElementById(hash.slice(1)) : null;
+    if (el) el.scrollIntoView(); else window.scrollTo(0, 0);
+  }, [pathname, hash]);
 
   return (
     <>

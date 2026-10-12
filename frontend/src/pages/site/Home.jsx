@@ -24,7 +24,7 @@ export default function Home() {
           <p className="tag">{tx(UI.tagline, lang)}</p>
           {device !== 'mobile' && <p className="sub">{tx(UI.welcome_sub, lang)}</p>}
           <div className="row">
-            <Link to="/apply.html" className="btn accent">{tx(UI.apply_ms, lang)} →</Link>
+            <Link to="/mangala-santhippu#apply" className="btn accent">{tx(UI.apply_ms, lang)} →</Link>
             {device !== 'mobile' && <Link to="/events" className="btn secondary">{tx(UI.see_events, lang)}</Link>}
           </div>
         </section>
@@ -50,7 +50,7 @@ export default function Home() {
             <p>{tx(MS_FEATURE.text, lang)}</p>
           </div>
           <div className="row">
-            <Link to="/apply.html" className="btn accent">{t('apply_btn')} →</Link>
+            <Link to="/mangala-santhippu#apply" className="btn accent">{t('apply_btn')} →</Link>
             <Link to="/mangala-santhippu" className="btn secondary">{tx(UI.details, lang)}</Link>
           </div>
         </section>

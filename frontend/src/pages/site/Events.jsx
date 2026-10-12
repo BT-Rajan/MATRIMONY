@@ -28,7 +28,7 @@ export default function Events() {
             {venue && <p>{venue}</p>}
             <p className="hint">{t('last_date_label')}: <strong>{t('last_date')}</strong></p>
             <div className="row">
-              <Link to="/apply.html" className="btn small">{t('apply_btn')}</Link>
+              <Link to="/mangala-santhippu#apply" className="btn small">{t('apply_btn')}</Link>
               <Link to="/mangala-santhippu" className="btn secondary small">{tx({ ta: 'விவரங்கள்', en: 'Details' }, lang)}</Link>
             </div>
           </div>
