@@ -91,6 +91,7 @@ CREATE TABLE IF NOT EXISTS site_settings (
   event_date VARCHAR(60) NOT NULL DEFAULT '',
   venue_ta VARCHAR(255) NOT NULL DEFAULT '',
   venue_en VARCHAR(255) NOT NULL DEFAULT '',
+  bank_holder VARCHAR(150) NOT NULL DEFAULT '',
   bank_name VARCHAR(150) NOT NULL DEFAULT '',
   bank_name_en VARCHAR(150) NOT NULL DEFAULT '',
   bank_account VARCHAR(40) NOT NULL DEFAULT '',
@@ -102,8 +103,8 @@ CREATE TABLE IF NOT EXISTS site_settings (
   CONSTRAINT chk_settings_singleton CHECK (id = 1)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-INSERT IGNORE INTO site_settings (id, event_date, venue_ta, venue_en, bank_name, bank_name_en, bank_account, bank_ifsc) VALUES
-  (1, '27-12-2026', 'ஸ்ரீ கணபதி ஹால், Dr. ராஜேந்திரபிரசாத் ரோடு, குரோம்பேட்டை', 'Sri Ganapathi Hall, Dr. Rajendra Prasad Road, Chromepet', 'இந்தியன் வங்கி, சிட்லபாக்கம் கிளை', 'Indian Bank, Chitlapakkam Branch', '935934700', '');
+INSERT IGNORE INTO site_settings (id, event_date, venue_ta, venue_en, bank_holder, bank_name, bank_name_en, bank_account, bank_ifsc) VALUES
+  (1, '27-12-2026', 'ஸ்ரீ கணபதி ஹால், Dr. ராஜேந்திரபிரசாத் ரோடு, குரோம்பேட்டை', 'Sri Ganapathi Hall, Dr. Rajendra Prasad Road, Chromepet', 'KARKATHAR WELFARE TRUST', 'கனரா வங்கி, சிட்லபாக்கம் கிளை', 'Canara Bank, Chitlapakkam Branch', '110265790593', 'CNRB0016490');
 
 CREATE TABLE IF NOT EXISTS leads (
   id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,

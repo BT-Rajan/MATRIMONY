@@ -5,7 +5,7 @@ import { useAuth } from '../../auth';
 import { useI18n } from '../../i18n';
 
 const QR_MAX_BYTES = 2 * 1024 * 1024;
-const BLANK = { event_date: '', venue_ta: '', venue_en: '', bank_name: '', bank_name_en: '', bank_account: '', bank_ifsc: '', qr_code: '' };
+const BLANK = { event_date: '', venue_ta: '', venue_en: '', bank_holder: '', bank_name: '', bank_name_en: '', bank_account: '', bank_ifsc: '', qr_code: '' };
 
 function readAsDataUrl(file) {
   return new Promise((resolve, reject) => {
@@ -115,6 +115,12 @@ export default function Settings() {
           <legend>{t('s_payment')}</legend>
           <div className="grid">
             <div className="field full">
+              <label htmlFor="bank_holder">{t('s_bank_holder')}</label>
+              <input id="bank_holder" type="text" maxLength={150} value={form.bank_holder}
+                onChange={(e) => set('bank_holder', e.target.value)} {...ia('bank_holder')} />
+              {fe('bank_holder')}
+            </div>
+            <div className="field full">
               <label htmlFor="bank_name">{t('s_bank_name')}</label>
               <input id="bank_name" type="text" maxLength={150} value={form.bank_name}
                 onChange={(e) => set('bank_name', e.target.value)} {...ia('bank_name')} />
@@ -134,7 +140,7 @@ export default function Settings() {
             </div>
             <div className="field">
               <label htmlFor="bank_ifsc">{t('s_bank_ifsc')}</label>
-              <input id="bank_ifsc" type="text" maxLength={20} value={form.bank_ifsc} placeholder="e.g. IDIB000S123"
+              <input id="bank_ifsc" type="text" maxLength={20} value={form.bank_ifsc} placeholder="e.g. CNRB0016490"
                 onChange={(e) => set('bank_ifsc', e.target.value.toUpperCase())} {...ia('bank_ifsc')} />
               {fe('bank_ifsc')}
             </div>
