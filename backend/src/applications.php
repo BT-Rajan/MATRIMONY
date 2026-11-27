@@ -34,6 +34,7 @@ function h_apply(): void
         $pdo->prepare('UPDATE applications SET reg_no = ? WHERE id = ?')->execute([$reg, $id]);
         audit($id, null, 'created', null, 'pending');
         $pdo->commit();
+        notify_new_application($reg, $d);
     } catch (PDOException $x) {
         if ($pdo->inTransaction()) $pdo->rollBack();
         if ($x->getCode() === '23000') fail(409, 'validation', ['payment_ref' => 'duplicate']);
@@ -310,4 +311,74 @@ function release_assignments(int $userId, int $byId): void
         if ($pdo->inTransaction()) $pdo->rollBack();
         throw $x;
     }
+}
+
+
+/* ---------- notify the association about each new application ---------- */
+
+function notify_new_application(string $reg, array $d): void
+{
+    if (trim((string)env('SMTP_PASS', '')) === '') {
+        error_log('notify: SMTP_PASS not set; no notification sent for ' . $reg);
+        return;
+    }
+    try {
+        $body = "New application submitted\n\n"
+            . "Registration no: " . $reg . "\n"
+            . "Name: " . ($d['full_name'] ?? '') . "\n"
+            . "Gender: " . ($d['gender'] ?? '') . "\n"
+            . "Phone: " . ($d['phone'] ?? '') . "\n"
+            . "Submitted: " . now() . "\n";
+        smtp_send((string)env('NOTIFY_TO', 'chrompetkarkatharsangam@gmail.com'), 'New application ' . $reg, $body);
+    } catch (Throwable $t) {
+        error_log('notify failed for ' . $reg . ': ' . $t->getMessage());
+    }
+}
+
+function smtp_send(string $to, string $subject, string $text): void
+{
+    $host = (string)env('SMTP_HOST', 'smtp.gmail.com');
+    $port = (int)env('SMTP_PORT', '587');
+    $user = (string)env('SMTP_USER', '');
+    $pass = str_replace(' ', '', (string)env('SMTP_PASS', ''));
+    $from = (string)env('SMTP_FROM', $user);
+
+    $s = stream_socket_client('tcp://' . $host . ':' . $port, $errno, $errstr, 20);
+    if (!$s) throw new RuntimeException('connect: ' . $errstr);
+    stream_set_timeout($s, 20);
+
+    $expect = function (array $codes) use ($s): void {
+        do {
+            $line = fgets($s, 1024);
+            if ($line === false) throw new RuntimeException('smtp: no reply');
+        } while (isset($line[3]) && $line[3] === '-');
+        if (!in_array((int)substr($line, 0, 3), $codes, true)) throw new RuntimeException('smtp: ' . trim($line));
+    };
+    $send = function (string $cmd) use ($s): void {
+        fwrite($s, $cmd . "\r\n");
+    };
+
+    $expect([220]);
+    $send('EHLO karkathar.org'); $expect([250]);
+    $send('STARTTLS'); $expect([220]);
+    if (!stream_socket_enable_crypto($s, true, STREAM_CRYPTO_METHOD_TLS_CLIENT)) throw new RuntimeException('tls failed');
+    $send('EHLO karkathar.org'); $expect([250]);
+    $send('AUTH LOGIN'); $expect([334]);
+    $send(base64_encode($user)); $expect([334]);
+    $send(base64_encode($pass)); $expect([235]);
+    $send('MAIL FROM:<' . $from . '>'); $expect([250]);
+    $send('RCPT TO:<' . $to . '>'); $expect([250, 251]);
+    $send('DATA'); $expect([354]);
+
+    $headers = 'From: Karkathar Welfare Trust <' . $from . ">\r\n"
+        . 'To: <' . $to . ">\r\n"
+        . 'Subject: =?UTF-8?B?' . base64_encode($subject) . "?=\r\n"
+        . 'Date: ' . date('r') . "\r\n"
+        . "MIME-Version: 1.0\r\n"
+        . "Content-Type: text/plain; charset=UTF-8\r\n"
+        . "Content-Transfer-Encoding: base64\r\n\r\n";
+    fwrite($s, $headers . chunk_split(base64_encode($text), 76, "\r\n") . "\r\n.\r\n");
+    $expect([250]);
+    $send('QUIT');
+    fclose($s);
 }
