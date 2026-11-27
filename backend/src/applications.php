@@ -343,7 +343,8 @@ function smtp_send(string $to, string $subject, string $text): void
     $pass = str_replace(' ', '', (string)env('SMTP_PASS', ''));
     $from = (string)env('SMTP_FROM', $user);
 
-    $s = stream_socket_client('tcp://' . $host . ':' . $port, $errno, $errstr, 20);
+    $scheme = $port === 465 ? 'ssl' : 'tcp';
+    $s = stream_socket_client($scheme . '://' . $host . ':' . $port, $errno, $errstr, 20);
     if (!$s) throw new RuntimeException('connect: ' . $errstr);
     stream_set_timeout($s, 20);
 
@@ -360,9 +361,11 @@ function smtp_send(string $to, string $subject, string $text): void
 
     $expect([220]);
     $send('EHLO karkathar.org'); $expect([250]);
-    $send('STARTTLS'); $expect([220]);
-    if (!stream_socket_enable_crypto($s, true, STREAM_CRYPTO_METHOD_TLS_CLIENT)) throw new RuntimeException('tls failed');
-    $send('EHLO karkathar.org'); $expect([250]);
+    if ($port !== 465) {
+        $send('STARTTLS'); $expect([220]);
+        if (!stream_socket_enable_crypto($s, true, STREAM_CRYPTO_METHOD_TLS_CLIENT)) throw new RuntimeException('tls failed');
+        $send('EHLO karkathar.org'); $expect([250]);
+    }
     $send('AUTH LOGIN'); $expect([334]);
     $send(base64_encode($user)); $expect([334]);
     $send(base64_encode($pass)); $expect([235]);
