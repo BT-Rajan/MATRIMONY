@@ -31,11 +31,11 @@ db()->exec("CREATE TABLE IF NOT EXISTS site_settings (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
 
 db()->exec("INSERT IGNORE INTO site_settings (id, event_date, venue_ta, venue_en, bank_name, bank_account, bank_ifsc) VALUES
-  (1, '', 'ஸ்ரீ கணபதி ஹால், Dr. ராஜேந்திரபிரசாத் ரோடு, குரோம்பேட்டை', 'Sri Ganapathi Hall, Dr. Rajendra Prasad Road, Chromepet', 'இந்தியன் வங்கி, சிட்லபாக்கம் கிளை', '935934700', '')");
+  (1, '', 'ஸ்ரீ கணபதி ஹால், Dr. ராஜேந்திரபிரசாத் ரோடு, குரோம்பேட்டை', 'Sri Ganapathi Hall, Dr. Rajendra Prasad Road, Chromepet', 'Canara Bank', '110265790593', 'CNRB0016490')");
 
 db()->exec("ALTER TABLE site_settings ADD COLUMN IF NOT EXISTS bank_name_en VARCHAR(150) NOT NULL DEFAULT '' AFTER bank_name");
 // One-time fills for values that were never set; anything an admin already entered is left alone.
-db()->exec("UPDATE site_settings SET bank_name_en = 'Indian Bank, Chitlapakkam Branch' WHERE id = 1 AND bank_name_en = ''");
+db()->exec("UPDATE site_settings SET bank_name_en = 'Canara Bank, Chitlapakkam Branch' WHERE id = 1 AND bank_name_en = ''");
 db()->exec("UPDATE site_settings SET event_date = '27-12-2026' WHERE id = 1 AND event_date = ''");
 
 // Manager assignment: admin assigns pending applications to a manager, who alone may approve/reject them.
